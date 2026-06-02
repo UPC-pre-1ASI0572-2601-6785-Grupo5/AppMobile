@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../constants/strings.dart';
+import 'dashboard_screen.dart'; // IMPORTACIÓN DEL DASHBOARD
 
 class SubscriptionSuccessScreen extends StatelessWidget {
   final String planName;
@@ -57,7 +58,12 @@ class SubscriptionSuccessScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.close, color: AppColors.textDark),
             onPressed: () {
-              // Navegar al home/dashboard general
+              // Navegar al dashboard limpiando el stack
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const DashboardScreen()),
+                    (route) => false,
+              );
             },
           ),
         ],
@@ -114,7 +120,7 @@ class SubscriptionSuccessScreen extends StatelessWidget {
                       ),
                       child: ClipOval(
                         child: Image.asset(
-                          'assets/images/success_illustration.png', // Guarda tu imagen con este nombre
+                          'assets/images/success_illustration.png',
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) => const Icon(
                             Icons.dashboard_customize,
@@ -179,7 +185,12 @@ class SubscriptionSuccessScreen extends StatelessWidget {
 
               ElevatedButton(
                 onPressed: () {
-                  // Acción para ir al dashboard principal de iot-monitoring
+                  // NAVEGACIÓN AL DASHBOARD
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const DashboardScreen()),
+                        (route) => false,
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,

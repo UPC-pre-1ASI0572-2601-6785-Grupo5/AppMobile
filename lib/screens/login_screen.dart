@@ -4,6 +4,7 @@ import '../constants/colors.dart';
 import '../constants/strings.dart';
 import '../services/auth_service.dart';
 import 'forgot_password_screen.dart';
+import 'mfa_verification_screen.dart'; // IMPORTACIÓN AÑADIDA
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -51,20 +52,37 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  // FUNCIÓN MODIFICADA PARA NAVEGAR A MFA
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
+
     setState(() => _isLoading = true);
+
     try {
+      // Simulación de validación de credenciales con el backend
       await Future.delayed(const Duration(seconds: 2));
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Accediendo al sistema...'), backgroundColor: AppColors.success),
+
+      if (!mounted) return;
+
+      // Obtenemos el email ingresado para mostrarlo en la pantalla MFA (Opcional pero recomendado por tu diseño)
+      final String userEmail = _emailController.text.trim();
+
+      // Navegación directa a la pantalla de Verificación MFA
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          // Si tu MfaVerificationScreen acepta un email por parámetro, puedes pasarlo así:
+          // builder: (context) => MfaVerificationScreen(email: userEmail),
+          builder: (context) => const MfaVerificationScreen(),
+        ),
       );
+
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error),
       );
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

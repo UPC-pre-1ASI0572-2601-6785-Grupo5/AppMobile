@@ -107,7 +107,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
       if (user != null) {
         if (!mounted) return;
-        // Navegación a la pantalla de planes en lugar de solo mostrar el mensaje
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const SubscriptionPlansScreen()),
@@ -127,13 +126,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     try {
       final user = await _authService.demoLogin();
+
+      if (!mounted) return;
+
       if (user != null) {
-        _showSuccessSnackBar('Bienvenido ${user.companyName}');
+        // Redirige a la pantalla de Login del flujo de Figma
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
       }
     } catch (e) {
       _showErrorSnackBar(e.toString());
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
