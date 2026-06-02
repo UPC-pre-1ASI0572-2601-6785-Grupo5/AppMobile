@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
-import 'tracking_screen.dart'; // Importación de la nueva pantalla
+import 'tracking_screen.dart';
+import 'orders_screen.dart'; // Importación de la pantalla de pedidos
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -12,8 +13,73 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
 
+  // Lista de las vistas que se intercambiarán en el cuerpo principal
+  late final List<Widget> _pages = [
+    _buildDashboardView(), // Índice 0: Tu diseño original de Inicio
+    const OrdersScreen(),  // Índice 1: Pantalla de Pedidos
+    const TrackingScreen(), // Índice 2: Pantalla de Seguimiento
+    const Center(child: Text('Pantalla de Analítica en construcción')), // Índice 3
+    const Center(child: Text('Pantalla de Perfil en construcción')),    // Índice 4
+  ];
+
   @override
   Widget build(BuildContext context) {
+    // Este Scaffold maestro solo contiene el IndexedStack y la barra inferior
+    return Scaffold(
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _pages,
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          // Ya no usamos Navigator.push, solo cambiamos el estado del índice
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: AppColors.primary,
+        unselectedItemColor: AppColors.textGrey,
+        showUnselectedLabels: true,
+        selectedLabelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+        unselectedLabelStyle: const TextStyle(fontSize: 10),
+        items: [
+          BottomNavigationBarItem(
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                  color: _selectedIndex == 0 ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
+                  shape: BoxShape.circle
+              ),
+              child: Icon(Icons.dashboard_customize, color: _selectedIndex == 0 ? AppColors.primary : AppColors.textGrey),
+            ),
+            label: 'Inicio',
+          ),
+          BottomNavigationBarItem(
+              icon: Icon(_selectedIndex == 1 ? Icons.shopping_cart : Icons.shopping_cart_outlined),
+              label: 'Pedidos'
+          ),
+          BottomNavigationBarItem(
+            icon: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              decoration: BoxDecoration(
+                color: _selectedIndex == 2 ? AppColors.primary : Colors.transparent,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Icon(Icons.local_shipping_outlined, color: _selectedIndex == 2 ? Colors.white : AppColors.textGrey),
+            ),
+            label: 'Seguimiento',
+          ),
+          const BottomNavigationBarItem(icon: Icon(Icons.bar_chart_outlined), label: 'Analítica'),
+          const BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Perfil'),
+        ],
+      ),
+    );
+  }
+
+  // Tu diseño original encapsulado en su propia vista para el índice 0
+  Widget _buildDashboardView() {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9F9),
       appBar: AppBar(
@@ -69,7 +135,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(width: 8),
           const CircleAvatar(
             radius: 16,
-            backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11'), // Avatar de prueba
+            backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11'),
           ),
           const SizedBox(width: 16),
         ],
@@ -79,7 +145,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Alerta Crítica
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -109,8 +174,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Tarjetas de Métricas (Grid 2x2)
             Row(
               children: [
                 Expanded(child: _buildMetricCard(title: 'Activos', value: '8', subtitle: 'Pedidos', subtitleColor: AppColors.primary, icon: Icons.autorenew)),
@@ -157,8 +220,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
             const SizedBox(height: 24),
-
-            // Gráfico de Tendencia
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.borderLight)),
@@ -190,8 +251,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             const SizedBox(height: 24),
-
-            // Buscador
             TextField(
               decoration: InputDecoration(
                 hintText: 'Buscar pedido por código...',
@@ -205,8 +264,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Chips de Filtro
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -219,8 +276,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             const SizedBox(height: 24),
-
-            // Lista de Pedidos
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: const [
@@ -229,12 +284,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
             const SizedBox(height: 16),
-
             _buildOrderItem('#FT-2023-01', '5000 Litros', '12 Oct', 'ETA: 15 min', 'En ruta', AppColors.primary),
             _buildOrderItem('#FT-2023-04', '12000 Litros', '11 Oct', null, 'Confirmado', const Color(0xFF85C1E9)),
             _buildOrderItem('#FT-2022-98', '8500 Litros', '10 Oct', null, 'Entregado', AppColors.textGrey),
-
-            const SizedBox(height: 80), // Espacio para el FAB y Bottom Nav
+            const SizedBox(height: 80),
           ],
         ),
       ),
@@ -242,40 +295,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         backgroundColor: AppColors.primary,
         onPressed: () {},
         child: const Icon(Icons.add, color: Colors.white),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          // Lógica de navegación actualizada
-          if (index == 2) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const TrackingScreen()),
-            );
-          } else {
-            setState(() => _selectedIndex = index);
-          }
-        },
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.textGrey,
-        showUnselectedLabels: true,
-        selectedLabelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-        unselectedLabelStyle: const TextStyle(fontSize: 10),
-        items: [
-          BottomNavigationBarItem(
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: _selectedIndex == 0 ? AppColors.primary.withOpacity(0.1) : Colors.transparent, shape: BoxShape.circle),
-              child: Icon(Icons.dashboard_customize, color: _selectedIndex == 0 ? AppColors.primary : AppColors.textGrey),
-            ),
-            label: 'Inicio',
-          ),
-          const BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_outlined), label: 'Pedidos'),
-          const BottomNavigationBarItem(icon: Icon(Icons.local_shipping_outlined), label: 'Seguimiento'),
-          const BottomNavigationBarItem(icon: Icon(Icons.bar_chart_outlined), label: 'Analítica'),
-          const BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Perfil'),
-        ],
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
+import 'digital_receipt_screen.dart'; // Importación vital para navegar
 
 class DeliverySuccessScreen extends StatefulWidget {
   const DeliverySuccessScreen({Key? key}) : super(key: key);
@@ -260,11 +261,17 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
 
                   const SizedBox(height: 32),
 
-                  // Botones
+                  // BOTÓN CON NAVEGACIÓN CORREGIDA
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: () {
+                        // NAVEGACIÓN A LA PANTALLA DEL VOUCHER
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const DigitalReceiptScreen(signaturePoints: [],)),
+                        );
+                      },
                       icon: const Icon(Icons.description_outlined, size: 18),
                       label: const Text('Ver comprobante digital'),
                       style: ElevatedButton.styleFrom(

@@ -3,17 +3,11 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../constants/colors.dart';
 import 'tracking_details_screen.dart';
-import 'delivery_success_screen.dart'; // IMPORTACIÓN DE LA NUEVA PANTALLA
+import 'delivery_success_screen.dart';
 
-class TrackingScreen extends StatefulWidget {
+// Lo pasamos a StatelessWidget ya que no necesita gestionar el estado de la barra inferior
+class TrackingScreen extends StatelessWidget {
   const TrackingScreen({Key? key}) : super(key: key);
-
-  @override
-  State<TrackingScreen> createState() => _TrackingScreenState();
-}
-
-class _TrackingScreenState extends State<TrackingScreen> {
-  final int _selectedIndex = 2; // Índice 2 corresponde a "Seguimiento"
 
   @override
   Widget build(BuildContext context) {
@@ -379,9 +373,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                           ),
                           const SizedBox(height: 12),
 
-                          // ==========================================
                           // BOTÓN PEDIDO ENTREGADO HABILITADO
-                          // ==========================================
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton.icon(
@@ -402,7 +394,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 48), // Un poco de padding extra abajo por si acaso
                         ],
                       ),
                     ),
@@ -413,7 +405,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
+      // ¡AQUÍ ESTABA EL ERROR! Hemos eliminado la propiedad bottomNavigationBar de este Scaffold.
     );
   }
 
@@ -507,40 +499,6 @@ class _TrackingScreenState extends State<TrackingScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      currentIndex: _selectedIndex,
-      onTap: (index) {
-        if (index == 0) {
-          Navigator.pop(context); // Vuelve al Dashboard
-        }
-      },
-      type: BottomNavigationBarType.fixed,
-      selectedItemColor: AppColors.primary,
-      unselectedItemColor: AppColors.textGrey,
-      showUnselectedLabels: true,
-      selectedLabelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-      unselectedLabelStyle: const TextStyle(fontSize: 10),
-      items: [
-        const BottomNavigationBarItem(icon: Icon(Icons.dashboard_customize_outlined), label: 'Inicio'),
-        const BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_outlined), label: 'Pedidos'),
-        BottomNavigationBarItem(
-          icon: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Icon(Icons.local_shipping_outlined, color: Colors.white),
-          ),
-          label: 'Seguimiento',
-        ),
-        const BottomNavigationBarItem(icon: Icon(Icons.bar_chart_outlined), label: 'Analítica'),
-        const BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Perfil'),
-      ],
     );
   }
 }
