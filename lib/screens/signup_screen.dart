@@ -9,6 +9,7 @@ import 'terms_screen.dart';
 import 'login_screen.dart';
 import 'registration_error_screen.dart';
 import 'subscription_plans_screen.dart';
+import 'dashboard_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);
@@ -127,8 +128,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     try {
       final user = await _authService.demoLogin();
-      if (user != null) {
-        _showSuccessSnackBar('Bienvenido ${user.companyName}');
+      if (user != null && mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const DashboardScreen()),
+          (route) => false,
+        );
       }
     } catch (e) {
       _showErrorSnackBar(e.toString());

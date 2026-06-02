@@ -4,6 +4,7 @@ import '../constants/colors.dart';
 import '../constants/strings.dart';
 import '../services/auth_service.dart';
 import 'forgot_password_screen.dart';
+import 'dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -72,9 +73,11 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
     try {
       final user = await _authService.demoLogin();
-      if (user != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Accediendo a Demo como ${user.companyName}'), backgroundColor: AppColors.success),
+      if (user != null && mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const DashboardScreen()),
+          (route) => false,
         );
       }
     } catch (e) {

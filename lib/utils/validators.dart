@@ -52,4 +52,29 @@ class Validators {
     }
     return null;
   }
+
+  /// Capacidad disponible en planta (mock IoT).
+  static const int plantAvailableCapacityLiters = 7000;
+
+  static int? parseQuantityLiters(String raw) {
+    final cleaned = raw.trim().replaceAll(RegExp(r'[.\s]'), '').replaceAll(',', '');
+    return int.tryParse(cleaned);
+  }
+
+  static String? validateOrderQuantity(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Ingresa la cantidad en litros';
+    }
+    final quantity = parseQuantityLiters(value);
+    if (quantity == null) {
+      return 'Ingresa un valor numérico válido';
+    }
+    if (quantity <= 0) {
+      return 'La cantidad debe ser mayor a 0';
+    }
+    if (quantity > plantAvailableCapacityLiters) {
+      return 'Excede la capacidad disponible en planta';
+    }
+    return null;
+  }
 }

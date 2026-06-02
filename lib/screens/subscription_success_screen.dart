@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dashboard_screen.dart';
 import '../constants/colors.dart';
 import '../constants/strings.dart';
 
@@ -179,7 +180,11 @@ class SubscriptionSuccessScreen extends StatelessWidget {
 
               ElevatedButton(
                 onPressed: () {
-                  // Acción para ir al dashboard principal de iot-monitoring
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const DashboardScreen()),
+                    (route) => false,
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
