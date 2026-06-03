@@ -4,8 +4,8 @@ import 'package:latlong2/latlong.dart';
 import '../constants/colors.dart';
 import 'tracking_details_screen.dart';
 import 'delivery_success_screen.dart';
+import 'alerts_screen.dart'; // <-- Importación agregada
 
-// Lo pasamos a StatelessWidget ya que no necesita gestionar el estado de la barra inferior
 class TrackingScreen extends StatelessWidget {
   const TrackingScreen({Key? key}) : super(key: key);
 
@@ -47,7 +47,13 @@ class TrackingScreen extends StatelessWidget {
             children: [
               IconButton(
                 icon: const Icon(Icons.notifications_none, color: AppColors.textDark),
-                onPressed: () {},
+                onPressed: () {
+                  // MODIFICADO: Ahora abre las notificaciones
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AlertsScreen()),
+                  );
+                },
               ),
               Positioned(
                 top: 12,
@@ -55,10 +61,7 @@ class TrackingScreen extends StatelessWidget {
                 child: Container(
                   width: 8,
                   height: 8,
-                  decoration: const BoxDecoration(
-                    color: AppColors.error,
-                    shape: BoxShape.circle,
-                  ),
+                  decoration: const BoxDecoration(color: AppColors.error, shape: BoxShape.circle),
                 ),
               ),
             ],
@@ -73,7 +76,6 @@ class TrackingScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // Encabezado del Pedido
           Container(
             color: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -85,7 +87,7 @@ class TrackingScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withAlpha(26), // 0.1 opacity
+                        color: AppColors.primary.withAlpha(26),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(Icons.local_gas_station_outlined, color: AppColors.primary),
@@ -116,12 +118,9 @@ class TrackingScreen extends StatelessWidget {
               ],
             ),
           ),
-
-          // Área del Mapa y Panel Inferior
           Expanded(
             child: Stack(
               children: [
-                // MAPA INTERACTIVO REAL
                 Positioned(
                   top: 0,
                   left: 0,
@@ -134,7 +133,6 @@ class TrackingScreen extends StatelessWidget {
                     ),
                     children: [
                       TileLayer(
-                        // Capa oscura para igualar el diseño
                         urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
                         userAgentPackageName: 'com.example.fueltrack',
                       ),
@@ -166,8 +164,6 @@ class TrackingScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-
-                // Botones flotantes sobre el mapa
                 Positioned(
                   top: 16,
                   left: 16,
@@ -179,8 +175,6 @@ class TrackingScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-
-                // Panel Inferior Deslizable
                 Positioned(
                   top: 250,
                   left: 0,
@@ -199,7 +193,6 @@ class TrackingScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Indicador de arrastre
                           Center(
                             child: Container(
                               width: 40,
@@ -211,66 +204,24 @@ class TrackingScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-
                           const Text(
                             'PROGRESO DEL PEDIDO',
                             style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textGrey, letterSpacing: 1),
                           ),
                           const SizedBox(height: 24),
-
-                          // Línea de tiempo
-                          _buildTimelineStep(
-                            isCompleted: true,
-                            isActive: false,
-                            icon: Icons.check,
-                            title: 'Pedido Confirmado',
-                            subtitle: '09:15 AM',
-                            isLast: false,
-                          ),
-                          _buildTimelineStep(
-                            isCompleted: false,
-                            isActive: true,
-                            icon: Icons.location_on_outlined,
-                            title: 'En Ruta',
-                            subtitle: 'Cerca de tu ubicación',
-                            isLast: false,
-                          ),
-                          _buildTimelineStep(
-                            isCompleted: false,
-                            isActive: false,
-                            icon: Icons.access_time,
-                            title: 'Llegada Estimada',
-                            subtitle: '10:30 AM (Proyectado)',
-                            isLast: false,
-                          ),
-                          _buildTimelineStep(
-                            isCompleted: false,
-                            isActive: false,
-                            icon: Icons.inventory_2_outlined,
-                            title: 'Entregado',
-                            subtitle: 'Pendiente de firma',
-                            isLast: true,
-                          ),
-
+                          _buildTimelineStep(isCompleted: true, isActive: false, icon: Icons.check, title: 'Pedido Confirmado', subtitle: '09:15 AM', isLast: false),
+                          _buildTimelineStep(isCompleted: false, isActive: true, icon: Icons.location_on_outlined, title: 'En Ruta', subtitle: 'Cerca de tu ubicación', isLast: false),
+                          _buildTimelineStep(isCompleted: false, isActive: false, icon: Icons.access_time, title: 'Llegada Estimada', subtitle: '10:30 AM (Proyectado)', isLast: false),
+                          _buildTimelineStep(isCompleted: false, isActive: false, icon: Icons.inventory_2_outlined, title: 'Entregado', subtitle: 'Pendiente de firma', isLast: true),
                           const SizedBox(height: 24),
-
-                          // Tarjeta del Conductor
                           Container(
                             padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF4F7F7),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                            decoration: BoxDecoration(color: const Color(0xFFF4F7F7), borderRadius: BorderRadius.circular(12)),
                             child: Row(
                               children: [
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(8),
-                                  child: Image.network(
-                                    'https://i.pravatar.cc/150?img=12',
-                                    width: 48,
-                                    height: 48,
-                                    fit: BoxFit.cover,
-                                  ),
+                                  child: Image.network('https://i.pravatar.cc/150?img=12', width: 48, height: 48, fit: BoxFit.cover),
                                 ),
                                 const SizedBox(width: 16),
                                 Column(
@@ -292,16 +243,10 @@ class TrackingScreen extends StatelessWidget {
                               ],
                             ),
                           ),
-
                           const SizedBox(height: 16),
-
-                          // Tarjeta de la Unidad
                           Container(
                             padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFEFEFEF),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                            decoration: BoxDecoration(color: const Color(0xFFEFEFEF), borderRadius: BorderRadius.circular(12)),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -315,7 +260,6 @@ class TrackingScreen extends StatelessWidget {
                                 const SizedBox(height: 4),
                                 const Text('VXB-402', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                                 const SizedBox(height: 12),
-                                // Barra de capacidad
                                 Stack(
                                   children: [
                                     Container(height: 4, decoration: BoxDecoration(color: AppColors.borderLight, borderRadius: BorderRadius.circular(2))),
@@ -333,10 +277,7 @@ class TrackingScreen extends StatelessWidget {
                               ],
                             ),
                           ),
-
                           const SizedBox(height: 24),
-
-                          // Botones de acción
                           Row(
                             children: [
                               Expanded(
@@ -347,8 +288,8 @@ class TrackingScreen extends StatelessWidget {
                                       MaterialPageRoute(builder: (context) => const TrackingDetailsScreen()),
                                     );
                                   },
-                                  icon: const Icon(Icons.remove_red_eye_outlined, size: 18),
-                                  label: const Text('Detalles'),
+                                  icon: const Icon(Icons.remove_red_eye_outlined, size: 18, color: Colors.white),
+                                  label: const Text('Detalles', style: TextStyle(color: Colors.white)),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFF006D3E),
                                     padding: const EdgeInsets.symmetric(vertical: 12),
@@ -360,8 +301,8 @@ class TrackingScreen extends StatelessWidget {
                               Expanded(
                                 child: ElevatedButton.icon(
                                   onPressed: () {},
-                                  icon: const Icon(Icons.call_outlined, size: 18),
-                                  label: const Text('Contactar'),
+                                  icon: const Icon(Icons.call_outlined, size: 18, color: Colors.white),
+                                  label: const Text('Contactar', style: TextStyle(color: Colors.white)),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFF006D3E),
                                     padding: const EdgeInsets.symmetric(vertical: 12),
@@ -372,13 +313,10 @@ class TrackingScreen extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 12),
-
-                          // BOTÓN PEDIDO ENTREGADO HABILITADO
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton.icon(
                               onPressed: () {
-                                // NAVEGACIÓN A LA PANTALLA DE ÉXITO
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(builder: (context) => const DeliverySuccessScreen()),
@@ -387,14 +325,14 @@ class TrackingScreen extends StatelessWidget {
                               icon: const Icon(Icons.inventory_outlined, size: 18, color: AppColors.primary),
                               label: const Text('Pedido entregado', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFE8F8F5), // Fondo verde claro del diseño
+                                backgroundColor: const Color(0xFFE8F8F5),
                                 elevation: 0,
                                 padding: const EdgeInsets.symmetric(vertical: 12),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                               ),
                             ),
                           ),
-                          const SizedBox(height: 48), // Un poco de padding extra abajo por si acaso
+                          const SizedBox(height: 48),
                         ],
                       ),
                     ),
@@ -405,7 +343,6 @@ class TrackingScreen extends StatelessWidget {
           ),
         ],
       ),
-      // ¡AQUÍ ESTABA EL ERROR! Hemos eliminado la propiedad bottomNavigationBar de este Scaffold.
     );
   }
 
@@ -439,7 +376,7 @@ class TrackingScreen extends StatelessWidget {
       bgColor = const Color(0xFF006D3E);
     } else if (isActive) {
       iconColor = const Color(0xFF006D3E);
-      bgColor = const Color(0xFF006D3E).withAlpha(51); // 0.2 opacity
+      bgColor = const Color(0xFF006D3E).withAlpha(51);
     } else {
       iconColor = AppColors.textGrey;
       bgColor = AppColors.borderLight;

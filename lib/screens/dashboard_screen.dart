@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import 'tracking_screen.dart';
-import 'orders_screen.dart'; // Importación de la pantalla de pedidos
+import 'orders_screen.dart';
+import 'analytics_screen.dart';
+import 'alerts_screen.dart';
+import 'profile_screen.dart'; // Solo agregué este import
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -13,18 +16,16 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
 
-  // Lista de las vistas que se intercambiarán en el cuerpo principal
   late final List<Widget> _pages = [
-    _buildDashboardView(), // Índice 0: Tu diseño original de Inicio
-    const OrdersScreen(),  // Índice 1: Pantalla de Pedidos
-    const TrackingScreen(), // Índice 2: Pantalla de Seguimiento
-    const Center(child: Text('Pantalla de Analítica en construcción')), // Índice 3
-    const Center(child: Text('Pantalla de Perfil en construcción')),    // Índice 4
+    _buildDashboardView(),
+    const OrdersScreen(),
+    const TrackingScreen(),
+    const AnalyticsScreen(),
+    const ProfileScreen(), // Aquí conecté tu pantalla de perfil
   ];
 
   @override
   Widget build(BuildContext context) {
-    // Este Scaffold maestro solo contiene el IndexedStack y la barra inferior
     return Scaffold(
       body: IndexedStack(
         index: _selectedIndex,
@@ -33,7 +34,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
-          // Ya no usamos Navigator.push, solo cambiamos el estado del índice
           setState(() {
             _selectedIndex = index;
           });
@@ -49,7 +49,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             icon: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                  color: _selectedIndex == 0 ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
+                  color: _selectedIndex == 0 ? AppColors.primary.withAlpha(26) : Colors.transparent,
                   shape: BoxShape.circle
               ),
               child: Icon(Icons.dashboard_customize, color: _selectedIndex == 0 ? AppColors.primary : AppColors.textGrey),
@@ -71,14 +71,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             label: 'Seguimiento',
           ),
-          const BottomNavigationBarItem(icon: Icon(Icons.bar_chart_outlined), label: 'Analítica'),
-          const BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Perfil'),
+          BottomNavigationBarItem(
+              icon: Icon(_selectedIndex == 3 ? Icons.bar_chart : Icons.bar_chart_outlined),
+              label: 'Analítica'
+          ),
+          BottomNavigationBarItem(
+              icon: Icon(_selectedIndex == 4 ? Icons.person : Icons.person_outline),
+              label: 'Perfil'
+          ),
         ],
       ),
     );
   }
 
-  // Tu diseño original encapsulado en su propia vista para el índice 0
   Widget _buildDashboardView() {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9F9),
@@ -116,7 +121,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               IconButton(
                 icon: const Icon(Icons.notifications_none, color: AppColors.textDark),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AlertsScreen()),
+                  );
+                },
               ),
               Positioned(
                 top: 12,
@@ -156,7 +166,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   Container(
                     padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: AppColors.error.withOpacity(0.2), shape: BoxShape.circle),
+                    decoration: BoxDecoration(color: AppColors.error.withAlpha(51), shape: BoxShape.circle),
                     child: const Icon(Icons.warning_amber_rounded, color: AppColors.error, size: 20),
                   ),
                   const SizedBox(width: 16),
@@ -238,13 +248,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      _buildChartBar('Lun', 40, AppColors.primary.withOpacity(0.3)),
-                      _buildChartBar('Mar', 60, AppColors.primary.withOpacity(0.4)),
-                      _buildChartBar('Mie', 30, AppColors.primary.withOpacity(0.5)),
-                      _buildChartBar('Jue', 70, AppColors.primary.withOpacity(0.7)),
+                      _buildChartBar('Lun', 40, AppColors.primary.withAlpha(76)),
+                      _buildChartBar('Mar', 60, AppColors.primary.withAlpha(102)),
+                      _buildChartBar('Mie', 30, AppColors.primary.withAlpha(128)),
+                      _buildChartBar('Jue', 70, AppColors.primary.withAlpha(178)),
                       _buildChartBar('Vie', 100, AppColors.primary),
-                      _buildChartBar('Sab', 80, AppColors.primary.withOpacity(0.6)),
-                      _buildChartBar('Dom', 50, AppColors.primary.withOpacity(0.3)),
+                      _buildChartBar('Sab', 80, AppColors.primary.withAlpha(153)),
+                      _buildChartBar('Dom', 50, AppColors.primary.withAlpha(76)),
                     ],
                   ),
                 ],
@@ -293,7 +303,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.primary,
-        onPressed: () {},
+        onPressed: () {
+          setState(() {
+            _selectedIndex = 1;
+          });
+        },
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
@@ -371,7 +385,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(color: statusColor.withOpacity(0.2), borderRadius: BorderRadius.circular(20)),
+            decoration: BoxDecoration(color: statusColor.withAlpha(51), borderRadius: BorderRadius.circular(20)),
             child: Text(status, style: TextStyle(fontSize: 12, color: statusColor == AppColors.textGrey ? AppColors.textDark : statusColor, fontWeight: FontWeight.bold)),
           ),
         ],

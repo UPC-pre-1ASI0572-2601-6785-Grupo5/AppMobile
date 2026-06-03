@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import 'tracking_screen.dart';
-import 'new_order_screen.dart'; // Importación de la pantalla de Nuevo Pedido
+import 'new_order_screen.dart';
+import 'alerts_screen.dart'; // <-- Importación agregada
 
-// Lo mantenemos como StatelessWidget ya que la barra inferior la maneja el Dashboard
 class OrdersScreen extends StatelessWidget {
   const OrdersScreen({Key? key}) : super(key: key);
 
@@ -45,7 +45,13 @@ class OrdersScreen extends StatelessWidget {
             children: [
               IconButton(
                 icon: const Icon(Icons.notifications_none, color: AppColors.textDark),
-                onPressed: () {},
+                onPressed: () {
+                  // MODIFICADO: Ahora abre las notificaciones
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AlertsScreen()),
+                  );
+                },
               ),
               Positioned(
                 top: 12,
@@ -71,7 +77,6 @@ class OrdersScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Buscador
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -89,8 +94,6 @@ class OrdersScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Filtros
             Row(
               children: [
                 _buildFilterChip(Icons.calendar_today_outlined, 'Fecha', true),
@@ -101,8 +104,6 @@ class OrdersScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 24),
-
-            // Lista de Pedidos
             _buildOrderCard(
               context,
               id: '#FT-2023-45',
@@ -139,8 +140,6 @@ class OrdersScreen extends StatelessWidget {
               date: '22 Oct 2023',
             ),
             const SizedBox(height: 24),
-
-            // Banner "Optimiza tu Flota"
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -178,8 +177,6 @@ class OrdersScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-
-            // Tarjeta de Resumen Mensual
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -232,14 +229,13 @@ class OrdersScreen extends StatelessWidget {
           ],
         ),
       ),
-      // BOTÓN FLOTANTE ACTUALIZADO PARA ABRIR EL MODAL DE NUEVO PEDIDO
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => const NewOrderScreen(),
-              fullscreenDialog: true, // Abre de abajo hacia arriba
+              fullscreenDialog: true,
             ),
           );
         },

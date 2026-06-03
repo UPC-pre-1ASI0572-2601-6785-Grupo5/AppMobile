@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
+import 'order_history_screen.dart'; // Importación de la pantalla de historial
 
 class OrderConfirmationScreen extends StatelessWidget {
   const OrderConfirmationScreen({Key? key}) : super(key: key);
@@ -190,8 +191,11 @@ class OrderConfirmationScreen extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  // Lo mandamos al Dashboard de vuelta. Desde ahí puede acceder al Seguimiento
-                  Navigator.popUntil(context, (route) => route.isFirst);
+                  // AHORA ESTE BOTÓN TE LLEVA DIRECTAMENTE AL HISTORIAL DE PEDIDOS
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const OrderHistoryScreen()),
+                  );
                 },
                 icon: const Icon(Icons.local_shipping_outlined, color: Colors.white, size: 18),
                 label: const Text('Ver Seguimiento', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
