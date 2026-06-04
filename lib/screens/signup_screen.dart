@@ -9,6 +9,7 @@ import 'terms_screen.dart';
 import 'login_screen.dart';
 import 'registration_error_screen.dart';
 import 'subscription_plans_screen.dart';
+import 'provider_dashboard_screen.dart'; // <-- IMPORTANTE: Se agregó la nueva pantalla del proveedor
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);
@@ -107,10 +108,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
       if (user != null) {
         if (!mounted) return;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const SubscriptionPlansScreen()),
-        );
+
+        // MODIFICACIÓN: Lógica de redirección basada en el rol seleccionado
+        if (_selectedRole == 'proveedor') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const ProviderDashboardScreen()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const SubscriptionPlansScreen()),
+          );
+        }
       }
     } catch (e) {
       _showErrorSnackBar(e.toString());
