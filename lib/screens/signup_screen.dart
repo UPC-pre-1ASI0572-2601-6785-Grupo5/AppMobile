@@ -99,18 +99,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
       }
 
       final user = await _authService.signUp(
-        companyName: _companyNameController.text.trim(),
+        fullName: _companyNameController.text.trim(),
         email: email,
         password: _passwordController.text,
         role: _selectedRole!,
-        acceptedTerms: _agreedToTerms,
       );
 
       if (user != null) {
         if (!mounted) return;
 
-        // MODIFICACIÓN: Lógica de redirección basada en el rol seleccionado
-        if (_selectedRole == 'proveedor') {
+        // Redirección basada en el rol devuelto por el backend
+        if (user.isProvider) {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const ProviderDashboardScreen()),

@@ -52,32 +52,31 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // FUNCIÓN MODIFICADA PARA NAVEGAR A MFA
+  // Autenticación real contra el backend
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
 
     try {
-      // Simulación de validación de credenciales con el backend
-      await Future.delayed(const Duration(seconds: 2));
+      final user = await _authService.signIn(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
 
       if (!mounted) return;
 
-      // Obtenemos el email ingresado para mostrarlo en la pantalla MFA (Opcional pero recomendado por tu diseño)
-      final String userEmail = _emailController.text.trim();
-
-      // Navegación directa a la pantalla de Verificación MFA
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          // Si tu MfaVerificationScreen acepta un email por parámetro, puedes pasarlo así:
-          // builder: (context) => MfaVerificationScreen(email: userEmail),
-          builder: (context) => const MfaVerificationScreen(),
-        ),
-      );
-
+      if (user != null) {
+        // Navegación a la pantalla de Verificación MFA
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const MfaVerificationScreen(),
+          ),
+        );
+      }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error),
       );
@@ -90,17 +89,26 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
     try {
       final user = await _authService.demoLogin();
+      if (!mounted) return;
       if (user != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Accediendo a Demo como ${user.companyName}'), backgroundColor: AppColors.success),
+          SnackBar(content: Text('Accediendo a Demo como ${user.name}'), backgroundColor: AppColors.success),
+        );
+        // Navegar a MFA después del demo login exitoso
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const MfaVerificationScreen(),
+          ),
         );
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error),
       );
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

@@ -1,58 +1,95 @@
 
+/// Maps the backend `AuthResponse` payload into a Dart model.
+///
+/// Backend JSON shape:
+/// ```json
+/// {
+///   "token": "...",
+///   "tokenType": "Bearer",
+///   "id": 1,
+///   "email": "user@example.com",
+///   "name": "Company Name",
+///   "role": "REQUESTER"
+/// }
+/// ```
 class User {
-final String id;
-final String companyName;
-final String email;
-final String role;
-final DateTime createdAt;
-final bool acceptedTerms;
+  final int id;
+  final String email;
+  final String name;
+  final String role; // "REQUESTER" or "PROVIDER"
+  final String token;
+  final String tokenType;
 
-User({
-required this.id,
-required this.companyName,
-required this.email,
-required this.role,
-required this.createdAt,
-required this.acceptedTerms,
-});
+  User({
+    required this.id,
+    required this.email,
+    required this.name,
+    required this.role,
+    required this.token,
+    required this.tokenType,
+  });
 
-Map<String, dynamic> toJson() {
-return {
-'id': id,
-'companyName': companyName,
-'email': email,
-'role': role,
-'createdAt': createdAt.toIso8601String(),
-'acceptedTerms': acceptedTerms,
-};
-}
+  /// Creates a [User] from the backend `AuthResponse` JSON.
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: (json['id'] as num).toInt(),
+      email: json['email'] as String,
+      name: json['name'] as String,
+      role: json['role'] as String,
+      token: json['token'] as String,
+      tokenType: json['tokenType'] as String? ?? 'Bearer',
+    );
+  }
 
-factory User.fromJson(Map<String, dynamic> json) {
-return User(
-id: json['id'],
-companyName: json['companyName'],
-email: json['email'],
-role: json['role'],
-createdAt: DateTime.parse(json['createdAt']),
-acceptedTerms: json['acceptedTerms'],
-);
-}
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'email': email,
+      'name': name,
+      'role': role,
+      'token': token,
+      'tokenType': tokenType,
+    };
+  }
 
-User copyWith({
-String? id,
-String? companyName,
-String? email,
-String? role,
-DateTime? createdAt,
-bool? acceptedTerms,
-}) {
-return User(
-id: id ?? this.id,
-companyName: companyName ?? this.companyName,
-email: email ?? this.email,
-role: role ?? this.role,
-createdAt: createdAt ?? this.createdAt,
-acceptedTerms: acceptedTerms ?? this.acceptedTerms,
-);
-}
+  // ── Role mapping helpers ──────────────────────────────────────────────
+
+  /// Converts the Flutter UI role label into the backend enum value.
+  ///
+  /// `'cliente'`    → `'REQUESTER'`
+  /// `'proveedor'`  → `'PROVIDER'`
+  static String uiRoleToBackend(String uiRole) {
+    switch (uiRole.toLowerCase()) {
+      case 'cliente':
+        return 'REQUESTER';
+      case 'proveedor':
+        return 'PROVIDER';
+      default:
+        return 'REQUESTER';
+    }
+  }
+
+  /// Converts the backend role enum into the Flutter UI label.
+  ///
+  /// `'REQUESTER'`  → `'cliente'`
+  /// `'PROVIDER'`   → `'proveedor'`
+  static String backendRoleToUi(String backendRole) {
+    switch (backendRole.toUpperCase()) {
+      case 'REQUESTER':
+        return 'cliente';
+      case 'PROVIDER':
+        return 'proveedor';
+      default:
+        return 'cliente';
+    }
+  }
+
+  /// The UI-friendly role label for this user.
+  String get uiRole => backendRoleToUi(role);
+
+  /// Whether this user is a provider.
+  bool get isProvider => role == 'PROVIDER';
+
+  /// Whether this user is a requester / client.
+  bool get isRequester => role == 'REQUESTER';
 }
