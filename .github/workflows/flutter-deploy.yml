@@ -26,6 +26,7 @@ jobs:
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_FUELTRACK_28DBA }}'
           channelId: live
           projectId: fueltrack-28dba
+        continue-on-error: true
 
   build_android:
     name: Build Android APK & App Bundle
