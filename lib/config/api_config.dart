@@ -32,3 +32,5 @@ class ApiConfig {
   // ── Reporting endpoints ───────────────────────────────────────────────
   static const String reports = '/api/v1/reports';
 }
+
+// Force deploy timestamp: 2026-06-27 17:26:02
