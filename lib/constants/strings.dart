@@ -1,6 +1,6 @@
 
 class AppStrings {
-static const String appName = 'FuelTrack';
+  static const String appName = 'FuelTrack v1.0.1';
 static const String signUpTitle = 'Cree su cuenta';
 static const String signUpSubtitle = 'Configure su perfil empresarial para comenzar a gestionar la logística de combustibles con precisión.';
 static const String selectRole = 'Seleccione su rol';
