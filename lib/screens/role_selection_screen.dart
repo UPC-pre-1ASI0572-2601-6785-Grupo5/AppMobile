@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../constants/strings.dart';
+import 'dashboard_screen.dart';
+import 'provider_dashboard_screen.dart';
+import '../services/session_manager.dart';
 
 class RoleSelectionScreen extends StatelessWidget {
   const RoleSelectionScreen({Key? key}) : super(key: key);
@@ -95,7 +98,20 @@ class RoleSelectionScreen extends StatelessWidget {
                   title: 'Cliente',
                   description: 'Gestiona tus pedidos, consulta facturas y monitorea el consumo de tu flota privada.',
                   onTap: () {
-                    // Navegación al dashboard de cliente
+                    final user = SessionManager.instance.user;
+                    if (user == null || user.isRequester) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const DashboardScreen()),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Tu cuenta no tiene rol de Cliente.'),
+                          backgroundColor: AppColors.error,
+                        ),
+                      );
+                    }
                   },
                 ),
 
@@ -107,7 +123,20 @@ class RoleSelectionScreen extends StatelessWidget {
                   title: 'Proveedor',
                   description: 'Administra el inventario de combustible, rutas de entrega y estados de carga en tiempo real.',
                   onTap: () {
-                    // Navegación al dashboard de proveedor
+                    final user = SessionManager.instance.user;
+                    if (user == null || user.isProvider) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ProviderDashboardScreen()),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Tu cuenta no tiene rol de Proveedor.'),
+                          backgroundColor: AppColors.error,
+                        ),
+                      );
+                    }
                   },
                 ),
 
