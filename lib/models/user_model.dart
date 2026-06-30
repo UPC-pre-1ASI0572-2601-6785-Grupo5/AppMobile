@@ -88,8 +88,14 @@ class User {
   String get uiRole => backendRoleToUi(role);
 
   /// Whether this user is a provider.
-  bool get isProvider => role == 'PROVIDER';
+  bool get isProvider {
+    final r = role.toUpperCase();
+    return r == 'PROVIDER' || r == 'PROVEEDOR' || r == 'ROLE_PROVIDER';
+  }
 
   /// Whether this user is a requester / client.
-  bool get isRequester => role == 'REQUESTER';
+  bool get isRequester {
+    final r = role.toUpperCase();
+    return r == 'REQUESTER' || r == 'CLIENTE' || r == 'ROLE_REQUESTER';
+  }
 }
