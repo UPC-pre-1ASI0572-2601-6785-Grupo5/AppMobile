@@ -3,7 +3,7 @@ class ApiConfig {
   ApiConfig._();
 
   /// Base URL of the deployed backend on Render.
-  static const String baseUrl = 'https://backend-npu7.onrender.com';
+  static const String baseUrl = 'https://fueltrack-backend-api.onrender.com';
 
   /// Connection timeout in seconds (Render free tier may cold-start).
   static const int connectTimeoutSeconds = 15;
