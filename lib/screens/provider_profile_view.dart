@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import 'security_configuration_screen.dart'; // Importación de la vista completa de seguridad corporativa
+import 'login_screen.dart';
+import '../services/session_manager.dart';
 
 class ProviderProfileView extends StatefulWidget {
   const ProviderProfileView({Key? key}) : super(key: key);
@@ -242,10 +244,17 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
           // ==========================================
           // CERRAR SESIÓN
           // ==========================================
-          SizedBox(
+           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                SessionManager.instance.clear();
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                      (Route<dynamic> route) => false,
+                );
+              },
               icon: const Icon(Icons.logout, color: AppColors.error, size: 18),
               label: const Text('Cerrar Sesión de Proveedor', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold, fontSize: 14)),
               style: OutlinedButton.styleFrom(

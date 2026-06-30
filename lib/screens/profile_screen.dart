@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import 'login_screen.dart'; // Importamos tu pantalla de login para cerrar sesión
+import '../services/session_manager.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -224,6 +225,7 @@ class ProfileScreen extends StatelessWidget {
             child: ElevatedButton.icon(
               // Aquí está la magia: Borramos todo el stack de rutas y lo mandamos al Login
               onPressed: () {
+                SessionManager.instance.clear();
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (context) => const LoginScreen()),
