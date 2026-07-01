@@ -25,12 +25,12 @@ class OrderModel {
     return OrderModel(
       id: json['id'] as int,
       requesterId: json['requesterId'] as int,
-      productName: json['productName'] as String? ?? 'Desconocido',
-      quantityGallons: (json['quantityGallons'] as num?)?.toDouble() ?? 0.0,
+      productName: json['fuelType'] as String? ?? 'Desconocido',
+      quantityGallons: (json['gallons'] as num?)?.toDouble() ?? 0.0,
       documentRef: json['documentRef'] as String? ?? '',
       status: json['status'] as String? ?? 'PENDING',
-      assignedTruckId: json['assignedTruckId'] as int?,
-      createdAt: json['createdAt'] as String? ?? '',
+      assignedTruckId: null,
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']).toString() : DateTime.now().toString(),
       updatedAt: json['updatedAt'] as String? ?? '',
     );
   }

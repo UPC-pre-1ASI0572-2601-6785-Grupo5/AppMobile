@@ -123,7 +123,7 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () => _showEditProfileDialog(context, companyName, userEmail),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFD4EFDF),
                       elevation: 0,
@@ -271,6 +271,52 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
           const SizedBox(height: 60),
         ],
       ),
+    );
+  }
+
+  void _showEditProfileDialog(BuildContext context, String currentName, String currentEmail) {
+    final nameController = TextEditingController(text: currentName);
+    final emailController = TextEditingController(text: currentEmail);
+    
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Actualizar Información', style: TextStyle(color: Color(0xFF006D3E))),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Razón Social'),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: emailController,
+                decoration: const InputDecoration(labelText: 'Correo Corporativo'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar', style: TextStyle(color: AppColors.textGrey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF006D3E)),
+              onPressed: () {
+                SessionManager.instance.user?.name = nameController.text;
+                SessionManager.instance.user?.email = emailController.text;
+                setState(() {});
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Información actualizada exitosamente')));
+              },
+              child: const Text('Guardar', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
     );
   }
 

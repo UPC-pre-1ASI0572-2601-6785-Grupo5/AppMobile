@@ -1,11 +1,13 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import 'tracking_screen.dart';
 import 'orders_screen.dart';
 import 'analytics_screen.dart';
 import 'alerts_screen.dart';
-import 'profile_screen.dart'; // Solo agregué este import
-
+import 'profile_screen.dart';
+import '../services/order_service.dart';
+import '../models/order_model.dart';
+import 'package:intl/intl.dart';
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
 
@@ -15,13 +17,37 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
+  final OrderService _orderService = OrderService();
+  List<OrderModel> _orders = [];
+  bool _isLoading = true;
+  String _selectedFilter = 'Todos';
+  String _searchQuery = '';
 
-  late final List<Widget> _pages = [
+  @override
+  void initState() {
+    super.initState();
+    _fetchDashboardData();
+  }
+
+  Future<void> _fetchDashboardData() async {
+    setState(() => _isLoading = true);
+    try {
+      final orders = await _orderService.getOrders();
+      setState(() {
+        _orders = orders;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  List<Widget> get _pages => [
     _buildDashboardView(),
     const OrdersScreen(),
     const TrackingScreen(),
     const AnalyticsScreen(),
-    const ProfileScreen(), // Aquí conecté tu pantalla de perfil
+    const ProfileScreen(),
   ];
 
   @override
@@ -150,7 +176,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(width: 16),
         ],
       ),
-      body: SingleChildScrollView(
+      body: _isLoading 
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          : SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,9 +214,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: 16),
             Row(
               children: [
-                Expanded(child: _buildMetricCard(title: 'Activos', value: '8', subtitle: 'Pedidos', subtitleColor: AppColors.primary, icon: Icons.autorenew)),
+                Expanded(child: _buildMetricCard(
+                  title: 'Activos', 
+                  value: _orders.where((o) => o.status != 'COMPLETED' && o.status != 'CANCELLED').length.toString(), 
+                  subtitle: 'Pedidos', 
+                  subtitleColor: AppColors.primary, 
+                  icon: Icons.autorenew)),
                 const SizedBox(width: 12),
-                Expanded(child: _buildMetricCard(title: 'Mensual', value: '125k', subtitle: 'Litros', subtitleColor: AppColors.textGrey, icon: Icons.calendar_today_outlined)),
+                Expanded(child: _buildMetricCard(
+                  title: 'Mensual', 
+                  value: '${(_orders.fold(0.0, (sum, o) => sum + o.quantityGallons) / 1000).toStringAsFixed(1)}k', 
+                  subtitle: 'Galones', 
+                  subtitleColor: AppColors.textGrey, 
+                  icon: Icons.calendar_today_outlined)),
               ],
             ),
             const SizedBox(height: 12),
@@ -262,6 +300,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const SizedBox(height: 24),
             TextField(
+              onChanged: (val) {
+                setState(() {
+                  _searchQuery = val.toLowerCase();
+                });
+              },
               decoration: InputDecoration(
                 hintText: 'Buscar pedido por código...',
                 hintStyle: const TextStyle(fontSize: 14, color: AppColors.textGrey),
@@ -278,25 +321,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _buildFilterChip('Todos', true),
-                  _buildFilterChip('En ruta', false),
-                  _buildFilterChip('Pendientes', false),
-                  _buildFilterChip('Completados', false),
+                  _buildFilterChip('Todos'),
+                  _buildFilterChip('En ruta', apiStatus: 'DISPATCHED'),
+                  _buildFilterChip('Pendientes', apiStatus: 'PENDING'),
+                  _buildFilterChip('Completados', apiStatus: 'COMPLETED'),
                 ],
               ),
             ),
             const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Text('Pedidos Recientes', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                Text('Ver todos', style: TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.bold)),
+              children: [
+                const Text('Pedidos Recientes', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedIndex = 1;
+                    });
+                  },
+                  child: const Text('Ver todos', style: TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.bold)),
+                ),
               ],
             ),
             const SizedBox(height: 16),
-            _buildOrderItem('#FT-2023-01', '5000 Litros', '12 Oct', 'ETA: 15 min', 'En ruta', AppColors.primary),
-            _buildOrderItem('#FT-2023-04', '12000 Litros', '11 Oct', null, 'Confirmado', const Color(0xFF85C1E9)),
-            _buildOrderItem('#FT-2022-98', '8500 Litros', '10 Oct', null, 'Entregado', AppColors.textGrey),
+            ..._buildDynamicOrdersList(),
             const SizedBox(height: 80),
           ],
         ),
@@ -340,17 +388,81 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildFilterChip(String label, bool isSelected) {
-    return Container(
-      margin: const EdgeInsets.only(right: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isSelected ? AppColors.primary : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isSelected ? AppColors.primary : AppColors.borderLight),
+  Widget _buildFilterChip(String label, {String? apiStatus}) {
+    bool isSelected = _selectedFilter == label;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedFilter = label;
+        });
+      },
+      child: Container(
+        margin: const EdgeInsets.only(right: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: isSelected ? AppColors.primary : AppColors.borderLight),
+        ),
+        child: Text(label, style: TextStyle(fontSize: 13, color: isSelected ? Colors.white : AppColors.textDark, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
       ),
-      child: Text(label, style: TextStyle(fontSize: 13, color: isSelected ? Colors.white : AppColors.textDark, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
     );
+  }
+
+  List<Widget> _buildDynamicOrdersList() {
+    List<OrderModel> filtered = _orders.where((o) {
+      if (_searchQuery.isNotEmpty && !o.id.toString().contains(_searchQuery)) {
+        return false;
+      }
+      if (_selectedFilter == 'Todos') return true;
+      if (_selectedFilter == 'En ruta' && o.status == 'DISPATCHED') return true;
+      if (_selectedFilter == 'Pendientes' && o.status == 'PENDING') return true;
+      if (_selectedFilter == 'Completados' && o.status == 'COMPLETED') return true;
+      return false;
+    }).toList();
+
+    filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    if (filtered.isEmpty) {
+      return [
+        const Padding(
+          padding: EdgeInsets.all(32.0),
+          child: Center(child: Text('No hay pedidos que coincidan con tu búsqueda', style: TextStyle(color: AppColors.textGrey))),
+        )
+      ];
+    }
+
+    return filtered.take(5).map((order) {
+      Color statusColor;
+      String statusText;
+      switch (order.status) {
+        case 'PENDING':
+          statusColor = const Color(0xFFF39C12); // Orange
+          statusText = 'Pendiente';
+          break;
+        case 'DISPATCHED':
+          statusColor = AppColors.primary;
+          statusText = 'En ruta';
+          break;
+        case 'COMPLETED':
+          statusColor = AppColors.textGrey;
+          statusText = 'Completado';
+          break;
+        default:
+          statusColor = const Color(0xFF85C1E9); // Light Blue
+          statusText = order.status;
+      }
+
+      String dateStr = '';
+      try {
+        DateTime dt = DateTime.parse(order.createdAt);
+        dateStr = DateFormat('dd MMM').format(dt);
+      } catch (e) {
+        dateStr = order.createdAt;
+      }
+
+      return _buildOrderItem('#FT-${order.id}', '${order.quantityGallons} Galones', dateStr, null, statusText, statusColor);
+    }).toList();
   }
 
   Widget _buildOrderItem(String id, String amount, String date, String? eta, String status, Color statusColor) {

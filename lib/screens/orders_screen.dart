@@ -120,6 +120,59 @@ class _OrdersScreenState extends State<OrdersScreen> {
     }
   }
 
+  void _showOrderDetails(OrderModel order) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Detalles del Pedido #FT-${order.id}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+              const SizedBox(height: 16),
+              _buildDetailRow('Combustible', order.productName),
+              _buildDetailRow('Cantidad', '${order.quantityGallons} Galones'),
+              _buildDetailRow('Estado', _getStatusTranslation(order.status)),
+              _buildDetailRow('Fecha', _formatDate(order.createdAt)),
+              if (order.documentRef.isNotEmpty) _buildDetailRow('Ref. / Dirección', order.documentRef),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Cerrar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(width: 120, child: Text(label, style: const TextStyle(color: AppColors.textGrey, fontWeight: FontWeight.bold))),
+          Expanded(child: Text(value, style: const TextStyle(color: AppColors.textDark))),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -332,9 +385,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text('45k', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                              Text('Litros\nEntregados', style: TextStyle(fontSize: 12, color: AppColors.textGrey, height: 1.2)),
+                            children: [
+                              Text('${(_orders.fold(0.0, (sum, o) => sum + o.quantityGallons) / 1000).toStringAsFixed(1)}k', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                              const Text('Galones\nEntregados', style: TextStyle(fontSize: 12, color: AppColors.textGrey, height: 1.2)),
                             ],
                           ),
                         ),
@@ -475,10 +528,13 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       MaterialPageRoute(builder: (context) => const TrackingScreen()),
                     );
                   },
-                  child: const Text('Detalles >', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                  child: const Text('Rastrear >', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary)),
                 )
               else
-                const Text('Ver más', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textGrey)),
+                GestureDetector(
+                  onTap: () => _showOrderDetails(order),
+                  child: const Text('Ver más', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textGrey)),
+                ),
             ],
           ),
         ],

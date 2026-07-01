@@ -3,9 +3,14 @@ import '../constants/colors.dart';
 import 'login_screen.dart'; // Importamos tu pantalla de login para cerrar sesión
 import '../services/session_manager.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
 
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final user = SessionManager.instance.user;
@@ -75,7 +80,7 @@ class ProfileScreen extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: () {},
+                    onPressed: () => _showEditProfileDialog(context, userName, userEmail),
                     icon: const Icon(Icons.edit_outlined, size: 16, color: Color(0xFF006D3E)),
                     label: const Text('Editar Perfil', style: TextStyle(color: Color(0xFF006D3E), fontWeight: FontWeight.bold)),
                     style: ElevatedButton.styleFrom(
@@ -250,6 +255,53 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 40),
         ],
       ),
+    );
+  }
+
+  void _showEditProfileDialog(BuildContext context, String currentName, String currentEmail) {
+    final nameController = TextEditingController(text: currentName);
+    final emailController = TextEditingController(text: currentEmail);
+    
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Editar Perfil', style: TextStyle(color: AppColors.primary)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Nombre Completo'),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: emailController,
+                decoration: const InputDecoration(labelText: 'Correo Electrónico'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar', style: TextStyle(color: AppColors.textGrey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+              onPressed: () {
+                // Actualización simulada localmente (aquí iría el llamado a tu API)
+                SessionManager.instance.user?.name = nameController.text;
+                SessionManager.instance.user?.email = emailController.text;
+                setState(() {});
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Perfil actualizado exitosamente')));
+              },
+              child: const Text('Guardar'),
+            ),
+          ],
+        );
+      },
     );
   }
 
