@@ -90,7 +90,7 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
                     children: const [
                       Text('Entrega Confirmada', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.primary)),
                       SizedBox(height: 2),
-                      Text('24 May 2024 â€¢ 14:32 PM', style: TextStyle(fontSize: 12, color: AppColors.textGrey)),
+                      Text('24 May 2024 • 14:32 PM', style: TextStyle(fontSize: 12, color: AppColors.textGrey)),
                     ],
                   ),
                 ),
@@ -178,7 +178,7 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
                         _buildDataRow('Producto', 'Diesel Ultra-B10'),
                         _buildDataRow('Unidad', 'Tractor FH-500'),
                         _buildDataRow('Operador', 'Carlos Mendoza'),
-                        _buildDataRow('UbicaciÃ³n', 'Planta Norte, GDL'),
+                        _buildDataRow('Ubicación', 'Planta Norte, GDL'),
 
                         const SizedBox(height: 24),
                         Center(
@@ -268,7 +268,7 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
-                        Text('CÃ³digo Hash de Seguridad', style: TextStyle(fontSize: 10, color: AppColors.textGrey)),
+                        Text('Código Hash de Seguridad', style: TextStyle(fontSize: 10, color: AppColors.textGrey)),
                         SizedBox(height: 2),
                         Text('#FT-HASH-992-B821-X9', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary, letterSpacing: 1)),
                       ],
@@ -385,7 +385,7 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
           ),
           label: 'Seguimiento',
         ),
-        const BottomNavigationBarItem(icon: Icon(Icons.bar_chart_outlined), label: 'AnalÃ­tica'),
+        const BottomNavigationBarItem(icon: Icon(Icons.bar_chart_outlined), label: 'Analítica'),
         const BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Perfil'),
       ],
     );
@@ -395,7 +395,7 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
 class black1Alpha {
 }
 
-// Pintor grÃ¡fico que dibuja los trazos reales de la firma transferida
+// Pintor gráfico que dibuja los trazos reales de la firma transferida
 class VoucherSignatureViewerPainter extends CustomPainter {
   final List<Offset?> points;
 

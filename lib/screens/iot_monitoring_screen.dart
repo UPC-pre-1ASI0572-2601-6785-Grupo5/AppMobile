@@ -78,7 +78,7 @@ class IotMonitoringScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFF2ECC71), // Verde brillante del diseÃ±o
+                color: const Color(0xFF2ECC71), // Verde brillante del diseño
                 borderRadius: BorderRadius.circular(24),
               ),
               child: Row(
@@ -110,10 +110,10 @@ class IotMonitoringScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            // Alerta 1: CaÃ­da de presiÃ³n
+            // Alerta 1: Caída de presión
             _buildCriticalAlertCard(
               icon: Icons.compress,
-              title: 'CaÃ­da de presiÃ³n',
+              title: 'Caída de presión',
               subtitle: 'Tanque principal A-1',
               trailingWidget: const Text(
                 '0.8 BAR',
@@ -126,7 +126,7 @@ class IotMonitoringScreen extends StatelessWidget {
             _buildCriticalAlertCard(
               icon: Icons.lock_open,
               title: 'Apertura no autorizada',
-              subtitle: 'VÃ¡lvula de descarga posterior',
+              subtitle: 'Válvula de descarga posterior',
               trailingWidget: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(color: const Color(0xFFFFEBEE), borderRadius: BorderRadius.circular(4)),
@@ -136,7 +136,7 @@ class IotMonitoringScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // ==========================================
-            // MAPA DE UBICACIÃ“N (MODO OSCURO TECH)
+            // MAPA DE UBICACIÓN (MODO OSCURO TECH)
             // ==========================================
             Container(
               height: 180,
@@ -144,7 +144,7 @@ class IotMonitoringScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 image: const DecorationImage(
-                  // Imagen placeholder techy oscura con lÃ­neas verdes
+                  // Imagen placeholder techy oscura con líneas verdes
                   image: AssetImage('assets/images/trailer.png'),
                   fit: BoxFit.cover,
                   colorFilter: ColorFilter.mode(Color(0xFF006D3E), BlendMode.hue),
@@ -185,7 +185,7 @@ class IotMonitoringScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // PÃ­ldora inferior de ubicaciÃ³n
+                  // Píldora inferior de ubicación
                   Positioned(
                     bottom: 12,
                     left: 12,
@@ -215,7 +215,7 @@ class IotMonitoringScreen extends StatelessWidget {
             // ==========================================
             Row(
               children: [
-                Expanded(child: _buildSensorMetricCard('PRESIÃ“N', Icons.speed, '2.4', ' BAR', 0.6, const Color(0xFF2ECC71))),
+                Expanded(child: _buildSensorMetricCard('PRESIÓN', Icons.speed, '2.4', ' BAR', 0.6, const Color(0xFF2ECC71))),
                 const SizedBox(width: 12),
                 Expanded(child: _buildSensorMetricCard('NIVEL', Icons.battery_charging_full, '82', ' %', 0.82, const Color(0xFF2ECC71))),
               ],
@@ -254,7 +254,7 @@ class IotMonitoringScreen extends StatelessWidget {
                             Text('18.5', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                             Padding(
                               padding: EdgeInsets.only(bottom: 4, left: 4),
-                              child: Text('Â°C', style: TextStyle(fontSize: 14, color: AppColors.textDark, fontWeight: FontWeight.w500)),
+                              child: Text('°C', style: TextStyle(fontSize: 14, color: AppColors.textDark, fontWeight: FontWeight.w500)),
                             ),
                           ],
                         ),
@@ -265,7 +265,7 @@ class IotMonitoringScreen extends StatelessWidget {
                     children: const [
                       Icon(Icons.trending_down, size: 14, color: Color(0xFF006D3E)),
                       SizedBox(width: 4),
-                      Text('~ -0.2Â°/h', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF006D3E))),
+                      Text('~ -0.2°/h', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF006D3E))),
                     ],
                   )
                 ],
@@ -283,7 +283,7 @@ class IotMonitoringScreen extends StatelessWidget {
               isActive: true,
               isLast: false,
               title: 'Entrada Geocerca',
-              subtitle: 'Zona Industrial QuerÃ©taro Nte.',
+              subtitle: 'Zona Industrial Querétaro Nte.',
               time: '14:22',
             ),
             _buildTimelineEvent(
@@ -297,7 +297,7 @@ class IotMonitoringScreen extends StatelessWidget {
               isActive: false,
               isLast: true,
               title: 'Salida Planta',
-              subtitle: 'RefinerÃ­a FuelTrack Terminal 1',
+              subtitle: 'Refinería FuelTrack Terminal 1',
               time: '08:45',
             ),
             const SizedBox(height: 40),

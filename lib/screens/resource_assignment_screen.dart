@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 
 class ResourceAssignmentScreen extends StatefulWidget {
@@ -88,14 +88,14 @@ class _ResourceAssignmentScreenState extends State<ResourceAssignmentScreen> {
             ),
             const SizedBox(height: 12),
 
-            // TÃ­tulo Principal
+            // Título Principal
             const Text(
-              'AsignaciÃ³n de Recursos',
+              'Asignación de Recursos',
               style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.textDark),
             ),
             const SizedBox(height: 12),
 
-            // Badge "Pendiente de AsignaciÃ³n"
+            // Badge "Pendiente de Asignación"
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(color: const Color(0xFFE8F8F5), borderRadius: BorderRadius.circular(20)),
@@ -104,7 +104,7 @@ class _ResourceAssignmentScreenState extends State<ResourceAssignmentScreen> {
                 children: const [
                   Icon(Icons.assignment_turned_in_outlined, color: AppColors.primary, size: 14),
                   SizedBox(width: 6),
-                  Text('Pendiente de AsignaciÃ³n', style: TextStyle(color: AppColors.primary, fontSize: 11, fontWeight: FontWeight.bold)),
+                  Text('Pendiente de Asignación', style: TextStyle(color: AppColors.primary, fontSize: 11, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -153,7 +153,7 @@ class _ResourceAssignmentScreenState extends State<ResourceAssignmentScreen> {
                     children: const [
                       Icon(Icons.business, size: 16, color: AppColors.textGrey),
                       SizedBox(width: 8),
-                      Text('LogÃ­stica Central S.A.', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                      Text('Logística Central S.A.', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -181,11 +181,11 @@ class _ResourceAssignmentScreenState extends State<ResourceAssignmentScreen> {
             const Text('VALIDACIONES DE RIESGO', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textGrey, letterSpacing: 0.5)),
             const SizedBox(height: 12),
             _buildRiskCard('Stock Disponible', 'Planta Callao Terminal', '12k GL'),
-            _buildRiskCard('LÃ­nea de CrÃ©dito', 'Estado: Activa', '\$45,000'),
+            _buildRiskCard('Línea de Crédito', 'Estado: Activa', '\$45,000'),
             const SizedBox(height: 32),
 
             // ==========================================
-            // SECCIÃ“N: CONDUCTORES
+            // SECCIÓN: CONDUCTORES
             // ==========================================
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -203,21 +203,21 @@ class _ResourceAssignmentScreenState extends State<ResourceAssignmentScreen> {
             _buildDriverOption(
               index: 0,
               name: 'Roberto Mendoza',
-              details: 'Licencia A3C - Exp: 12 aÃ±os',
+              details: 'Licencia A3C - Exp: 12 años',
               isAvailable: true,
-              imgUrl: 'https://i.pravatar.cc/150?img=11',
+              imgUrl: 'assets/images/logo.png',
             ),
             _buildDriverOption(
               index: 1,
               name: 'Carlos Espinoza',
-              details: 'Licencia A3B - Exp: 8 aÃ±os',
+              details: 'Licencia A3B - Exp: 8 años',
               isAvailable: false,
-              imgUrl: 'https://i.pravatar.cc/150?img=12',
+              imgUrl: 'assets/images/logo.png',
             ),
             const SizedBox(height: 24),
 
             // ==========================================
-            // SECCIÃ“N: CISTERNAS
+            // SECCIÓN: CISTERNAS
             // ==========================================
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -289,7 +289,7 @@ class _ResourceAssignmentScreenState extends State<ResourceAssignmentScreen> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                     elevation: 0,
                   ),
-                  child: const Text('Confirmar AsignaciÃ³n', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                  child: const Text('Confirmar Asignación', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
                 ),
               ),
             ],
@@ -358,12 +358,12 @@ class _ResourceAssignmentScreenState extends State<ResourceAssignmentScreen> {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(24),
-              child: Image.network(
+              child: Image.asset(
                 imgUrl,
                 width: 44,
                 height: 44,
                 fit: BoxFit.cover,
-                // ProtecciÃ³n por si la imagen de internet no carga
+                // Protección por si la imagen de internet no carga
                 errorBuilder: (context, error, stackTrace) => Container(
                   width: 44,
                   height: 44,
@@ -414,7 +414,7 @@ class _ResourceAssignmentScreenState extends State<ResourceAssignmentScreen> {
     );
   }
 
-  // WIDGET MODIFICADO: Volvemos al Ã­cono de camioncito gris, tal como estÃ¡ en el Figma
+  // WIDGET MODIFICADO: Volvemos al ícono de camioncito gris, tal como está en el Figma
   Widget _buildVehicleOption({required int index, required String name, required String capacity, required String plate, required String statusTag}) {
     final bool isSelected = _selectedVehicleIndex == index;
 
@@ -435,7 +435,7 @@ class _ResourceAssignmentScreenState extends State<ResourceAssignmentScreen> {
         ),
         child: Row(
           children: [
-            // Contenedor Gris con el Icono (IDÃ‰NTICO AL FIGMA)
+            // Contenedor Gris con el Icono (IDÉNTICO AL FIGMA)
             Container(
               width: 50,
               height: 40,

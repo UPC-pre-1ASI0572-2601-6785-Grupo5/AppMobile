@@ -60,7 +60,7 @@ class ResourceTrackingDetailScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(width: 8),
-          // CORREGIDO: Se quitÃ³ el 'const' que envolvÃ­a al NetworkImage
+          // CORREGIDO: Se quitó el 'const' que envolvía al NetworkImage
           const CircleAvatar(
             radius: 14,
             backgroundImage: AssetImage('assets/images/logo.png'),
@@ -103,7 +103,7 @@ class ResourceTrackingDetailScreen extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: const [
-                                  Text('ALERTA: CaÃ­da de\nPresiÃ³n Detectada', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFC0392B), height: 1.2)),
+                                  Text('ALERTA: Caída de\nPresión Detectada', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFC0392B), height: 1.2)),
                                   SizedBox(height: 6),
                                   Text('ESTADO: CRÃTICO', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.error, letterSpacing: 0.5)),
                                 ],
@@ -147,7 +147,7 @@ class ResourceTrackingDetailScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // ==========================================
-            // GRÃFICA DE CAÃDA DE PRESIÃ“N
+            // GRÃFICA DE CAÃDA DE PRESIÓN
             // ==========================================
             Container(
               width: double.infinity,
@@ -163,7 +163,7 @@ class ResourceTrackingDetailScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('PresiÃ³n (PSI) - Ãšltimos 15 min', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                      const Text('Presión (PSI) - Últimos 15 min', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                       Row(
                         children: [
                           Container(width: 6, height: 6, decoration: const BoxDecoration(color: AppColors.error, shape: BoxShape.circle)),
@@ -175,7 +175,7 @@ class ResourceTrackingDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
 
-                  // Ãrea de la grÃ¡fica dibujada con CustomPaint
+                  // Ãrea de la gráfica dibujada con CustomPaint
                   Container(
                     height: 120,
                     width: double.infinity,
@@ -185,7 +185,7 @@ class ResourceTrackingDetailScreen extends StatelessWidget {
                     ),
                     child: Stack(
                       children: [
-                        // Fondo del grÃ¡fico
+                        // Fondo del gráfico
                         Positioned.fill(
                           child: CustomPaint(painter: _PressureDropChartPainter()),
                         ),
@@ -201,7 +201,7 @@ class ResourceTrackingDetailScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             // ==========================================
-            // MAPA CON UBICACIÃ“N EXACTA
+            // MAPA CON UBICACIÓN EXACTA
             // ==========================================
             Container(
               height: 140,
@@ -209,7 +209,7 @@ class ResourceTrackingDetailScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 image: const DecorationImage(
-                  // Imagen de refinerÃ­a/planta industrial
+                  // Imagen de refinería/planta industrial
                   image: AssetImage('assets/images/trailer.png'),
                   fit: BoxFit.cover,
                   colorFilter: ColorFilter.mode(Colors.black38, BlendMode.darken),
@@ -227,7 +227,7 @@ class ResourceTrackingDetailScreen extends StatelessWidget {
                     decoration: BoxDecoration(color: Colors.black45, borderRadius: BorderRadius.circular(100)),
                   ),
 
-                  // PÃ­ldora inferior de coordenadas
+                  // Píldora inferior de coordenadas
                   Positioned(
                     bottom: 12,
                     left: 12,
@@ -260,9 +260,9 @@ class ResourceTrackingDetailScreen extends StatelessWidget {
                 children: [
                   const Text('Lecturas de Sensores Raw', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                   const SizedBox(height: 16),
-                  _buildSensorRow('CaudalÃ­metro (F-1)', '0.00 L/m', isAlert: false),
-                  _buildSensorRow('Temperatura (T-2)', '24.5 Â°C', isAlert: false),
-                  _buildSensorRow('VÃ¡lvula Principal', 'ABIERTA', isAlert: true),
+                  _buildSensorRow('Caudalímetro (F-1)', '0.00 L/m', isAlert: false),
+                  _buildSensorRow('Temperatura (T-2)', '24.5 °C', isAlert: false),
+                  _buildSensorRow('Válvula Principal', 'ABIERTA', isAlert: true),
                   _buildSensorRow('Densidad', '0.845 kg/L', isAlert: false, isLast: true),
                 ],
               ),
@@ -277,7 +277,7 @@ class ResourceTrackingDetailScreen extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: () {},
                 icon: const Icon(Icons.lock, color: Colors.white, size: 18),
-                label: const Text('Cerrar VÃ¡lvulas de Emergencia', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                label: const Text('Cerrar Válvulas de Emergencia', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.error,
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -351,17 +351,17 @@ class _PressureDropChartPainter extends CustomPainter {
 
     final path = Path();
 
-    // Coordenadas simulando la caÃ­da de presiÃ³n del diseÃ±o
+    // Coordenadas simulando la caída de presión del diseño
     path.moveTo(0, size.height * 0.3);
     path.lineTo(size.width * 0.15, size.height * 0.32);
     path.lineTo(size.width * 0.3, size.height * 0.31);
     path.lineTo(size.width * 0.45, size.height * 0.35);
-    path.lineTo(size.width * 0.55, size.height * 0.34); // Punto antes de la caÃ­da
+    path.lineTo(size.width * 0.55, size.height * 0.34); // Punto antes de la caída
 
     // CAÃDA DRÃSTICA
     path.lineTo(size.width * 0.65, size.height * 0.75);
 
-    // EstabilizaciÃ³n en la parte baja
+    // Estabilización en la parte baja
     path.lineTo(size.width * 0.8, size.height * 0.85);
     path.lineTo(size.width * 0.95, size.height * 0.88);
     path.lineTo(size.width, size.height * 0.87);
@@ -381,7 +381,7 @@ class _PressureDropChartPainter extends CustomPainter {
     pathFill.close();
 
     canvas.drawPath(pathFill, paintFill); // Dibuja el fondo difuminado
-    canvas.drawPath(path, paintLine);     // Dibuja la lÃ­nea dura
+    canvas.drawPath(path, paintLine);     // Dibuja la línea dura
 
     // 3. DIBUJAR UN PUNTO EN LA CAÃDA (Opcional, le da buen toque)
     final dotPaint = Paint()..color = AppColors.error;

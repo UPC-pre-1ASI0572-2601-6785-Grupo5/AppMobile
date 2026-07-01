@@ -95,7 +95,7 @@ class ProviderTrackingScreen extends StatelessWidget {
                         child: const Text('En Ruta', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                       ),
                       const SizedBox(width: 8),
-                      const Text('â€¢ Actualizado hace 2 min', style: TextStyle(fontSize: 11, color: AppColors.textGrey)),
+                      const Text('• Actualizado hace 2 min', style: TextStyle(fontSize: 11, color: AppColors.textGrey)),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -131,7 +131,7 @@ class ProviderTrackingScreen extends StatelessWidget {
             // ==========================================
             // LÃNEA DE TIEMPO OPERATIVA
             // ==========================================
-            const Text('LÃ­nea de Tiempo Operativa', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+            const Text('Línea de Tiempo Operativa', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
             const SizedBox(height: 20),
 
             // Paso 1: Orden Aprobada
@@ -139,7 +139,7 @@ class ProviderTrackingScreen extends StatelessWidget {
               isCompleted: true,
               isLast: false,
               title: 'Orden Aprobada',
-              subtitle: '08:30 AM â€¢ 12 Oct\nVerificado por Control Central',
+              subtitle: '08:30 AM • 12 Oct\nVerificado por Control Central',
             ),
 
             // Paso 2: Recurso Asignado
@@ -147,7 +147,7 @@ class ProviderTrackingScreen extends StatelessWidget {
               isCompleted: true,
               isLast: false,
               title: 'Recurso Asignado',
-              subtitle: '09:15 AM â€¢ 12 Oct',
+              subtitle: '09:15 AM • 12 Oct',
               extraContent: Container(
                 margin: const EdgeInsets.only(top: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -157,7 +157,7 @@ class ProviderTrackingScreen extends StatelessWidget {
                   children: const [
                     Icon(Icons.person, size: 14, color: AppColors.textGrey),
                     SizedBox(width: 6),
-                    Text('Operador: Roberto MÃ©ndez', style: TextStyle(fontSize: 11, color: AppColors.textDark, fontWeight: FontWeight.w500)),
+                    Text('Operador: Roberto Méndez', style: TextStyle(fontSize: 11, color: AppColors.textDark, fontWeight: FontWeight.w500)),
                   ],
                 ),
               ),
@@ -168,7 +168,7 @@ class ProviderTrackingScreen extends StatelessWidget {
               isCompleted: true,
               isLast: false,
               title: 'Carga Finalizada',
-              subtitle: '10:45 AM â€¢ 12 Oct\nTerminal Norte - BahÃ­a 4',
+              subtitle: '10:45 AM • 12 Oct\nTerminal Norte - Bahía 4',
             ),
 
             // Paso 4: En Ruta (ACTUAL - Con Mapa)
@@ -176,7 +176,7 @@ class ProviderTrackingScreen extends StatelessWidget {
               isActive: true,
               isLast: false,
               title: 'En Ruta',
-              subtitle: 'Salida: 11:00 AM â€¢ Carretera 57',
+              subtitle: 'Salida: 11:00 AM • Carretera 57',
               extraContent: Container(
                 margin: const EdgeInsets.only(top: 12),
                 height: 120,
@@ -226,7 +226,7 @@ class ProviderTrackingScreen extends StatelessWidget {
               isActive: false,
               isLast: true,
               title: 'Entregado',
-              subtitle: 'Pendiente â€¢ Est. 02:30 PM',
+              subtitle: 'Pendiente • Est. 02:30 PM',
             ),
 
             const SizedBox(height: 24),
@@ -387,7 +387,7 @@ class ProviderTrackingScreen extends StatelessWidget {
                             children: [
                               const Text('ORIGEN', style: TextStyle(fontSize: 10, color: AppColors.textGrey, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
                               const SizedBox(height: 4),
-                              const Text('Terminal MarÃ­tima Tuxpan', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                              const Text('Terminal Marítima Tuxpan', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                               const SizedBox(height: 2),
                               const Text('Carretera Barra Norte Km 6.5, Ver.', style: TextStyle(fontSize: 11, color: AppColors.textGrey)),
 
@@ -395,9 +395,9 @@ class ProviderTrackingScreen extends StatelessWidget {
 
                               const Text('DESTINO FINAL', style: TextStyle(fontSize: 10, color: AppColors.textGrey, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
                               const SizedBox(height: 4),
-                              const Text('EstaciÃ³n Central de LogÃ­stica BajÃ­o', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                              const Text('Estación Central de Logística Bajío', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                               const SizedBox(height: 2),
-                              const Text('Parque Industrial QuerÃ©taro, Qro.', style: TextStyle(fontSize: 11, color: AppColors.textGrey)),
+                              const Text('Parque Industrial Querétaro, Qro.', style: TextStyle(fontSize: 11, color: AppColors.textGrey)),
                             ],
                           ),
                         ),
@@ -406,7 +406,7 @@ class ProviderTrackingScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
 
-                  // Tarjetas pequeÃ±as (Temperatura, PresiÃ³n)
+                  // Tarjetas pequeñas (Temperatura, Presión)
                   Row(
                     children: [
                       Expanded(
@@ -418,7 +418,7 @@ class ProviderTrackingScreen extends StatelessWidget {
                             children: const [
                               Text('Temperatura\nTanque', style: TextStyle(fontSize: 10, color: AppColors.textGrey)),
                               SizedBox(height: 6),
-                              Text('22.4Â°C', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                              Text('22.4°C', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                             ],
                           ),
                         ),
@@ -431,7 +431,7 @@ class ProviderTrackingScreen extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: const [
-                              Text('PresiÃ³n\n', style: TextStyle(fontSize: 10, color: AppColors.textGrey)),
+                              Text('Presión\n', style: TextStyle(fontSize: 10, color: AppColors.textGrey)),
                               SizedBox(height: 6),
                               Text('1.2 Bar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                             ],
@@ -501,7 +501,7 @@ class ProviderTrackingScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Columna del Icono y la lÃ­nea vertical
+          // Columna del Icono y la línea vertical
           Column(
             children: [
               Container(

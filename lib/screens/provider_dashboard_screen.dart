@@ -16,12 +16,12 @@ class ProviderDashboardScreen extends StatefulWidget {
 class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
   int _selectedIndex = 0;
 
-  // Lista de pantallas para el proveedor con todas las pestaÃ±as conectadas
+  // Lista de pantallas para el proveedor con todas las pestañas conectadas
   late final List<Widget> _pages = [
     _buildProviderDashboardView(),          // Ãndice 0: Inicio Proveedor
-    const ProviderDispatchesScreen(),       // Ãndice 1: GestiÃ³n de Despachos
+    const ProviderDispatchesScreen(),       // Ãndice 1: Gestión de Despachos
     const ProviderFleetScreen(),            // Ãndice 2: Panel de Flota (Conductores y Cisternas)
-    const IotCriticalAlertsScreen(),        // Ãndice 3: Centro de Alertas CrÃ­ticas
+    const IotCriticalAlertsScreen(),        // Ãndice 3: Centro de Alertas Críticas
     const ProviderProfileView(),            // Ãndice 4: Perfil Corporativo
   ];
 
@@ -64,7 +64,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
               IconButton(
                 icon: const Icon(Icons.notifications_none, color: AppColors.textDark),
                 onPressed: () {
-                  // Navegar a la pestaÃ±a de Alertas directamente
+                  // Navegar a la pestaña de Alertas directamente
                   setState(() {
                     _selectedIndex = 3;
                   });
@@ -166,7 +166,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
           const Text('Panel de Proveedor', style: TextStyle(fontSize: 12, color: AppColors.textGrey)),
           const SizedBox(height: 20),
 
-          // MÃ©trica Principal: Entregas Activas
+          // Métrica Principal: Entregas Activas
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -196,7 +196,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
           ),
           const SizedBox(height: 12),
 
-          // MÃ©tricas Secundarias: Cisternas y Conductores
+          // Métricas Secundarias: Cisternas y Conductores
           Row(
             children: [
               Expanded(
@@ -222,7 +222,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
           ),
           const SizedBox(height: 24),
 
-          // SecciÃ³n: Monitoreo en Ruta
+          // Sección: Monitoreo en Ruta
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -267,7 +267,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
                       children: const [
                         Icon(Icons.warning_amber_rounded, size: 14, color: AppColors.error),
                         SizedBox(width: 4),
-                        Text('12 Unidades CrÃ­ticas', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                        Text('12 Unidades Críticas', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                       ],
                     ),
                   ),
@@ -277,7 +277,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
           ),
           const SizedBox(height: 24),
 
-          // SecciÃ³n: Alertas IoT CrÃ­ticas
+          // Sección: Alertas IoT Críticas
           const Text('ALERTAS IOT CRÃTICAS', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textGrey, letterSpacing: 0.5)),
           const SizedBox(height: 12),
 
@@ -292,9 +292,9 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
             child: _buildIotAlert(
               isCritical: true,
               icon: Icons.thermostat,
-              title: 'VariaciÃ³n de Temperatura',
+              title: 'Variación de Temperatura',
               time: 'Ahora',
-              description: 'Cisterna A-12 detectÃ³ +3Â°C sobre el lÃ­mite permitido.',
+              description: 'Cisterna A-12 detectó +3°C sobre el límite permitido.',
             ),
           ),
 
@@ -302,32 +302,32 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
           _buildIotAlert(
             isCritical: false,
             icon: Icons.tire_repair,
-            title: 'Baja presiÃ³n neumÃ¡ticos',
+            title: 'Baja presión neumáticos',
             time: '15 min',
-            description: 'Unidad B-04 reporta presiÃ³n 20 PSI en eje trasero.',
+            description: 'Unidad B-04 reporta presión 20 PSI en eje trasero.',
           ),
           const SizedBox(height: 24),
 
-          // SecciÃ³n: Despachos Recientes
+          // Sección: Despachos Recientes
           const Text('DESPACHOS RECIENTES', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textGrey, letterSpacing: 0.5)),
           const SizedBox(height: 12),
           _buildDispatchItem(
             refCode: '#REF-8902-X',
             destination: 'Destino: Planta Norte',
-            driver: 'Conductor: A. PÃ©rez',
+            driver: 'Conductor: A. Pérez',
             status: 'EN RUTA',
             isCompleted: false,
           ),
           _buildDispatchItem(
             refCode: '#REF-8891-B',
-            destination: 'Destino: Centro LogÃ­stico',
-            driver: 'Conductor: M. LÃ³pez',
+            destination: 'Destino: Centro Logístico',
+            driver: 'Conductor: M. López',
             status: 'EN RUTA',
             isCompleted: false,
           ),
           _buildDispatchItem(
             refCode: '#REF-8875-A',
-            destination: 'Destino: Terminal AÃ©reo',
+            destination: 'Destino: Terminal Aéreo',
             driver: 'Conductor: C. Ruiz',
             status: 'COMPLETADO',
             isCompleted: true,

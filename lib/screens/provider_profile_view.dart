@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
-import 'security_configuration_screen.dart'; // ImportaciÃ³n de la vista completa de seguridad corporativa
+import 'security_configuration_screen.dart'; // Importación de la vista completa de seguridad corporativa
 import 'login_screen.dart';
 import '../services/session_manager.dart';
 
@@ -12,7 +12,7 @@ class ProviderProfileView extends StatefulWidget {
 }
 
 class _ProviderProfileViewState extends State<ProviderProfileView> {
-  // Estados para los interruptores de la secciÃ³n de Notificaciones (Proveedor)
+  // Estados para los interruptores de la sección de Notificaciones (Proveedor)
   bool _stockAlerts = true;
   bool _monthlyReports = true;
   bool _loginAlerts = false;
@@ -112,13 +112,13 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildInfoField('RazÃ³n Social', companyName),
+                _buildInfoField('Razón Social', companyName),
                 const SizedBox(height: 16),
-                _buildInfoField('RFC / IdentificaciÃ³n Fiscal', 'FSI990101TX4'),
+                _buildInfoField('RFC / Identificación Fiscal', 'FSI990101TX4'),
                 const SizedBox(height: 16),
                 _buildInfoField('Correo Corporativo', userEmail),
                 const SizedBox(height: 16),
-                _buildInfoField('UbicaciÃ³n Central', 'Av. LogÃ­stica 450, Ciudad Industrial'),
+                _buildInfoField('Ubicación Central', 'Av. Logística 450, Ciudad Industrial'),
                 const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,
@@ -130,7 +130,7 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
-                    child: const Text('Actualizar InformaciÃ³n', style: TextStyle(color: Color(0xFF006D3E), fontWeight: FontWeight.bold, fontSize: 13)),
+                    child: const Text('Actualizar Información', style: TextStyle(color: Color(0xFF006D3E), fontWeight: FontWeight.bold, fontSize: 13)),
                   ),
                 ),
               ],
@@ -139,7 +139,7 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
           const SizedBox(height: 16),
 
           // ==========================================
-          // SEGURIDAD Y ACCESO (Redirige a la configuraciÃ³n completa del prototipo)
+          // SEGURIDAD Y ACCESO (Redirige a la configuración completa del prototipo)
           // ==========================================
           _buildSectionCard(
             title: 'Seguridad y Acceso',
@@ -162,7 +162,7 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
                           children: const [
                             Text('MFA Activado', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF006D3E))),
                             SizedBox(height: 2),
-                            Text('Tu cuenta estÃ¡ protegida por AutenticaciÃ³n de Dos Factores.', style: TextStyle(fontSize: 11, color: Color(0xFF006D3E))),
+                            Text('Tu cuenta está protegida por Autenticación de Dos Factores.', style: TextStyle(fontSize: 11, color: Color(0xFF006D3E))),
                           ],
                         ),
                       ),
@@ -170,7 +170,7 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                _buildActionRow('ContraseÃ±a', 'Cambiar'),
+                _buildActionRow('Contraseña', 'Cambiar'),
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 12),
                   child: Divider(color: AppColors.borderLight, height: 1),
@@ -192,7 +192,7 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     child: const Text(
-                      'ConfiguraciÃ³n de Seguridad',
+                      'Configuración de Seguridad',
                       style: TextStyle(color: AppColors.textGrey, fontWeight: FontWeight.bold, fontSize: 13),
                     ),
                   ),
@@ -203,10 +203,10 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
           const SizedBox(height: 16),
 
           // ==========================================
-          // GESTIÃ“N DE ROLES
+          // GESTIÓN DE ROLES
           // ==========================================
           _buildSectionCard(
-            title: 'GestiÃ³n de Roles',
+            title: 'Gestión de Roles',
             icon: Icons.people_outline,
             trailing: InkWell(
               onTap: () {},
@@ -214,12 +214,12 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
             ),
             child: Column(
               children: [
-                _buildRoleItem('JP', 'Juan PÃ©rez', 'Operador Senior', const Color(0xFFD4EFDF), const Color(0xFF006D3E)),
+                _buildRoleItem('JP', 'Juan Pérez', 'Operador Senior', const Color(0xFFD4EFDF), const Color(0xFF006D3E)),
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 12),
                   child: Divider(color: AppColors.borderLight, height: 1),
                 ),
-                _buildRoleItem('MG', 'MarÃ­a GarcÃ­a', 'Analista de Datos', const Color(0xFFF4F7F7), AppColors.textDark),
+                _buildRoleItem('MG', 'María García', 'Analista de Datos', const Color(0xFFF4F7F7), AppColors.textDark),
                 const SizedBox(height: 16),
                 const Text('3 usuarios adicionales con acceso limitado', style: TextStyle(fontSize: 11, color: AppColors.textGrey)),
               ],
@@ -235,18 +235,18 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
             icon: Icons.tune,
             child: Column(
               children: [
-                _buildNotificationToggle('Alertas de Stock CrÃ­tico', 'Notificar al caer el 15%', _stockAlerts, (val) => setState(() => _stockAlerts = val)),
+                _buildNotificationToggle('Alertas de Stock Crítico', 'Notificar al caer el 15%', _stockAlerts, (val) => setState(() => _stockAlerts = val)),
                 const SizedBox(height: 8),
-                _buildNotificationToggle('Reportes Mensuales', 'EnvÃ­o por correo electrÃ³nico', _monthlyReports, (val) => setState(() => _monthlyReports = val)),
+                _buildNotificationToggle('Reportes Mensuales', 'Envío por correo electrónico', _monthlyReports, (val) => setState(() => _monthlyReports = val)),
                 const SizedBox(height: 8),
-                _buildNotificationToggle('Inicios de SesiÃ³n', 'Alertas de seguridad push', _loginAlerts, (val) => setState(() => _loginAlerts = val)),
+                _buildNotificationToggle('Inicios de Sesión', 'Alertas de seguridad push', _loginAlerts, (val) => setState(() => _loginAlerts = val)),
               ],
             ),
           ),
           const SizedBox(height: 32),
 
           // ==========================================
-          // CERRAR SESIÃ“N
+          // CERRAR SESIÓN
           // ==========================================
            SizedBox(
             width: double.infinity,
@@ -260,7 +260,7 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
                 );
               },
               icon: const Icon(Icons.logout, color: AppColors.error, size: 18),
-              label: const Text('Cerrar SesiÃ³n de Proveedor', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold, fontSize: 14)),
+              label: const Text('Cerrar Sesión de Proveedor', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold, fontSize: 14)),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: AppColors.error),
                 padding: const EdgeInsets.symmetric(vertical: 16),

@@ -3,9 +3,17 @@ import '../constants/colors.dart';
 import 'resource_assignment_screen.dart';
 import 'provider_tracking_screen.dart';
 import 'iot_cistern_detail_screen.dart'; // <-- IMPORTANTE: Agregamos la pantalla de Detalle Cisterna
+import 'new_order_screen.dart';
 
-class ProviderDispatchesScreen extends StatelessWidget {
+class ProviderDispatchesScreen extends StatefulWidget {
   const ProviderDispatchesScreen({Key? key}) : super(key: key);
+
+  @override
+  State<ProviderDispatchesScreen> createState() => _ProviderDispatchesScreenState();
+}
+
+class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> {
+  String _selectedFilter = 'Todos';
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +44,13 @@ class ProviderDispatchesScreen extends StatelessWidget {
           // 2. Botón Nuevo Despacho
           Center(
             child: ElevatedButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                import 'new_order_screen.dart'; // Just in case, though it's better to add at top. Let's add it at top and just use it here.
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const NewOrderScreen()),
+                );
+              },
               icon: const Icon(Icons.add, color: Colors.white, size: 18),
               label: const Text('Nuevo Despacho', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
@@ -54,175 +68,180 @@ class ProviderDispatchesScreen extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _buildFilterChip('Todos', isActive: true),
-                _buildFilterChip('Pending', isActive: false),
-                _buildFilterChip('Confirmed', isActive: false),
-                _buildFilterChip('In Route', isActive: false),
+                _buildFilterChip('Todos'),
+                _buildFilterChip('Pending'),
+                _buildFilterChip('Confirmed'),
+                _buildFilterChip('In Route'),
               ],
             ),
           ),
           const SizedBox(height: 24),
 
           // 4. Tarjeta 1: Pending (Logística del Norte) - ¡AQUÍ CONECTAMOS EL DETALLE DE CISTERNA!
-          _buildDispatchCard(
-            id: '#DS-40922',
-            status: 'Pending',
-            statusBgColor: const Color(0xFFFFEBEE),
-            statusTextColor: AppColors.error,
-            client: 'Logística del Norte S.A.',
-            details: Column(
-              children: [
-                _buildDetailRow(Icons.water_drop_outlined, '12,500 Lts - Diesel Premium', AppColors.textDark),
-                const SizedBox(height: 4),
-                _buildDetailRow(Icons.access_time, 'ETA: Hoy, 14:30 PM', AppColors.textDark),
-              ],
-            ),
-            actions: Row(
-              children: [
-                Expanded(child: _buildSolidButton('Approve', const Color(0xFF006D3E), Colors.white)),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildOutlinedButton(
-                    'View Details',
-                    onPressed: () {
-                      // Navegación hacia el Detalle de Cisterna IoT
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const IotCisternDetailScreen()),
-                      );
-                    },
+          if (_selectedFilter == 'Todos' || _selectedFilter == 'Pending')
+            _buildDispatchCard(
+              id: '#DS-40922',
+              status: 'Pending',
+              statusBgColor: const Color(0xFFFFEBEE),
+              statusTextColor: AppColors.error,
+              client: 'Logística del Norte S.A.',
+              details: Column(
+                children: [
+                  _buildDetailRow(Icons.water_drop_outlined, '12,500 Lts - Diesel Premium', AppColors.textDark),
+                  const SizedBox(height: 4),
+                  _buildDetailRow(Icons.access_time, 'ETA: Hoy, 14:30 PM', AppColors.textDark),
+                ],
+              ),
+              actions: Row(
+                children: [
+                  Expanded(child: _buildSolidButton('Approve', const Color(0xFF006D3E), Colors.white)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildOutlinedButton(
+                      'View Details',
+                      onPressed: () {
+                        // Navegación hacia el Detalle de Cisterna IoT
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const IotCisternDetailScreen()),
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
+          if (_selectedFilter == 'Todos' || _selectedFilter == 'Pending') const SizedBox(height: 16),
 
           // 5. Tarjeta 2: In Route (Transportes Valdivia)
-          _buildDispatchCard(
-            id: '#DS-40925',
-            status: 'In Route',
-            statusBgColor: const Color(0xFF2ECC71),
-            statusTextColor: Colors.white,
-            client: 'Transportes Valdivia',
-            details: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Stack(
-                  children: [
-                    Container(height: 4, decoration: BoxDecoration(color: AppColors.borderLight, borderRadius: BorderRadius.circular(2))),
-                    Container(width: 150, height: 4, decoration: BoxDecoration(color: const Color(0xFF006D3E), borderRadius: BorderRadius.circular(2))),
-                  ],
+          if (_selectedFilter == 'Todos' || _selectedFilter == 'In Route')
+            _buildDispatchCard(
+              id: '#DS-40925',
+              status: 'In Route',
+              statusBgColor: const Color(0xFF2ECC71),
+              statusTextColor: Colors.white,
+              client: 'Transportes Valdivia',
+              details: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Stack(
+                    children: [
+                      Container(height: 4, decoration: BoxDecoration(color: AppColors.borderLight, borderRadius: BorderRadius.circular(2))),
+                      Container(width: 150, height: 4, decoration: BoxDecoration(color: const Color(0xFF006D3E), borderRadius: BorderRadius.circular(2))),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _buildDetailRow(Icons.water_drop_outlined, '8,200 Lts - Regular 95', AppColors.textDark),
+                  const SizedBox(height: 4),
+                  _buildDetailRow(Icons.location_on_outlined, 'A 12km de destino', const Color(0xFF006D3E), isBold: true),
+                ],
+              ),
+              actions: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Navegación hacia la pantalla de Seguimiento Operativo
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ProviderTrackingScreen()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFD4EFDF),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: const Text('Live Tracking', style: TextStyle(color: Color(0xFF006D3E), fontWeight: FontWeight.bold, fontSize: 12)),
                 ),
-                const SizedBox(height: 12),
-                _buildDetailRow(Icons.water_drop_outlined, '8,200 Lts - Regular 95', AppColors.textDark),
-                const SizedBox(height: 4),
-                _buildDetailRow(Icons.location_on_outlined, 'A 12km de destino', const Color(0xFF006D3E), isBold: true),
-              ],
-            ),
-            actions: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  // Navegación hacia la pantalla de Seguimiento Operativo
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ProviderTrackingScreen()),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFD4EFDF),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                child: const Text('Live Tracking', style: TextStyle(color: Color(0xFF006D3E), fontWeight: FontWeight.bold, fontSize: 12)),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
+          if (_selectedFilter == 'Todos' || _selectedFilter == 'In Route') const SizedBox(height: 16),
 
           // 6. Tarjeta 3: Confirmed (Agroindustria Central)
-          _buildDispatchCard(
-            id: '#DS-40928',
-            status: 'Confirmed',
-            statusBgColor: const Color(0xFFD4EFDF),
-            statusTextColor: const Color(0xFF006D3E),
-            client: 'Agroindustria Central',
-            details: Column(
-              children: [
-                _buildDetailRow(Icons.water_drop_outlined, '25,000 Lts - Jet A1', AppColors.textDark),
-                const SizedBox(height: 4),
-                _buildDetailRow(Icons.calendar_today_outlined, 'Programado: Mañana 08:00 AM', AppColors.textDark),
-              ],
-            ),
-            actions: SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  // Navegación hacia la pantalla de asignación de recursos
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ResourceAssignmentScreen()),
-                  );
-                },
-                icon: const Icon(Icons.person_add_alt_1_outlined, size: 16, color: Color(0xFF006D3E)),
-                label: const Text('Assign Driver', style: TextStyle(color: Color(0xFF006D3E), fontWeight: FontWeight.bold)),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFF006D3E)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+          if (_selectedFilter == 'Todos' || _selectedFilter == 'Confirmed')
+            _buildDispatchCard(
+              id: '#DS-40928',
+              status: 'Confirmed',
+              statusBgColor: const Color(0xFFD4EFDF),
+              statusTextColor: const Color(0xFF006D3E),
+              client: 'Agroindustria Central',
+              details: Column(
+                children: [
+                  _buildDetailRow(Icons.water_drop_outlined, '25,000 Lts - Jet A1', AppColors.textDark),
+                  const SizedBox(height: 4),
+                  _buildDetailRow(Icons.calendar_today_outlined, 'Programado: Mañana 08:00 AM', AppColors.textDark),
+                ],
+              ),
+              actions: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    // Navegación hacia la pantalla de asignación de recursos
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ResourceAssignmentScreen()),
+                    );
+                  },
+                  icon: const Icon(Icons.person_add_alt_1_outlined, size: 16, color: Color(0xFF006D3E)),
+                  label: const Text('Assign Driver', style: TextStyle(color: Color(0xFF006D3E), fontWeight: FontWeight.bold)),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Color(0xFF006D3E)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
+          if (_selectedFilter == 'Todos' || _selectedFilter == 'Confirmed') const SizedBox(height: 16),
 
           // 7. Tarjeta 4: Delivered (Minera Los Pasos)
-          _buildDispatchCard(
-            id: '#DS-40920',
-            status: 'Delivered',
-            statusBgColor: const Color(0xFFEAECEE),
-            statusTextColor: AppColors.textGrey,
-            client: 'Minera Los Pasos',
-            details: Column(
-              children: [
-                _buildDetailRow(Icons.water_drop_outlined, '45,000 Lts - Diesel', AppColors.textDark),
-                const SizedBox(height: 4),
-                _buildDetailRow(Icons.check_circle_outline, 'Completado ayer 18:45', const Color(0xFF006D3E)),
-              ],
+          if (_selectedFilter == 'Todos')
+            _buildDispatchCard(
+              id: '#DS-40920',
+              status: 'Delivered',
+              statusBgColor: const Color(0xFFEAECEE),
+              statusTextColor: AppColors.textGrey,
+              client: 'Minera Los Pasos',
+              details: Column(
+                children: [
+                  _buildDetailRow(Icons.water_drop_outlined, '45,000 Lts - Diesel', AppColors.textDark),
+                  const SizedBox(height: 4),
+                  _buildDetailRow(Icons.check_circle_outline, 'Completado ayer 18:45', const Color(0xFF006D3E)),
+                ],
+              ),
+              actions: SizedBox(
+                width: double.infinity,
+                child: _buildSolidButton('View Proof of Delivery', const Color(0xFFEAECEE), AppColors.textGrey),
+              ),
             ),
-            actions: SizedBox(
-              width: double.infinity,
-              child: _buildSolidButton('View Proof of Delivery', const Color(0xFFEAECEE), AppColors.textGrey),
-            ),
-          ),
-          const SizedBox(height: 16),
+          if (_selectedFilter == 'Todos') const SizedBox(height: 16),
 
           // 8. Tarjeta 5: Pending con Alerta (Puerto Vallarta)
-          _buildDispatchCard(
-            id: '#DS-40931',
-            status: 'Pending',
-            statusBgColor: const Color(0xFFFFEBEE),
-            statusTextColor: AppColors.error,
-            client: 'Puerto Vallarta Terminal',
-            details: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildDetailRow(Icons.water_drop_outlined, '5,000 Lts - Lubricantes', AppColors.textDark),
-                const SizedBox(height: 4),
-                const Text('! Urgente: Stock bajo', style: TextStyle(color: AppColors.error, fontSize: 11, fontWeight: FontWeight.bold)),
-              ],
+          if (_selectedFilter == 'Todos' || _selectedFilter == 'Pending')
+            _buildDispatchCard(
+              id: '#DS-40931',
+              status: 'Pending',
+              statusBgColor: const Color(0xFFFFEBEE),
+              statusTextColor: AppColors.error,
+              client: 'Puerto Vallarta Terminal',
+              details: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildDetailRow(Icons.water_drop_outlined, '5,000 Lts - Lubricantes', AppColors.textDark),
+                  const SizedBox(height: 4),
+                  const Text('! Urgente: Stock bajo', style: TextStyle(color: AppColors.error, fontSize: 11, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              actions: Row(
+                children: [
+                  Expanded(child: _buildSolidButton('Approve', const Color(0xFF006D3E), Colors.white)),
+                  const SizedBox(width: 12),
+                  Expanded(child: _buildOutlinedButton('Details')),
+                ],
+              ),
             ),
-            actions: Row(
-              children: [
-                Expanded(child: _buildSolidButton('Approve', const Color(0xFF006D3E), Colors.white)),
-                const SizedBox(width: 12),
-                Expanded(child: _buildOutlinedButton('Details')),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
+          if (_selectedFilter == 'Todos' || _selectedFilter == 'Pending') const SizedBox(height: 24),
 
           // 9. Tarjeta Resumen Verde
           Container(
@@ -290,20 +309,28 @@ class ProviderDispatchesScreen extends StatelessWidget {
 
   // ====== WIDGETS REUTILIZABLES DE ESTA PANTALLA ======
 
-  Widget _buildFilterChip(String label, {required bool isActive}) {
-    return Container(
-      margin: const EdgeInsets.only(right: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isActive ? const Color(0xFF2ECC71) : const Color(0xFFEAECEE),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: isActive ? Colors.white : AppColors.textGrey,
+  Widget _buildFilterChip(String label) {
+    bool isActive = _selectedFilter == label;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedFilter = label;
+        });
+      },
+      child: Container(
+        margin: const EdgeInsets.only(right: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive ? const Color(0xFF2ECC71) : const Color(0xFFEAECEE),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: isActive ? Colors.white : AppColors.textGrey,
+          ),
         ),
       ),
     );

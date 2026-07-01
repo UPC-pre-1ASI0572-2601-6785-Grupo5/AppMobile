@@ -93,7 +93,7 @@ class IotCisternDetailScreen extends StatelessWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: _buildMasterControl(
-                          title: 'VÃ¡lvula',
+                          title: 'Válvula',
                           subtitle: 'CERRADA',
                           icon: Icons.plumbing,
                           bgColor: const Color(0xFFFFEBEE),
@@ -131,7 +131,7 @@ class IotCisternDetailScreen extends StatelessWidget {
                                     children: [
                                       Container(width: 6, height: 6, decoration: const BoxDecoration(color: Color(0xFF2ECC71), shape: BoxShape.circle)),
                                       const SizedBox(width: 4),
-                                      const Text('En Servicio â€¢ 6h 24m', style: TextStyle(fontSize: 11, color: Color(0xFF2ECC71), fontWeight: FontWeight.w600)),
+                                      const Text('En Servicio • 6h 24m', style: TextStyle(fontSize: 11, color: Color(0xFF2ECC71), fontWeight: FontWeight.w600)),
                                     ],
                                   ),
                                 ],
@@ -161,7 +161,7 @@ class IotCisternDetailScreen extends StatelessWidget {
                             Container(width: 1, height: 24, color: AppColors.borderLight),
                             Column(
                               children: const [
-                                Text('CALIFICACIÃ“N', style: TextStyle(fontSize: 9, color: AppColors.textGrey)),
+                                Text('CALIFICACIÓN', style: TextStyle(fontSize: 9, color: AppColors.textGrey)),
                                 SizedBox(height: 4),
                                 Text('4.9/5.0', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                               ],
@@ -223,7 +223,7 @@ class IotCisternDetailScreen extends StatelessWidget {
             ),
 
             // ==========================================
-            // TELEMETRÃA IOT (SECCIÃ“N OSCURA)
+            // TELEMETRÃA IOT (SECCIÓN OSCURA)
             // ==========================================
             Container(
               width: double.infinity,
@@ -239,7 +239,7 @@ class IotCisternDetailScreen extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: const [
-                          Text('TelemetrÃ­a IoT', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                          Text('Telemetría IoT', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                           Text('Real-Time', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                           SizedBox(height: 4),
                           Text('Actualizado hace: 2 segundos', style: TextStyle(fontSize: 10, color: Colors.white70)),
@@ -261,14 +261,14 @@ class IotCisternDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
 
-                  // Tarjeta 1: Nivel UltrasÃ³nico
+                  // Tarjeta 1: Nivel Ultrasónico
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(color: const Color(0xFF2D3335), borderRadius: BorderRadius.circular(16)),
                     child: Column(
                       children: [
-                        const Text('NIVEL ULTRASÃ“NICO', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.white54, letterSpacing: 1)),
+                        const Text('NIVEL ULTRASÓNICO', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.white54, letterSpacing: 1)),
                         const SizedBox(height: 20),
                         // Dibujo del Tanque
                         Container(
@@ -280,7 +280,7 @@ class IotCisternDetailScreen extends StatelessWidget {
                           ),
                           alignment: Alignment.bottomCenter,
                           child: Container(
-                            height: 85, // Altura dinÃ¡mica (simulando 72%)
+                            height: 85, // Altura dinámica (simulando 72%)
                             decoration: const BoxDecoration(
                               color: Color(0xFF2ECC71),
                               borderRadius: BorderRadius.only(bottomLeft: Radius.circular(6), bottomRight: Radius.circular(6)),
@@ -306,14 +306,14 @@ class IotCisternDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
 
-                  // Tarjeta 2: PresiÃ³n Interna
+                  // Tarjeta 2: Presión Interna
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(color: const Color(0xFF2D3335), borderRadius: BorderRadius.circular(16)),
                     child: Column(
                       children: [
-                        const Text('PRESIÃ“N INTERNA', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.white54, letterSpacing: 1)),
+                        const Text('PRESIÓN INTERNA', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.white54, letterSpacing: 1)),
                         const SizedBox(height: 24),
                         // Medidor Circular
                         Stack(
@@ -368,7 +368,7 @@ class IotCisternDetailScreen extends StatelessWidget {
                             Text('22.4', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
                             Padding(
                               padding: EdgeInsets.only(bottom: 6, left: 4),
-                              child: Text('Â°C', style: TextStyle(fontSize: 14, color: Colors.white54)),
+                              child: Text('°C', style: TextStyle(fontSize: 14, color: Colors.white54)),
                             ),
                           ],
                         ),
@@ -397,7 +397,7 @@ class IotCisternDetailScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: List.generate(16, (index) {
-                        // Alturas aleatorias para simular el grÃ¡fico del diseÃ±o
+                        // Alturas aleatorias para simular el gráfico del diseño
                         final heights = [30.0, 45.0, 25.0, 50.0, 60.0, 40.0, 35.0, 20.0, 15.0, 30.0, 45.0, 10.0, 35.0, 40.0, 25.0, 15.0];
                         return Container(
                           width: 14,
@@ -424,7 +424,7 @@ class IotCisternDetailScreen extends StatelessWidget {
                 children: [
                   _buildFooterInfoCard(icon: Icons.speed, title: 'VELOCIDAD PROMEDIO', value: '68 km/h'),
                   const SizedBox(height: 12),
-                  _buildFooterInfoCard(icon: Icons.route, title: 'PRÃ“XIMO PUNTO', value: 'Terminal B - 12km'),
+                  _buildFooterInfoCard(icon: Icons.route, title: 'PRÓXIMO PUNTO', value: 'Terminal B - 12km'),
                   const SizedBox(height: 20),
                 ],
               ),
@@ -435,7 +435,7 @@ class IotCisternDetailScreen extends StatelessWidget {
 
       // Bottom Navigation Bar
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1, // Despachos o Flota, segÃºn donde lo integres
+        currentIndex: 1, // Despachos o Flota, según donde lo integres
         type: BottomNavigationBarType.fixed,
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.textGrey,

@@ -74,7 +74,7 @@ class SecurityConfigurationScreen extends StatelessWidget {
             // ==========================================
             // HEADER
             // ==========================================
-            const Text('ConfiguraciÃ³n de Seguridad', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+            const Text('Configuración de Seguridad', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
             const SizedBox(height: 8),
             const Text(
               'Gestiona los accesos de tu equipo, protocolos de seguridad y credenciales de acceso corporativo.',
@@ -104,7 +104,7 @@ class SecurityConfigurationScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('AutenticaciÃ³n de Dos\nFactores (MFA)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textDark, height: 1.2)),
+                            const Text('Autenticación de Dos\nFactores (MFA)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textDark, height: 1.2)),
                             const SizedBox(height: 6),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -118,7 +118,7 @@ class SecurityConfigurationScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   const Text(
-                    'AÃ±ade una capa extra de seguridad a tu cuenta solicitando un cÃ³digo de verificaciÃ³n ademÃ¡s de tu contraseÃ±a.',
+                    'Añade una capa extra de seguridad a tu cuenta solicitando un código de verificación además de tu contraseña.',
                     style: TextStyle(fontSize: 11, color: AppColors.textGrey, height: 1.4),
                   ),
                   const SizedBox(height: 20),
@@ -142,7 +142,7 @@ class SecurityConfigurationScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             // ==========================================
-            // TARJETA 2: CAMBIAR CONTRASEÃ‘A
+            // TARJETA 2: CAMBIAR CONTRASEÑA
             // ==========================================
             Container(
               padding: const EdgeInsets.all(20),
@@ -158,28 +158,28 @@ class SecurityConfigurationScreen extends StatelessWidget {
                         child: const Icon(Icons.history, color: AppColors.textDark, size: 18),
                       ),
                       const SizedBox(width: 12),
-                      const Text('Cambiar ContraseÃ±a', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                      const Text('Cambiar Contraseña', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                     ],
                   ),
                   const SizedBox(height: 20),
-                  const Text('ContraseÃ±a Actual', style: TextStyle(fontSize: 10, color: AppColors.textGrey)),
+                  const Text('Contraseña Actual', style: TextStyle(fontSize: 10, color: AppColors.textGrey)),
                   const SizedBox(height: 6),
                   TextField(
                     obscureText: true,
                     decoration: InputDecoration(
-                      hintText: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
+                      hintText: '••••••••',
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.borderLight)),
                       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.borderLight)),
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text('Nueva ContraseÃ±a', style: TextStyle(fontSize: 10, color: AppColors.textGrey)),
+                  const Text('Nueva Contraseña', style: TextStyle(fontSize: 10, color: AppColors.textGrey)),
                   const SizedBox(height: 6),
                   TextField(
                     obscureText: true,
                     decoration: InputDecoration(
-                      hintText: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
+                      hintText: '••••••••',
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.borderLight)),
                       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.borderLight)),
@@ -196,7 +196,7 @@ class SecurityConfigurationScreen extends StatelessWidget {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         elevation: 0,
                       ),
-                      child: const Text('Actualizar ContraseÃ±a', style: TextStyle(color: Color(0xFF006D3E), fontWeight: FontWeight.bold, fontSize: 12)),
+                      child: const Text('Actualizar Contraseña', style: TextStyle(color: Color(0xFF006D3E), fontWeight: FontWeight.bold, fontSize: 12)),
                     ),
                   ),
                 ],
@@ -205,7 +205,7 @@ class SecurityConfigurationScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             // ==========================================
-            // TARJETA 3: GESTIÃ“N DE ROLES Y EQUIPO
+            // TARJETA 3: GESTIÓN DE ROLES Y EQUIPO
             // ==========================================
             Container(
               padding: const EdgeInsets.all(20),
@@ -224,7 +224,7 @@ class SecurityConfigurationScreen extends StatelessWidget {
                             child: const Icon(Icons.people, color: Color(0xFF006D3E), size: 18),
                           ),
                           const SizedBox(width: 12),
-                          const Text('GestiÃ³n de\nRoles y Equipo', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textDark, height: 1.2)),
+                          const Text('Gestión de\nRoles y Equipo', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textDark, height: 1.2)),
                         ],
                       ),
                       Row(
@@ -247,7 +247,7 @@ class SecurityConfigurationScreen extends StatelessWidget {
                   const SizedBox(height: 12),
                   _buildUserRoleRow('AM', 'Alejandro\nMendoza', 'a.mendoza@fuelops.com', 'Administrador', const Color(0xFFE8F8F5), const Color(0xFF2ECC71)),
                   const SizedBox(height: 12),
-                  _buildUserRoleRow('LG', 'LucÃ­a GarcÃ­a', 'l.garcia@fuelops.com', 'Operador\nFlota', const Color(0xFFD4EFDF), const Color(0xFF006D3E)),
+                  _buildUserRoleRow('LG', 'Lucía García', 'l.garcia@fuelops.com', 'Operador\nFlota', const Color(0xFFD4EFDF), const Color(0xFF006D3E)),
                   const SizedBox(height: 12),
                   _buildUserRoleRow('RT', 'Ricardo Torres', 'r.torres@fuelops.com', 'Auditor', const Color(0xFFEAECEE), AppColors.textDark),
 
@@ -256,10 +256,10 @@ class SecurityConfigurationScreen extends StatelessWidget {
                     child: Divider(color: AppColors.borderLight, height: 1),
                   ),
 
-                  // INFORMACIÃ“N SOBRE PERMISOS
-                  const Text('InformaciÃ³n sobre Permisos', style: TextStyle(fontSize: 10, color: AppColors.textDark, fontWeight: FontWeight.bold)),
+                  // INFORMACIÓN SOBRE PERMISOS
+                  const Text('Información sobre Permisos', style: TextStyle(fontSize: 10, color: AppColors.textDark, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
-                  _buildPermissionInfo('Los Administradores pueden gestionar facturaciÃ³n, flotas y otros usuarios.'),
+                  _buildPermissionInfo('Los Administradores pueden gestionar facturación, flotas y otros usuarios.'),
                   const SizedBox(height: 8),
                   _buildPermissionInfo('Los Operadores solo tienen acceso a despachos y alertas en tiempo real.'),
                 ],
@@ -289,11 +289,11 @@ class SecurityConfigurationScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  _buildSessionRow(Icons.desktop_windows, 'Chrome en Windows', 'Ciudad de MÃ©xico â€¢ IP: 189.21.XX.XX', isCurrent: true),
+                  _buildSessionRow(Icons.desktop_windows, 'Chrome en Windows', 'Ciudad de México • IP: 189.21.XX.XX', isCurrent: true),
                   const SizedBox(height: 12),
-                  _buildSessionRow(Icons.smartphone, 'App FuelOps (iPhone 13)', 'Monterrey â€¢ Hace 2 horas', isCurrent: false),
+                  _buildSessionRow(Icons.smartphone, 'App FuelOps (iPhone 13)', 'Monterrey • Hace 2 horas', isCurrent: false),
                   const SizedBox(height: 12),
-                  _buildSessionRow(Icons.laptop_mac, 'Safari en MacOS', 'Guadalajara â€¢ Hace 1 dÃ­a', isCurrent: false),
+                  _buildSessionRow(Icons.laptop_mac, 'Safari en MacOS', 'Guadalajara • Hace 1 día', isCurrent: false),
                 ],
               ),
             ),

@@ -71,7 +71,7 @@ class ProviderFleetScreen extends StatelessWidget {
             statusColor: AppColors.error,
             statusBgColor: const Color(0xFFFFEBEE),
             borderColor: const Color(0xFFFFCDD2),
-            avatarUrl: 'https://i.pravatar.cc/150?img=11',
+            avatarUrl: 'assets/images/logo.png',
             dotColor: AppColors.error,
             bottomContent: Row(
               children: const [
@@ -88,7 +88,7 @@ class ProviderFleetScreen extends StatelessWidget {
             statusColor: const Color(0xFF006D3E),
             statusBgColor: const Color(0xFFE8F8F5),
             borderColor: AppColors.borderLight,
-            avatarUrl: 'https://i.pravatar.cc/150?img=12',
+            avatarUrl: 'assets/images/logo.png',
             dotColor: const Color(0xFF2ECC71),
             bottomContent: Column(
               children: [
@@ -111,7 +111,7 @@ class ProviderFleetScreen extends StatelessWidget {
             statusColor: AppColors.textDark,
             statusBgColor: const Color(0xFFEAECEE),
             borderColor: AppColors.borderLight,
-            avatarUrl: 'https://i.pravatar.cc/150?img=5',
+            avatarUrl: 'assets/images/logo.png',
             dotColor: AppColors.textGrey,
             bottomContent: Row(
               children: const [
@@ -199,7 +199,7 @@ class ProviderFleetScreen extends StatelessWidget {
             children: [
               Stack(
                 children: [
-                  CircleAvatar(radius: 20, backgroundImage: NetworkImage(avatarUrl)),
+                  CircleAvatar(radius: 20, backgroundImage: AssetImage(avatarUrl)),
                   Positioned(
                     bottom: 0,
                     right: 0,

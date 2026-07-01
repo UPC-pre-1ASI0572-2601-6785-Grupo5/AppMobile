@@ -1,6 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import '../constants/colors.dart';
-import 'digital_receipt_screen.dart'; // ImportaciÃ³n vital para navegar
+import 'digital_receipt_screen.dart'; // Importación vital para navegar
 
 class DeliverySuccessScreen extends StatefulWidget {
   const DeliverySuccessScreen({Key? key}) : super(key: key);
@@ -98,7 +98,7 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
               child: Column(
                 children: [
                   const SizedBox(height: 16),
-                  // Icono de Ã‰xito
+                  // Icono de Éxito
                   Container(
                     width: 80,
                     height: 80,
@@ -120,7 +120,7 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
                   ),
                   const SizedBox(height: 12),
                   const Text(
-                    'El suministro ha sido completado y\nverificado por el sistema de gestiÃ³n de flotas\nFuelTrack.',
+                    'El suministro ha sido completado y\nverificado por el sistema de gestión de flotas\nFuelTrack.',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 14, color: AppColors.textGrey, height: 1.5),
                   ),
@@ -140,7 +140,7 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
                       Expanded(
                         child: _buildSummaryCard(
                           icon: Icons.access_time,
-                          label: 'FINALIZACIÃ“N',
+                          label: 'FINALIZACIÓN',
                           value: '14:45',
                         ),
                       ),
@@ -170,7 +170,7 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
                                 Text('Firma Digital', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                               ],
                             ),
-                            // BotÃ³n de Limpiar si hay firma
+                            // Botón de Limpiar si hay firma
                             if (_signaturePoints.isNotEmpty)
                               GestureDetector(
                                 onTap: () => setState(() => _signaturePoints.clear()),
@@ -209,7 +209,7 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
                                   });
                                 },
                                 child: Container(
-                                  color: Colors.transparent, // Asegura que capture los gestos en toda el Ã¡rea
+                                  color: Colors.transparent, // Asegura que capture los gestos en toda el área
                                   width: double.infinity,
                                   height: double.infinity,
                                   child: CustomPaint(
@@ -217,10 +217,10 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
                                   ),
                                 ),
                               ),
-                              // Mensaje de ayuda si estÃ¡ vacÃ­o
+                              // Mensaje de ayuda si está vacío
                               if (_signaturePoints.isEmpty)
                                 const Center(
-                                  child: Text('Firma aquÃ­', style: TextStyle(color: AppColors.textLight, fontSize: 16, fontStyle: FontStyle.italic)),
+                                  child: Text('Firma aquí', style: TextStyle(color: AppColors.textLight, fontSize: 16, fontStyle: FontStyle.italic)),
                                 ),
                               Positioned(
                                 bottom: 8,
@@ -249,7 +249,7 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: const [
-                              Text('CÃ³digo Hash de Seguridad', style: TextStyle(fontSize: 11, color: AppColors.textGrey)),
+                              Text('Código Hash de Seguridad', style: TextStyle(fontSize: 11, color: AppColors.textGrey)),
                               SizedBox(height: 4),
                               Text('#FT-HASH-992-B821-X9', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primary, letterSpacing: 1)),
                             ],
@@ -261,12 +261,12 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
 
                   const SizedBox(height: 32),
 
-                  // BOTÃ“N CON NAVEGACIÃ“N CORREGIDA
+                  // BOTÓN CON NAVEGACIÓN CORREGIDA
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        // NAVEGACIÃ“N A LA PANTALLA DEL VOUCHER
+                        // NAVEGACIÓN A LA PANTALLA DEL VOUCHER
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => const DigitalReceiptScreen(signaturePoints: [],)),
@@ -275,7 +275,7 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
                       icon: const Icon(Icons.description_outlined, size: 18),
                       label: const Text('Ver comprobante digital'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2ECC71), // Verde mÃ¡s claro del diseÃ±o
+                        backgroundColor: const Color(0xFF2ECC71), // Verde más claro del diseño
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
@@ -361,14 +361,14 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
           ),
           label: 'Seguimiento',
         ),
-        const BottomNavigationBarItem(icon: Icon(Icons.bar_chart_outlined), label: 'AnalÃ­tica'),
+        const BottomNavigationBarItem(icon: Icon(Icons.bar_chart_outlined), label: 'Analítica'),
         const BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Perfil'),
       ],
     );
   }
 }
 
-// CustomPainter actualizado para dibujar lÃ­neas basadas en gestos
+// CustomPainter actualizado para dibujar líneas basadas en gestos
 class InteractiveSignaturePainter extends CustomPainter {
   final List<Offset?> points;
 
@@ -384,7 +384,7 @@ class InteractiveSignaturePainter extends CustomPainter {
 
     for (int i = 0; i < points.length - 1; i++) {
       if (points[i] != null && points[i + 1] != null) {
-        // Dibuja una lÃ­nea entre puntos consecutivos
+        // Dibuja una línea entre puntos consecutivos
         canvas.drawLine(points[i]!, points[i + 1]!, paint);
       }
     }

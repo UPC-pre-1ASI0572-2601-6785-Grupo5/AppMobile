@@ -1,6 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import '../constants/colors.dart';
-import 'order_history_screen.dart'; // ImportaciÃ³n de la pantalla de historial
+import 'order_history_screen.dart'; // Importación de la pantalla de historial
 
 class OrderConfirmationScreen extends StatelessWidget {
   const OrderConfirmationScreen({Key? key}) : super(key: key);
@@ -68,13 +68,13 @@ class OrderConfirmationScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
         child: Column(
           children: [
-            // 1. Elemento visual central (Check verde con Ã­conos flotantes)
+            // 1. Elemento visual central (Check verde con íconos flotantes)
             SizedBox(
               height: 160,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  // CÃ­rculo exterior verde clarito
+                  // Círculo exterior verde clarito
                   Container(
                     width: 140,
                     height: 140,
@@ -83,7 +83,7 @@ class OrderConfirmationScreen extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                   ),
-                  // CÃ­rculo interior verde brillante
+                  // Círculo interior verde brillante
                   Container(
                     width: 90,
                     height: 90,
@@ -96,7 +96,7 @@ class OrderConfirmationScreen extends StatelessWidget {
                     ),
                     child: const Icon(Icons.check, color: Colors.white, size: 48),
                   ),
-                  // Ãcono flotante superior derecho (CamiÃ³n)
+                  // Ãcono flotante superior derecho (Camión)
                   Positioned(
                     top: 15,
                     right: 15,
@@ -131,13 +131,13 @@ class OrderConfirmationScreen extends StatelessWidget {
 
             // 2. Textos principales
             const Text(
-              'Â¡Pedido Realizado con\nÃ‰xito!',
+              '¡Pedido Realizado con\nÉxito!',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.textDark, height: 1.2),
             ),
             const SizedBox(height: 12),
             const Text(
-              'Tu solicitud ha sido procesada\ncorrectamente y se encuentra en fase de\nlogÃ­stica.',
+              'Tu solicitud ha sido procesada\ncorrectamente y se encuentra en fase de\nlogística.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 14, color: AppColors.textGrey, height: 1.4),
             ),
@@ -154,12 +154,12 @@ class OrderConfirmationScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  const Text('CÃ“DIGO', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textGrey, letterSpacing: 1)),
+                  const Text('CÓDIGO', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textGrey, letterSpacing: 1)),
                   const SizedBox(height: 4),
                   const Text('#FT-8892', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
                   const SizedBox(height: 16),
 
-                  // PequeÃ±o divisor o espacio
+                  // Pequeño divisor o espacio
                   Container(height: 1, width: 40, color: AppColors.borderLight),
                   const SizedBox(height: 16),
 
@@ -186,12 +186,12 @@ class OrderConfirmationScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
 
-            // 4. Botones de acciÃ³n
+            // 4. Botones de acción
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  // AHORA ESTE BOTÃ“N TE LLEVA DIRECTAMENTE AL HISTORIAL DE PEDIDOS
+                  // AHORA ESTE BOTÓN TE LLEVA DIRECTAMENTE AL HISTORIAL DE PEDIDOS
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const OrderHistoryScreen()),
@@ -200,7 +200,7 @@ class OrderConfirmationScreen extends StatelessWidget {
                 icon: const Icon(Icons.local_shipping_outlined, color: Colors.white, size: 18),
                 label: const Text('Ver Seguimiento', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2ECC71), // Verde brillante del diseÃ±o
+                  backgroundColor: const Color(0xFF2ECC71), // Verde brillante del diseño
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   elevation: 0,
@@ -218,7 +218,7 @@ class OrderConfirmationScreen extends StatelessWidget {
                 icon: const Icon(Icons.home_outlined, color: AppColors.primary, size: 18),
                 label: const Text('Ir al Inicio', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 14)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFD4EFDF), // Verde muy pÃ¡lido
+                  backgroundColor: const Color(0xFFD4EFDF), // Verde muy pálido
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   elevation: 0,
@@ -246,7 +246,7 @@ class OrderConfirmationScreen extends StatelessWidget {
                         Text('Notificaciones activas', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                         SizedBox(height: 4),
                         Text(
-                          'Te enviaremos una notificaciÃ³n cuando el camiÃ³n cisterna estÃ© a menos de 5km de tu ubicaciÃ³n.',
+                          'Te enviaremos una notificación cuando el camión cisterna esté a menos de 5km de tu ubicación.',
                           style: TextStyle(fontSize: 11, color: AppColors.textGrey, height: 1.4),
                         ),
                       ],

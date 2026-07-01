@@ -4,7 +4,7 @@ import 'tracking_screen.dart';
 import 'orders_screen.dart';
 import 'analytics_screen.dart';
 import 'alerts_screen.dart';
-import 'profile_screen.dart'; // Solo agreguÃ© este import
+import 'profile_screen.dart'; // Solo agregué este import
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -21,7 +21,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     const OrdersScreen(),
     const TrackingScreen(),
     const AnalyticsScreen(),
-    const ProfileScreen(), // AquÃ­ conectÃ© tu pantalla de perfil
+    const ProfileScreen(), // Aquí conecté tu pantalla de perfil
   ];
 
   @override
@@ -73,7 +73,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           BottomNavigationBarItem(
               icon: Icon(_selectedIndex == 3 ? Icons.bar_chart : Icons.bar_chart_outlined),
-              label: 'AnalÃ­tica'
+              label: 'Analítica'
           ),
           BottomNavigationBarItem(
               icon: Icon(_selectedIndex == 4 ? Icons.person : Icons.person_outline),
@@ -174,7 +174,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Alerta CrÃ­tica', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                        Text('Alerta Crítica', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
                         SizedBox(height: 4),
                         Text('Riesgo de desabastecimiento en Sede Norte', style: TextStyle(color: Colors.white70, fontSize: 12)),
                       ],
@@ -222,7 +222,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         const SizedBox(height: 8),
                         const Text('Riesgo', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.error)),
                         const SizedBox(height: 4),
-                        const Text('RevisiÃ³n requerida', style: TextStyle(fontSize: 10, color: AppColors.error, fontWeight: FontWeight.bold)),
+                        const Text('Revisión requerida', style: TextStyle(fontSize: 10, color: AppColors.error, fontWeight: FontWeight.bold)),
                       ],
                     ),
                   ),
@@ -263,7 +263,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: 24),
             TextField(
               decoration: InputDecoration(
-                hintText: 'Buscar pedido por cÃ³digo...',
+                hintText: 'Buscar pedido por código...',
                 hintStyle: const TextStyle(fontSize: 14, color: AppColors.textGrey),
                 prefixIcon: const Icon(Icons.search, color: AppColors.textGrey),
                 filled: true,
