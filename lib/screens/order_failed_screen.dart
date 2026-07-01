@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../constants/colors.dart';
+import 'dashboard_screen.dart';
 
 class OrderFailedScreen extends StatelessWidget {
   const OrderFailedScreen({Key? key}) : super(key: key);
@@ -244,7 +245,11 @@ class OrderFailedScreen extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: () {
                   // Vuelve completamente a la pantalla de Inicio (Dashboard)
-                  Navigator.popUntil(context, (route) => route.isFirst);
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const DashboardScreen()),
+                    (route) => false,
+                  );
                 },
                 icon: const Icon(Icons.home_outlined, color: Colors.white, size: 18),
                 label: const Text('Ir al Inicio', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),

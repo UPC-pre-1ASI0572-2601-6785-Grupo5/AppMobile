@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../constants/colors.dart';
-import 'order_history_screen.dart'; // Importación de la pantalla de historial
+import 'order_history_screen.dart';
+import 'dashboard_screen.dart';
 
 class OrderConfirmationScreen extends StatelessWidget {
   const OrderConfirmationScreen({Key? key}) : super(key: key);
@@ -213,7 +214,11 @@ class OrderConfirmationScreen extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: () {
                   // Vuelve completamente a la pantalla de Inicio (Dashboard)
-                  Navigator.popUntil(context, (route) => route.isFirst);
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const DashboardScreen()),
+                    (route) => false,
+                  );
                 },
                 icon: const Icon(Icons.home_outlined, color: AppColors.primary, size: 18),
                 label: const Text('Ir al Inicio', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 14)),

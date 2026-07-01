@@ -16,7 +16,10 @@ class TrackingScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textDark),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Row(
           children: [
             ClipRRect(

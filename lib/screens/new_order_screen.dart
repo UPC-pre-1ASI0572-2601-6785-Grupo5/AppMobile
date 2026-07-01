@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../constants/colors.dart';
-import 'order_confirmation_screen.dart'; // Importación de la pantalla de confirmación
+import '../services/order_service.dart';
+import 'order_confirmation_screen.dart';
+import 'order_failed_screen.dart';
 
 class NewOrderScreen extends StatefulWidget {
   const NewOrderScreen({Key? key}) : super(key: key);
@@ -12,15 +14,19 @@ class NewOrderScreen extends StatefulWidget {
 }
 
 class _NewOrderScreenState extends State<NewOrderScreen> {
-  String _selectedFuel = 'Diésel';
+  final OrderService _orderService = OrderService();
+  final TextEditingController _qtyController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
+  
+  String _selectedFuel = 'Diésel';
+  String _selectedAddress = 'Planta Industrial Norte - Sector B';
+  bool _isLoading = false;
 
-  // Función para abrir el calendario y formatear la fecha seleccionada
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
-      firstDate: DateTime.now(), // No permite seleccionar fechas pasadas
+      firstDate: DateTime.now(),
       lastDate: DateTime(2030),
       builder: (context, child) {
         return Theme(
@@ -38,14 +44,55 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
 
     if (picked != null) {
       setState(() {
-        // Formatea la fecha como dd/mm/yyyy
         _dateController.text = "${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}";
       });
     }
   }
 
+  Future<void> _submitOrder() async {
+    if (_qtyController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor ingrese la cantidad en litros')),
+      );
+      return;
+    }
+
+    final double qty = double.tryParse(_qtyController.text) ?? 0.0;
+    if (qty <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('La cantidad debe ser mayor a 0')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      await _orderService.createOrder(
+        productName: _selectedFuel,
+        quantityGallons: qty,
+        documentRef: '$_selectedAddress | ${_dateController.text}',
+      );
+      
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const OrderConfirmationScreen()),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const OrderFailedScreen()),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   void dispose() {
+    _qtyController.dispose();
     _dateController.dispose();
     super.dispose();
   }
@@ -72,7 +119,6 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Banner de Recomendación IoT
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -106,10 +152,10 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Input Cantidad
             const Text('Cantidad (litros)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textDark)),
             const SizedBox(height: 8),
             TextField(
+              controller: _qtyController,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
                 hintText: 'Ej. 5000',
@@ -124,7 +170,6 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Tipo de Combustible
             const Text('Tipo de Combustible', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textDark)),
             const SizedBox(height: 8),
             Row(
@@ -138,7 +183,6 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Dirección de Entrega
             const Text('Dirección de Entrega', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textDark)),
             const SizedBox(height: 8),
             Container(
@@ -155,7 +199,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                   Expanded(
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
-                        value: 'Planta Industrial Norte - Sector B',
+                        value: _selectedAddress,
                         isExpanded: true,
                         icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.textGrey),
                         items: ['Planta Industrial Norte - Sector B', 'Sede Central Sur'].map((String value) {
@@ -164,7 +208,9 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                             child: Text(value, style: const TextStyle(fontSize: 14, color: AppColors.textDark)),
                           );
                         }).toList(),
-                        onChanged: (_) {},
+                        onChanged: (val) {
+                          if (val != null) setState(() => _selectedAddress = val);
+                        },
                       ),
                     ),
                   ),
@@ -173,13 +219,12 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Fecha Programada con Interacción
             const Text('Fecha Programada', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textDark)),
             const SizedBox(height: 8),
             TextField(
               controller: _dateController,
               readOnly: true,
-              onTap: () => _selectDate(context), // Al presionar se abre el calendario
+              onTap: () => _selectDate(context),
               decoration: InputDecoration(
                 hintText: 'dd/mm/yyyy',
                 prefixIcon: const Icon(Icons.calendar_today_outlined, color: AppColors.primary),
@@ -192,7 +237,6 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
             ),
             const SizedBox(height: 16),
 
-            // MAPA REAL INTEGRADO
             Container(
               height: 150,
               width: double.infinity,
@@ -208,13 +252,12 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                   children: [
                     FlutterMap(
                       options: const MapOptions(
-                        initialCenter: LatLng(-12.0464, -77.0428), // Coordenadas del diseño
+                        initialCenter: LatLng(-12.0464, -77.0428),
                         initialZoom: 14.0,
-                        interactionOptions: InteractionOptions(flags: InteractiveFlag.none), // Se bloquea el arrastre para no estorbar el scroll general
+                        interactionOptions: InteractionOptions(flags: InteractiveFlag.none),
                       ),
                       children: [
                         TileLayer(
-                          // Usamos un mapa en tonos claros para este contenedor
                           urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
                           userAgentPackageName: 'com.example.fueltrack',
                         ),
@@ -256,31 +299,28 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
             ),
             const SizedBox(height: 32),
 
-            // Tiempo estimado y Botón
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Text('Tiempo estimado de entrega', style: TextStyle(fontSize: 12, color: AppColors.textGrey)),
-                Text('24 - 48 Horas', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primary)),
-              ],
+               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+               children: const [
+                 Text('Tiempo estimado de entrega', style: TextStyle(fontSize: 12, color: AppColors.textGrey)),
+                 Text('24 - 48 Horas', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primary)),
+               ],
             ),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  // NAVEGACIÓN A LA PANTALLA DE ÉXITO Y CIERRE DEL MODAL
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const OrderConfirmationScreen()),
-                  );
-                },
+                onPressed: _isLoading ? null : _submitOrder,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text('Confirmar Pedido >', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                child: _isLoading 
+                    ? const SizedBox(
+                        height: 24, width: 24, 
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : const Text('Confirmar Pedido >', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
             const SizedBox(height: 24),
@@ -290,7 +330,6 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
     );
   }
 
-  // Widget para las tarjetas seleccionables de combustible
   Widget _buildFuelTypeOption(String name, IconData icon) {
     bool isSelected = _selectedFuel == name;
     return GestureDetector(
