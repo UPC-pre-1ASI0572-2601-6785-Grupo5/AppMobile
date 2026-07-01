@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 
 class AlertsScreen extends StatefulWidget {
@@ -12,16 +12,16 @@ class _AlertsScreenState extends State<AlertsScreen> {
   // Variable que controla si hay notificaciones o no
   bool _hasAlerts = true;
 
-  // Función que se ejecuta al presionar "Marcar todo como leído"
+  // FunciÃ³n que se ejecuta al presionar "Marcar todo como leÃ­do"
   void _markAllAsRead() {
     setState(() {
       _hasAlerts = false;
     });
 
-    // Muestra un pequeño mensaje de confirmación abajo
+    // Muestra un pequeÃ±o mensaje de confirmaciÃ³n abajo
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Todas las alertas han sido marcadas como leídas'),
+        content: Text('Todas las alertas han sido marcadas como leÃ­das'),
         backgroundColor: AppColors.primary,
         duration: Duration(seconds: 2),
       ),
@@ -86,7 +86,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
           const SizedBox(width: 8),
           const CircleAvatar(
             radius: 16,
-            backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11'),
+            backgroundImage: AssetImage('assets/images/logo.png'),
           ),
           const SizedBox(width: 16),
         ],
@@ -105,13 +105,13 @@ class _AlertsScreenState extends State<AlertsScreen> {
                   TextButton.icon(
                     onPressed: _markAllAsRead,
                     icon: const Icon(Icons.check, size: 16, color: AppColors.primary),
-                    label: const Text('Marcar todo como leído', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                    label: const Text('Marcar todo como leÃ­do', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary)),
                   ),
               ],
             ),
             const SizedBox(height: 16),
 
-            // CONDICIONAL: Si hay alertas muestra la lista, sino muestra el estado vacío
+            // CONDICIONAL: Si hay alertas muestra la lista, sino muestra el estado vacÃ­o
             _hasAlerts ? _buildAlertsList() : _buildEmptyState(),
 
           ],
@@ -126,7 +126,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
   }
 
   // ==========================================
-  // VISTA CON ALERTAS (Tu diseño completo original)
+  // VISTA CON ALERTAS (Tu diseÃ±o completo original)
   // ==========================================
   Widget _buildAlertsList() {
     return Column(
@@ -139,7 +139,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
             children: [
               _buildFilterChip('Todas', true, null),
               const SizedBox(width: 8),
-              _buildFilterChip('Críticas', false, Icons.warning_rounded, iconColor: AppColors.error),
+              _buildFilterChip('CrÃ­ticas', false, Icons.warning_rounded, iconColor: AppColors.error),
               const SizedBox(width: 8),
               _buildFilterChip('Advertencias', false, Icons.warning_amber_rounded, iconColor: const Color(0xFFF39C12)),
             ],
@@ -147,17 +147,17 @@ class _AlertsScreenState extends State<AlertsScreen> {
         ),
         const SizedBox(height: 24),
 
-        // Tarjeta 1: Crítica
+        // Tarjeta 1: CrÃ­tica
         _buildAlertCard(
           borderColor: AppColors.error,
           icon: Icons.close,
           iconBgColor: const Color(0xFFFFEBEE),
           iconColor: AppColors.error,
-          tagText: 'PRIORIDAD CRÍTICA',
+          tagText: 'PRIORIDAD CRÃTICA',
           tagColor: AppColors.error,
           time: 'Hace 2 min',
           title: 'Posible fuga detectada\n- Sede Norte',
-          description: 'El sensor 4B-902 reporta una caída de presión anómala fuera de los rangos de seguridad. Se requiere inspección inmediata.',
+          description: 'El sensor 4B-902 reporta una caÃ­da de presiÃ³n anÃ³mala fuera de los rangos de seguridad. Se requiere inspecciÃ³n inmediata.',
           actions: Row(
             children: [
               Expanded(
@@ -180,7 +180,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
                     elevation: 0,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
-                  child: const Text('Cerrar\nVálvulas', textAlign: TextAlign.center, style: TextStyle(color: AppColors.error, fontSize: 11, fontWeight: FontWeight.bold)),
+                  child: const Text('Cerrar\nVÃ¡lvulas', textAlign: TextAlign.center, style: TextStyle(color: AppColors.error, fontSize: 11, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -197,8 +197,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
           tagText: 'ADVERTENCIA DE STOCK',
           tagColor: const Color(0xFFF39C12),
           time: 'Hace 15 min',
-          title: 'Nivel bajo en tanque ultra-diésel',
-          description: 'El tanque T-104 en la central de despacho se encuentra al 12% de su capacidad. Reabastecimiento sugerido en las próximas 4 horas.',
+          title: 'Nivel bajo en tanque ultra-diÃ©sel',
+          description: 'El tanque T-104 en la central de despacho se encuentra al 12% de su capacidad. Reabastecimiento sugerido en las prÃ³ximas 4 horas.',
           actions: Align(
             alignment: Alignment.centerLeft,
             child: ElevatedButton.icon(
@@ -226,10 +226,10 @@ class _AlertsScreenState extends State<AlertsScreen> {
           tagColor: AppColors.primary,
           time: 'Hace 45 min',
           title: 'Cisterna VXB-402 en ruta',
-          description: 'La unidad ha salido del centro logístico principal con destino a Estación Oriente. ETA: 14:30 PM.',
+          description: 'La unidad ha salido del centro logÃ­stico principal con destino a EstaciÃ³n Oriente. ETA: 14:30 PM.',
           footer: Row(
             children: [
-              const CircleAvatar(radius: 12, backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=12')),
+              const CircleAvatar(radius: 12, backgroundImage: AssetImage('assets/images/logo.png')),
               const SizedBox(width: 4),
               Container(
                 padding: const EdgeInsets.all(4),
@@ -249,11 +249,11 @@ class _AlertsScreenState extends State<AlertsScreen> {
           icon: Icons.sensors,
           iconBgColor: const Color(0xFFF2F4F4),
           iconColor: const Color(0xFF7F8C8D),
-          tagText: 'NOTIFICACIÓN IOT',
+          tagText: 'NOTIFICACIÃ“N IOT',
           tagColor: const Color(0xFF7F8C8D),
           time: 'Hace 1 h',
-          title: 'Sensor de presión calibrado con éxito',
-          description: 'El sistema de mantenimiento remoto ha finalizado la calibración periódica del nodo S-55. Operatividad al 100%.',
+          title: 'Sensor de presiÃ³n calibrado con Ã©xito',
+          description: 'El sistema de mantenimiento remoto ha finalizado la calibraciÃ³n periÃ³dica del nodo S-55. Operatividad al 100%.',
         ),
         const SizedBox(height: 24),
 
@@ -271,7 +271,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
             children: [
               const Text('Resumen de Hoy', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textDark)),
               const SizedBox(height: 16),
-              _buildSummaryRow(AppColors.error, 'Críticas', '01'),
+              _buildSummaryRow(AppColors.error, 'CrÃ­ticas', '01'),
               const SizedBox(height: 12),
               _buildSummaryRow(const Color(0xFFF39C12), 'Advertencias', '03'),
               const SizedBox(height: 12),
@@ -288,7 +288,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             image: const DecorationImage(
-              image: NetworkImage('https://i.stack.imgur.com/vhoa0.jpg'),
+              image: AssetImage('assets/images/trailer.png'),
               fit: BoxFit.cover,
             ),
           ),
@@ -305,7 +305,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
                 children: const [
                   Icon(Icons.shield_outlined, color: Colors.white, size: 12),
                   SizedBox(width: 6),
-                  Text('Sede Norte activación hace 30 segundos.', style: TextStyle(color: Colors.white, fontSize: 10)),
+                  Text('Sede Norte activaciÃ³n hace 30 segundos.', style: TextStyle(color: Colors.white, fontSize: 10)),
                 ],
               ),
             ),
@@ -366,7 +366,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
   }
 
   // ==========================================
-  // VISTA VACÍA (Cuando marcas todo como leído)
+  // VISTA VACÃA (Cuando marcas todo como leÃ­do)
   // ==========================================
   Widget _buildEmptyState() {
     return Center(
@@ -375,7 +375,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
           const SizedBox(height: 80),
           Icon(Icons.check_circle_outline, size: 100, color: AppColors.primary.withOpacity(0.5)),
           const SizedBox(height: 24),
-          const Text('¡Estás al día!', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+          const Text('Â¡EstÃ¡s al dÃ­a!', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textDark)),
           const SizedBox(height: 8),
           const Text(
             'No tienes notificaciones pendientes\nen este momento.',

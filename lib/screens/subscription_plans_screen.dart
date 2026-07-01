@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../constants/strings.dart';
 import 'payment_confirmation_screen.dart';
+import '../services/session_manager.dart';
+import 'dashboard_screen.dart';
+import 'provider_dashboard_screen.dart';
 
 class SubscriptionPlansScreen extends StatelessWidget {
   const SubscriptionPlansScreen({Key? key}) : super(key: key);
@@ -58,7 +61,16 @@ class SubscriptionPlansScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.close, color: AppColors.textDark),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              final user = SessionManager.instance.user;
+              final isProvider = user != null && user.isProvider;
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => isProvider ? const ProviderDashboardScreen() : const DashboardScreen(),
+                ),
+              );
+            },
           ),
         ],
       ),

@@ -1,8 +1,65 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import '../constants/colors.dart';
+import '../config/api_config.dart';
+import '../services/session_manager.dart';
 
-class OrderHistoryScreen extends StatelessWidget {
+class OrderHistoryScreen extends StatefulWidget {
   const OrderHistoryScreen({Key? key}) : super(key: key);
+
+  @override
+  State<OrderHistoryScreen> createState() => _OrderHistoryScreenState();
+}
+
+class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
+  List<dynamic> _orders = [];
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchOrders();
+  }
+
+  Future<void> _fetchOrders() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final token = SessionManager.instance.token;
+      if (token == null) {
+        throw Exception('No authentication token found');
+      }
+
+      final url = Uri.parse('${ApiConfig.baseUrl}${ApiConfig.orders}');
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      ).timeout(const Duration(seconds: ApiConfig.connectTimeoutSeconds));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        setState(() {
+          _orders = data;
+          _isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to load orders: ${response.statusCode}');
+      }
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -11,7 +68,8 @@ class OrderHistoryScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        automaticallyImplyLeading: false,
+        automaticallyImplyLeading: true, // Se habilita el boton de atras
+        iconTheme: const IconThemeData(color: AppColors.textDark),
         title: Row(
           children: [
             ClipRRect(
@@ -61,194 +119,84 @@ class OrderHistoryScreen extends StatelessWidget {
           const SizedBox(width: 8),
           const CircleAvatar(
             radius: 16,
-            backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11'),
+            backgroundImage: AssetImage('assets/images/logo.png'),
           ),
           const SizedBox(width: 16),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Título y Descripción
-            const Text('Historial de Pedidos', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-            const SizedBox(height: 4),
-            const Text('Consulta y descarga registros de suministros\nfinalizados.', style: TextStyle(fontSize: 12, color: AppColors.textGrey, height: 1.4)),
-            const SizedBox(height: 16),
+      body: RefreshIndicator(
+        onRefresh: _fetchOrders,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Titulo y Descripcion
+              const Text('Historial de Pedidos', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+              const SizedBox(height: 4),
+              const Text('Consulta y descarga registros de suministros\nfinalizados.', style: TextStyle(fontSize: 12, color: AppColors.textGrey, height: 1.4)),
+              const SizedBox(height: 24),
 
-            // Botón Exportar CSV
-            ElevatedButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.download_outlined, size: 16, color: Colors.white),
-              label: const Text('Exportar CSV', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF006D3E),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                elevation: 0,
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Buscador
-            TextField(
-              decoration: InputDecoration(
-                hintText: 'FLT-2024',
-                hintStyle: const TextStyle(fontSize: 14, color: AppColors.textGrey),
-                prefixIcon: const Icon(Icons.search, color: AppColors.textGrey, size: 20),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.borderLight)),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary)),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Chips de Filtro
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE8F8F5),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFFB2EBF2)),
+              if (_isLoading)
+                const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator()))
+              else if (_error != null)
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Column(
+                      children: [
+                        const Icon(Icons.error_outline, color: AppColors.error, size: 48),
+                        const SizedBox(height: 16),
+                        Text(_error!, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.error)),
+                        const SizedBox(height: 16),
+                        ElevatedButton(onPressed: _fetchOrders, child: const Text('Reintentar'))
+                      ],
+                    ),
                   ),
-                  child: Row(
-                    children: const [
-                      Text('Estado: Entregado', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                      SizedBox(width: 4),
-                      Icon(Icons.close, size: 12, color: AppColors.primary),
-                    ],
+                )
+              else if (_orders.isEmpty)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(32),
+                      child: Text('No hay pedidos registrados', style: TextStyle(color: AppColors.textGrey)),
+                    ),
+                  )
+                else
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _orders.length,
+                    separatorBuilder: (context, index) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final order = _orders[index];
+                      return _buildHistoryCard(
+                        id: '#${order['id'] ?? ''}',
+                        date: order['createdAt'] != null ? order['createdAt'].substring(0, 10) : 'N/A',
+                        time: order['createdAt'] != null && order['createdAt'].length > 16 ? order['createdAt'].substring(11, 16) : 'N/A',
+                        fuel: order['fuelType']?.toString() ?? 'Desconocido',
+                        qty: '${order['gallons']} Gal.',
+                        status: order['status']?.toString() ?? 'PENDIENTE',
+                      );
+                    },
                   ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF4F7F7),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.borderLight),
-                  ),
-                  child: Row(
-                    children: const [
-                      Text('Últimos 30 días', style: TextStyle(fontSize: 11, color: AppColors.textDark)),
-                      SizedBox(width: 4),
-                      Icon(Icons.keyboard_arrow_down, size: 14, color: AppColors.textGrey),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
 
-            // Tarjetas de Métricas
-            _buildMetricCardWhite(icon: Icons.check_circle_outline, title: 'TOTAL ENTREGADOS', value: '1,284', trailing: '+12%', trailingColor: AppColors.primary),
-            const SizedBox(height: 12),
-            _buildMetricCardWhite(icon: Icons.local_gas_station_outlined, title: 'VOLUMEN TOTAL', value: '45.2k L', trailing: '', trailingColor: Colors.transparent),
-            const SizedBox(height: 12),
-            _buildEfficiencyCard(),
-            const SizedBox(height: 24),
-
-            // Lista de Historial
-            _buildHistoryCard(id: '#FLT-2024-001', date: '24 Oct, 2023', time: '14:30 PM', fuel: 'Diesel Ultra', qty: '1,200 Litros'),
-            const SizedBox(height: 12),
-            _buildHistoryCard(id: '#FLT-2024-002', date: '23 Oct, 2023', time: '09:15 AM', fuel: 'Gasolina 95', qty: '850 Litros'),
-            const SizedBox(height: 12),
-            _buildHistoryCard(id: '#FLT-2023-899', date: '21 Oct, 2023', time: '17:45 PM', fuel: 'Biodiesel', qty: '2,500 Litros'),
-            const SizedBox(height: 24),
-
-            // Footer
-            Center(child: const Text('Mostrando 10 de 1,284 resultados', style: TextStyle(fontSize: 11, color: AppColors.textGrey))),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFEAECEE),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                  elevation: 0,
-                ),
-                child: const Text('Cargar más registros', style: TextStyle(color: AppColors.textDark, fontSize: 12, fontWeight: FontWeight.bold)),
-              ),
-            ),
-            const SizedBox(height: 40),
-          ],
+              const SizedBox(height: 24),
+              if (!_isLoading && _orders.isNotEmpty)
+                Center(child: Text('Mostrando ${_orders.length} resultados', style: const TextStyle(fontSize: 11, color: AppColors.textGrey))),
+              const SizedBox(height: 40),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildMetricCardWhite({required IconData icon, required String title, required String value, required String trailing, required Color trailingColor}) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.borderLight), boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))]),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(color: const Color(0xFFE8F8F5), shape: BoxShape.circle),
-                child: Icon(icon, size: 18, color: AppColors.primary),
-              ),
-              if (trailing.isNotEmpty) Text(trailing, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: trailingColor)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(title, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textGrey, letterSpacing: 0.5)),
-          const SizedBox(height: 4),
-          Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-        ],
-      ),
-    );
-  }
+  Widget _buildHistoryCard({required String id, required String date, required String time, required String fuel, required String qty, required String status}) {
+    Color statusColor = AppColors.primary;
+    if (status == 'PENDING') statusColor = Colors.orange;
+    if (status == 'CANCELLED') statusColor = AppColors.error;
 
-  Widget _buildEfficiencyCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF006D3E),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            right: -20,
-            bottom: -20,
-            child: Icon(Icons.check_circle_outline, size: 100, color: Colors.white.withAlpha(25)),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Eficiencia de Entrega', style: TextStyle(fontSize: 11, color: Colors.white70)),
-              const SizedBox(height: 8),
-              const Text('98.4%', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
-              const SizedBox(height: 16),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: 0.984,
-                  backgroundColor: Colors.white.withAlpha(50),
-                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                  minHeight: 6,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHistoryCard({required String id, required String date, required String time, required String fuel, required String qty}) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.borderLight), boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))]),
@@ -277,12 +225,12 @@ class OrderHistoryScreen extends StatelessWidget {
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(color: const Color(0xFFE8F8F5), borderRadius: BorderRadius.circular(12)),
+                decoration: BoxDecoration(color: statusColor.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
                 child: Row(
-                  children: const [
-                    Icon(Icons.check_circle_outline, size: 12, color: AppColors.primary),
-                    SizedBox(width: 4),
-                    Text('Entregado', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                  children: [
+                    Icon(status == 'PENDING' ? Icons.hourglass_empty : Icons.check_circle_outline, size: 12, color: statusColor),
+                    const SizedBox(width: 4),
+                    Text(status, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: statusColor)),
                   ],
                 ),
               ),
@@ -334,15 +282,6 @@ class OrderHistoryScreen extends StatelessWidget {
                   ],
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: const [
-              Icon(Icons.remove_red_eye_outlined, size: 18, color: AppColors.textGrey),
-              SizedBox(width: 16),
-              Icon(Icons.receipt_long_outlined, size: 18, color: AppColors.textGrey),
             ],
           ),
         ],

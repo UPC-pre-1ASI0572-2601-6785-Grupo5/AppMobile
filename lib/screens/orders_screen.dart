@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import 'tracking_screen.dart';
 import 'new_order_screen.dart';
-import 'alerts_screen.dart'; // <-- Importación agregada
+import 'alerts_screen.dart'; // <-- ImportaciÃ³n agregada
 
 class OrdersScreen extends StatelessWidget {
   const OrdersScreen({Key? key}) : super(key: key);
@@ -67,7 +67,7 @@ class OrdersScreen extends StatelessWidget {
           const SizedBox(width: 8),
           const CircleAvatar(
             radius: 16,
-            backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11'),
+            backgroundImage: AssetImage('assets/images/logo.png'),
           ),
           const SizedBox(width: 16),
         ],
@@ -100,14 +100,14 @@ class OrdersScreen extends StatelessWidget {
                 const SizedBox(width: 8),
                 _buildFilterChip(Icons.swap_vert, 'Estado', false),
                 const SizedBox(width: 8),
-                _buildFilterChip(Icons.tag, '# Código', false),
+                _buildFilterChip(Icons.tag, '# CÃ³digo', false),
               ],
             ),
             const SizedBox(height: 24),
             _buildOrderCard(
               context,
               id: '#FT-2023-45',
-              product: 'Diésel Premium B5',
+              product: 'DiÃ©sel Premium B5',
               status: 'En ruta',
               statusColor: const Color(0xFF006D3E),
               volume: '12,500 Litros',
@@ -135,8 +135,8 @@ class OrdersScreen extends StatelessWidget {
               status: 'Pendiente',
               statusColor: const Color(0xFFE67E22),
               volume: '20,000 Litros',
-              timeLabel: 'Validación',
-              timeValue: 'En revisión',
+              timeLabel: 'ValidaciÃ³n',
+              timeValue: 'En revisiÃ³n',
               date: '22 Oct 2023',
             ),
             const SizedBox(height: 24),
@@ -156,7 +156,7 @@ class OrdersScreen extends StatelessWidget {
                 children: [
                   const Text('Optimiza tu Flota', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
-                  const Text('Programa tus pedidos automáticos y\nrecibe descuentos exclusivos por\nvolumen este mes.', style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.4)),
+                  const Text('Programa tus pedidos automÃ¡ticos y\nrecibe descuentos exclusivos por\nvolumen este mes.', style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.4)),
                   const SizedBox(height: 16),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -167,7 +167,7 @@ class OrdersScreen extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: const [
-                        Text('Saber más', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                        Text('Saber mÃ¡s', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                         SizedBox(width: 4),
                         Icon(Icons.arrow_forward, color: Colors.white, size: 14),
                       ],
@@ -196,7 +196,7 @@ class OrdersScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 4),
-                  const Text('Estado de tus últimos 30 días', style: TextStyle(fontSize: 12, color: AppColors.textGrey)),
+                  const Text('Estado de tus Ãºltimos 30 dÃ­as', style: TextStyle(fontSize: 12, color: AppColors.textGrey)),
                   const SizedBox(height: 20),
                   Row(
                     children: [

@@ -8,6 +8,11 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = SessionManager.instance.user;
+    final userName = user?.name ?? 'Usuario';
+    final userRole = user?.isProvider == true ? 'Proveedor' : 'Cliente';
+    final userEmail = user?.email ?? '';
+    
     // Igual que las demás, sin Scaffold ni AppBar propio para no duplicar
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20.0),
@@ -31,8 +36,8 @@ class ProfileScreen extends StatelessWidget {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            'https://i.pravatar.cc/150?img=11', // Foto del usuario
+                          child: Image.asset(
+                            'assets/images/logo.png',
                             width: 56,
                             height: 56,
                             fit: BoxFit.cover,
@@ -57,10 +62,10 @@ class ProfileScreen extends StatelessWidget {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text('Carlos Rodríguez', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                          SizedBox(height: 4),
-                          Text('Administrador de Sede • Sede Norte', style: TextStyle(fontSize: 12, color: AppColors.textGrey, height: 1.2)),
+                        children: [
+                          Text(userName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                          const SizedBox(height: 4),
+                          Text('$userRole • $userEmail', style: const TextStyle(fontSize: 12, color: AppColors.textGrey, height: 1.2)),
                         ],
                       ),
                     ),

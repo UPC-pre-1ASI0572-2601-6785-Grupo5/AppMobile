@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 
 class OrderFailedScreen extends StatelessWidget {
@@ -58,7 +58,7 @@ class OrderFailedScreen extends StatelessWidget {
           const SizedBox(width: 8),
           const CircleAvatar(
             radius: 16,
-            backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11'),
+            backgroundImage: AssetImage('assets/images/logo.png'),
           ),
           const SizedBox(width: 16),
         ],
@@ -67,13 +67,13 @@ class OrderFailedScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
         child: Column(
           children: [
-            // 1. Elemento visual central (X roja con íconos flotantes)
+            // 1. Elemento visual central (X roja con Ã­conos flotantes)
             SizedBox(
               height: 160,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  // Círculo exterior rojo clarito
+                  // CÃ­rculo exterior rojo clarito
                   Container(
                     width: 140,
                     height: 140,
@@ -82,7 +82,7 @@ class OrderFailedScreen extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                   ),
-                  // Círculo interior rojo fuerte
+                  // CÃ­rculo interior rojo fuerte
                   Container(
                     width: 90,
                     height: 90,
@@ -95,7 +95,7 @@ class OrderFailedScreen extends StatelessWidget {
                     ),
                     child: const Icon(Icons.close, color: Colors.white, size: 48),
                   ),
-                  // Ícono flotante superior derecho (Camión)
+                  // Ãcono flotante superior derecho (CamiÃ³n)
                   Positioned(
                     top: 15,
                     right: 15,
@@ -109,7 +109,7 @@ class OrderFailedScreen extends StatelessWidget {
                       child: const Icon(Icons.local_shipping_outlined, color: AppColors.textGrey, size: 18),
                     ),
                   ),
-                  // Ícono flotante inferior izquierdo (Edificio/Planta)
+                  // Ãcono flotante inferior izquierdo (Edificio/Planta)
                   Positioned(
                     bottom: 15,
                     left: 15,
@@ -130,13 +130,13 @@ class OrderFailedScreen extends StatelessWidget {
 
             // 2. Textos principales
             const Text(
-              '¡Error al Procesar el Pedido!',
+              'Â¡Error al Procesar el Pedido!',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textDark, height: 1.2),
             ),
             const SizedBox(height: 12),
             const Text(
-              'Lo sentimos, ha ocurrido un problema\ninesperado. Por favor, revisa la información\nde abajo o intenta nuevamente.',
+              'Lo sentimos, ha ocurrido un problema\ninesperado. Por favor, revisa la informaciÃ³n\nde abajo o intenta nuevamente.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 13, color: AppColors.textGrey, height: 1.4),
             ),
@@ -162,7 +162,7 @@ class OrderFailedScreen extends StatelessWidget {
                       children: const [
                         Text('MOTIVO DEL ERROR', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.error, letterSpacing: 0.5)),
                         SizedBox(height: 4),
-                        Text('Fallo en la comunicación con la\nterminal de carga', style: TextStyle(fontSize: 13, color: AppColors.error, height: 1.4)),
+                        Text('Fallo en la comunicaciÃ³n con la\nterminal de carga', style: TextStyle(fontSize: 13, color: AppColors.error, height: 1.4)),
                       ],
                     ),
                   ),
@@ -182,7 +182,7 @@ class OrderFailedScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  const Text('CÓDIGO', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textGrey, letterSpacing: 1)),
+                  const Text('CÃ“DIGO', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textGrey, letterSpacing: 1)),
                   const SizedBox(height: 4),
                   const Text('#FT-8892', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)), // El verde oscuro de tu app
                   const SizedBox(height: 16),
@@ -220,12 +220,12 @@ class OrderFailedScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
 
-            // 5. Botones de acción
+            // 5. Botones de acciÃ³n
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  // Lógica para volver a intentar o ver seguimiento si aplica
+                  // LÃ³gica para volver a intentar o ver seguimiento si aplica
                   Navigator.pop(context);
                 },
                 icon: const Icon(Icons.map_outlined, color: AppColors.textDark, size: 18),
@@ -277,7 +277,7 @@ class OrderFailedScreen extends StatelessWidget {
                         Text('Notificaciones activas', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                         SizedBox(height: 4),
                         Text(
-                          'Te enviaremos una notificación cuando el camión cisterna esté a menos de 5km de tu ubicación.',
+                          'Te enviaremos una notificaciÃ³n cuando el camiÃ³n cisterna estÃ© a menos de 5km de tu ubicaciÃ³n.',
                           style: TextStyle(fontSize: 11, color: AppColors.textGrey, height: 1.4),
                         ),
                       ],

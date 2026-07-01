@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 
 class DeliveryFailedScreen extends StatefulWidget {
@@ -68,7 +68,7 @@ class _DeliveryFailedScreenState extends State<DeliveryFailedScreen> {
           const SizedBox(width: 8),
           const CircleAvatar(
             radius: 16,
-            backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11'),
+            backgroundImage: AssetImage('assets/images/logo.png'),
           ),
           const SizedBox(width: 16),
         ],
@@ -116,7 +116,7 @@ class _DeliveryFailedScreenState extends State<DeliveryFailedScreen> {
                   ),
                   const SizedBox(height: 12),
                   const Text(
-                    'El suministro no ha sido completado. Se\ndetectó una incidencia que impidió la\ndescarga.',
+                    'El suministro no ha sido completado. Se\ndetectÃ³ una incidencia que impidiÃ³ la\ndescarga.',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 14, color: AppColors.textGrey, height: 1.5),
                   ),
@@ -136,7 +136,7 @@ class _DeliveryFailedScreenState extends State<DeliveryFailedScreen> {
                       Expanded(
                         child: _buildSummaryCard(
                           icon: Icons.access_time,
-                          label: 'FINALIZACIÓN',
+                          label: 'FINALIZACIÃ“N',
                           value: '14:45',
                         ),
                       ),
@@ -177,7 +177,7 @@ class _DeliveryFailedScreenState extends State<DeliveryFailedScreen> {
                         const Divider(color: Color(0xFFFFD6D6)), // Divisor rojizo
                         const SizedBox(height: 12),
                         const Text(
-                          'CÓDIGO ERROR: #ERR-992-B821-X9',
+                          'CÃ“DIGO ERROR: #ERR-992-B821-X9',
                           style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.error, letterSpacing: 1),
                         ),
                       ],
@@ -186,7 +186,7 @@ class _DeliveryFailedScreenState extends State<DeliveryFailedScreen> {
 
                   const SizedBox(height: 32),
 
-                  // Botones de Acción
+                  // Botones de AcciÃ³n
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
@@ -276,7 +276,7 @@ class _DeliveryFailedScreenState extends State<DeliveryFailedScreen> {
           ),
           label: 'Seguimiento',
         ),
-        const BottomNavigationBarItem(icon: Icon(Icons.bar_chart_outlined), label: 'Analítica'),
+        const BottomNavigationBarItem(icon: Icon(Icons.bar_chart_outlined), label: 'AnalÃ­tica'),
         const BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Perfil'),
       ],
     );

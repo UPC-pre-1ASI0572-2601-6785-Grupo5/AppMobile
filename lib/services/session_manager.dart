@@ -1,10 +1,8 @@
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 
-/// Simple in-memory session store.
-///
-/// After a successful sign-in or sign-up the JWT token and user profile are
-/// kept here so that [ApiClient] can attach the `Authorization` header
-/// automatically and screens can read the current user.
+/// Session store with local persistence.
 class SessionManager {
   SessionManager._();
   static final SessionManager _instance = SessionManager._();
@@ -26,17 +24,44 @@ class SessionManager {
   /// Whether a session is currently active.
   bool get isLoggedIn => _token != null;
 
+  // ── Initialization ──────────────────────────────────────────────────────
+
+  /// Loads the session from local storage on app start.
+  Future<void> init() async {
+    final prefs = await SharedPreferences.getInstance();
+    _token = prefs.getString('session_token');
+    
+    final userJson = prefs.getString('session_user');
+    if (userJson != null) {
+      try {
+        _user = User.fromJson(jsonDecode(userJson));
+      } catch (e) {
+        // Ignorar si hay un error de parseo (version vieja, etc)
+        _user = null;
+        _token = null; 
+      }
+    }
+  }
+
   // ── Mutations ─────────────────────────────────────────────────────────
 
   /// Stores [token] and [user] after a successful authentication.
-  void saveSession({required String token, required User user}) {
+  Future<void> saveSession({required String token, required User user}) async {
     _token = token;
     _user = user;
+    
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('session_token', token);
+    await prefs.setString('session_user', jsonEncode(user.toJson()));
   }
 
   /// Clears the current session (logout).
-  void clear() {
+  Future<void> clear() async {
     _token = null;
     _user = null;
+    
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('session_token');
+    await prefs.remove('session_user');
   }
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../constants/strings.dart';
-import 'role_selection_screen.dart';
+import '../services/session_manager.dart';
+import 'dashboard_screen.dart';
+import 'provider_dashboard_screen.dart';
 
 class MfaVerificationScreen extends StatefulWidget {
   final String email;
@@ -60,9 +62,14 @@ class _MfaVerificationScreenState extends State<MfaVerificationScreen> {
 
     // Simulamos que el código correcto es 123456
     if (_code == '123456') {
+      final user = SessionManager.instance.user;
+      final isProvider = user != null && user.isProvider;
+      
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const RoleSelectionScreen()),
+        MaterialPageRoute(
+          builder: (context) => isProvider ? const ProviderDashboardScreen() : const DashboardScreen(),
+        ),
       );
     } else {
       setState(() {

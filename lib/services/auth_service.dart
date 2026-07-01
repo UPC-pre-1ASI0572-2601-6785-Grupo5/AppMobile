@@ -29,7 +29,7 @@ class AuthService {
 
       final json = await _api.post(ApiConfig.signUp, body: body);
       final user = User.fromJson(json as Map<String, dynamic>);
-      _session.saveSession(token: user.token, user: user);
+      await _session.saveSession(token: user.token, user: user);
       return user;
     } catch (e) {
       rethrow;
@@ -49,7 +49,7 @@ class AuthService {
 
       final json = await _api.post(ApiConfig.signIn, body: body);
       final user = User.fromJson(json as Map<String, dynamic>);
-      _session.saveSession(token: user.token, user: user);
+      await _session.saveSession(token: user.token, user: user);
       return user;
     } catch (e) {
       rethrow;
@@ -86,7 +86,7 @@ class AuthService {
 
   /// Clears the local session.
   Future<void> logout() async {
-    _session.clear();
+    await _session.clear();
   }
 
   /// Checks whether an email is already registered.

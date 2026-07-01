@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../constants/colors.dart';
 import 'tracking_details_screen.dart';
 import 'delivery_success_screen.dart';
-import 'alerts_screen.dart'; // <-- Importación agregada
+import 'alerts_screen.dart'; // <-- ImportaciÃ³n agregada
 
 class TrackingScreen extends StatelessWidget {
   const TrackingScreen({Key? key}) : super(key: key);
@@ -69,7 +69,7 @@ class TrackingScreen extends StatelessWidget {
           const SizedBox(width: 8),
           const CircleAvatar(
             radius: 16,
-            backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11'),
+            backgroundImage: AssetImage('assets/images/logo.png'),
           ),
           const SizedBox(width: 16),
         ],
@@ -210,7 +210,7 @@ class TrackingScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 24),
                           _buildTimelineStep(isCompleted: true, isActive: false, icon: Icons.check, title: 'Pedido Confirmado', subtitle: '09:15 AM', isLast: false),
-                          _buildTimelineStep(isCompleted: false, isActive: true, icon: Icons.location_on_outlined, title: 'En Ruta', subtitle: 'Cerca de tu ubicación', isLast: false),
+                          _buildTimelineStep(isCompleted: false, isActive: true, icon: Icons.location_on_outlined, title: 'En Ruta', subtitle: 'Cerca de tu ubicaciÃ³n', isLast: false),
                           _buildTimelineStep(isCompleted: false, isActive: false, icon: Icons.access_time, title: 'Llegada Estimada', subtitle: '10:30 AM (Proyectado)', isLast: false),
                           _buildTimelineStep(isCompleted: false, isActive: false, icon: Icons.inventory_2_outlined, title: 'Entregado', subtitle: 'Pendiente de firma', isLast: true),
                           const SizedBox(height: 24),

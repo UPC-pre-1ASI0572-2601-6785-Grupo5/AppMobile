@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../constants/colors.dart';
-import 'alerts_screen.dart'; // <-- Importación agregada para que funcionen las alertas
+import 'alerts_screen.dart'; // <-- ImportaciÃ³n agregada para que funcionen las alertas
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({Key? key}) : super(key: key);
@@ -10,7 +10,7 @@ class AnalyticsScreen extends StatefulWidget {
 }
 
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
-  // Esta variable controla qué diseño se muestra. true = con datos, false = sin datos.
+  // Esta variable controla quÃ© diseÃ±o se muestra. true = con datos, false = sin datos.
   bool _hasData = false;
 
   @override
@@ -46,7 +46,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           ],
         ),
         actions: [
-          // ¡AQUÍ ESTÁ EL OJITO! Botón para alternar entre vistas
+          // Â¡AQUÃ ESTÃ EL OJITO! BotÃ³n para alternar entre vistas
           IconButton(
             icon: Icon(_hasData ? Icons.visibility : Icons.visibility_off, color: AppColors.primary),
             tooltip: 'Alternar Vista de Datos',
@@ -62,7 +62,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               IconButton(
                 icon: const Icon(Icons.notifications_none, color: AppColors.textDark),
                 onPressed: () {
-                  // MODIFICADO: Ahora sí abre las notificaciones al presionarlo
+                  // MODIFICADO: Ahora sÃ­ abre las notificaciones al presionarlo
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const AlertsScreen()),
@@ -83,7 +83,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           const SizedBox(width: 8),
           const CircleAvatar(
             radius: 16,
-            backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11'),
+            backgroundImage: AssetImage('assets/images/logo.png'),
           ),
           const SizedBox(width: 16),
         ],
@@ -94,7 +94,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   }
 
   // ==========================================
-  // VISTA 1: CON DATOS (Gráficas y métricas)
+  // VISTA 1: CON DATOS (GrÃ¡ficas y mÃ©tricas)
   // ==========================================
   Widget _buildPopulatedState() {
     return SingleChildScrollView(
@@ -135,13 +135,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Alerta de Desabastecimiento Crítico', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.error)),
+                      const Text('Alerta de Desabastecimiento CrÃ­tico', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.error)),
                       const SizedBox(height: 6),
                       RichText(
                         text: const TextSpan(
                           style: TextStyle(fontSize: 11, color: AppColors.error, height: 1.4),
                           children: [
-                            TextSpan(text: 'Se estima que el inventario de combustible se agotará el '),
+                            TextSpan(text: 'Se estima que el inventario de combustible se agotarÃ¡ el '),
                             TextSpan(text: '24 de Octubre, 2023. ', style: TextStyle(fontWeight: FontWeight.bold)),
                             TextSpan(text: 'Se recomienda programar reabastecimiento inmediato para evitar paros operativos (Burn Rate: 14.2% diario).'),
                           ],
@@ -165,7 +165,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             ),
             child: Column(
               children: [
-                const Text('Proyección de Consumo de Flota', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                const Text('ProyecciÃ³n de Consumo de Flota', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                 const SizedBox(height: 24),
                 SizedBox(
                   width: 140,
@@ -189,7 +189,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                const Text('Ritmo de consumo óptimo', style: TextStyle(fontSize: 12, color: AppColors.textGrey)),
+                const Text('Ritmo de consumo Ã³ptimo', style: TextStyle(fontSize: 12, color: AppColors.textGrey)),
                 const SizedBox(height: 4),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -217,7 +217,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: const [Text('Análisis de Consumo Corporativo\nMensual', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textDark)), Icon(Icons.more_vert, color: AppColors.textGrey, size: 20)]),
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: const [Text('AnÃ¡lisis de Consumo Corporativo\nMensual', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textDark)), Icon(Icons.more_vert, color: AppColors.textGrey, size: 20)]),
                 const SizedBox(height: 20),
                 Container(
                   height: 150,
@@ -240,11 +240,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          const Text('Optimización de Operaciones', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+          const Text('OptimizaciÃ³n de Operaciones', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
           const SizedBox(height: 16),
           _buildOptimizationTile(Icons.local_shipping_outlined, 'Ruta de Mayor Rendimiento', 'Corredor Norte (L2)'),
           const SizedBox(height: 12),
-          _buildOptimizationTile(Icons.access_time, 'Ventana Óptima de Suministro', '22:00 - 04:00 AM'),
+          _buildOptimizationTile(Icons.access_time, 'Ventana Ã“ptima de Suministro', '22:00 - 04:00 AM'),
           const SizedBox(height: 12),
           _buildOptimizationTile(Icons.speed, 'Eficiencia de Combustible (Flota)', '24.5 L / 100 km'),
           const SizedBox(height: 40),
@@ -283,7 +283,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   }
 
   // ==========================================
-  // VISTA 2: SIN DATOS (Tu diseño de sincronización pendiente)
+  // VISTA 2: SIN DATOS (Tu diseÃ±o de sincronizaciÃ³n pendiente)
   // ==========================================
   Widget _buildEmptyState() {
     return SingleChildScrollView(
@@ -303,13 +303,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          Row(children: const [Text('Panel Principal', style: TextStyle(fontSize: 12, color: AppColors.textGrey, fontWeight: FontWeight.w600)), Icon(Icons.chevron_right, size: 16, color: AppColors.textGrey), Text('Analítica', style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.bold))]),
+          Row(children: const [Text('Panel Principal', style: TextStyle(fontSize: 12, color: AppColors.textGrey, fontWeight: FontWeight.w600)), Icon(Icons.chevron_right, size: 16, color: AppColors.textGrey), Text('AnalÃ­tica', style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.bold))]),
           const SizedBox(height: 20),
           _buildSkeletonCard('Consumo Total', Icons.info_outline, 'Datos insuficientes para este periodo'),
           const SizedBox(height: 12),
-          _buildSkeletonCard('Eficiencia Flota', Icons.speed_outlined, 'Calculando métricas base...'),
+          _buildSkeletonCard('Eficiencia Flota', Icons.speed_outlined, 'Calculando mÃ©tricas base...'),
           const SizedBox(height: 12),
-          _buildSkeletonCard('Proyección Mensual', Icons.trending_up, 'Esperando historial de carga'),
+          _buildSkeletonCard('ProyecciÃ³n Mensual', Icons.trending_up, 'Esperando historial de carga'),
           const SizedBox(height: 24),
           Container(
             width: double.infinity,
@@ -323,12 +323,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   decoration: BoxDecoration(
                     color: const Color(0xFFEAECEE),
                     borderRadius: BorderRadius.circular(12),
-                    image: const DecorationImage(image: NetworkImage('https://i.stack.imgur.com/vhoa0.jpg'), fit: BoxFit.cover, colorFilter: ColorFilter.mode(Colors.white60, BlendMode.lighten)),
+                    image: const DecorationImage(image: AssetImage('assets/images/trailer.png'), fit: BoxFit.cover, colorFilter: ColorFilter.mode(Colors.white60, BlendMode.lighten)),
                   ),
                   child: Center(child: Container(padding: const EdgeInsets.all(12), decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 2))]), child: const Icon(Icons.auto_graph, color: AppColors.primary, size: 28))),
                 ),
                 const SizedBox(height: 24),
-                const Text('Sincronización de\nSensores de Flota\nPendiente', textAlign: TextAlign.center, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark, height: 1.2)),
+                const Text('SincronizaciÃ³n de\nSensores de Flota\nPendiente', textAlign: TextAlign.center, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark, height: 1.2)),
                 const SizedBox(height: 16),
                 RichText(
                   textAlign: TextAlign.center,
@@ -336,7 +336,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     style: TextStyle(fontSize: 12, color: AppColors.textGrey, height: 1.5),
                     children: [
                       TextSpan(text: 'Como administrador, para habilitar el tablero de Burn Rate, es necesario sincronizar los sensores de su flota. '),
-                      TextSpan(text: 'Se requieren al menos 7 días de datos', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                      TextSpan(text: 'Se requieren al menos 7 dÃ­as de datos', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
                       TextSpan(text: ' continuos para que nuestros algoritmos generen proyecciones precisas.'),
                     ],
                   ),
@@ -344,7 +344,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 const SizedBox(height: 24),
                 SizedBox(width: double.infinity, child: ElevatedButton.icon(onPressed: () {}, icon: const Icon(Icons.sync, color: Colors.white, size: 18), label: const Text('Sincronizar Datos IoT', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)), style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF006D3E), padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)), elevation: 0))),
                 const SizedBox(height: 12),
-                SizedBox(width: double.infinity, child: ElevatedButton.icon(onPressed: () {}, icon: const Icon(Icons.help_outline, color: AppColors.primary, size: 18), label: const Text('Ver Guía de Configuración', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13)), style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD4EFDF), padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)), elevation: 0))),
+                SizedBox(width: double.infinity, child: ElevatedButton.icon(onPressed: () {}, icon: const Icon(Icons.help_outline, color: AppColors.primary, size: 18), label: const Text('Ver GuÃ­a de ConfiguraciÃ³n', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13)), style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD4EFDF), padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)), elevation: 0))),
               ],
             ),
           ),
@@ -358,7 +358,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(color: const Color(0xFF006D3E), borderRadius: BorderRadius.circular(16), boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))]),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: const [Text('Consejo Pro', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)), SizedBox(height: 8), Text('Asegúrate de que tus conductores registren cada carga manualmente mientras completamos el despliegue de los sensores automáticos.', style: TextStyle(fontSize: 12, color: Colors.white70, height: 1.4))]),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: const [Text('Consejo Pro', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)), SizedBox(height: 8), Text('AsegÃºrate de que tus conductores registren cada carga manualmente mientras completamos el despliegue de los sensores automÃ¡ticos.', style: TextStyle(fontSize: 12, color: Colors.white70, height: 1.4))]),
           ),
           const SizedBox(height: 40),
         ],

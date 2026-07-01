@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import 'provider_dispatches_screen.dart';
 import 'provider_fleet_screen.dart';
@@ -16,13 +16,13 @@ class ProviderDashboardScreen extends StatefulWidget {
 class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
   int _selectedIndex = 0;
 
-  // Lista de pantallas para el proveedor con todas las pestañas conectadas
+  // Lista de pantallas para el proveedor con todas las pestaÃ±as conectadas
   late final List<Widget> _pages = [
-    _buildProviderDashboardView(),          // Índice 0: Inicio Proveedor
-    const ProviderDispatchesScreen(),       // Índice 1: Gestión de Despachos
-    const ProviderFleetScreen(),            // Índice 2: Panel de Flota (Conductores y Cisternas)
-    const IotCriticalAlertsScreen(),        // Índice 3: Centro de Alertas Críticas
-    const ProviderProfileView(),            // Índice 4: Perfil Corporativo
+    _buildProviderDashboardView(),          // Ãndice 0: Inicio Proveedor
+    const ProviderDispatchesScreen(),       // Ãndice 1: GestiÃ³n de Despachos
+    const ProviderFleetScreen(),            // Ãndice 2: Panel de Flota (Conductores y Cisternas)
+    const IotCriticalAlertsScreen(),        // Ãndice 3: Centro de Alertas CrÃ­ticas
+    const ProviderProfileView(),            // Ãndice 4: Perfil Corporativo
   ];
 
   @override
@@ -64,7 +64,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
               IconButton(
                 icon: const Icon(Icons.notifications_none, color: AppColors.textDark),
                 onPressed: () {
-                  // Navegar a la pestaña de Alertas directamente
+                  // Navegar a la pestaÃ±a de Alertas directamente
                   setState(() {
                     _selectedIndex = 3;
                   });
@@ -87,7 +87,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
           const SizedBox(width: 8),
           const CircleAvatar(
             radius: 16,
-            backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11'),
+            backgroundImage: AssetImage('assets/images/logo.png'),
           ),
           const SizedBox(width: 16),
         ],
@@ -166,7 +166,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
           const Text('Panel de Proveedor', style: TextStyle(fontSize: 12, color: AppColors.textGrey)),
           const SizedBox(height: 20),
 
-          // Métrica Principal: Entregas Activas
+          // MÃ©trica Principal: Entregas Activas
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -196,7 +196,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
           ),
           const SizedBox(height: 12),
 
-          // Métricas Secundarias: Cisternas y Conductores
+          // MÃ©tricas Secundarias: Cisternas y Conductores
           Row(
             children: [
               Expanded(
@@ -222,7 +222,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
           ),
           const SizedBox(height: 24),
 
-          // Sección: Monitoreo en Ruta
+          // SecciÃ³n: Monitoreo en Ruta
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -240,7 +240,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               image: const DecorationImage(
-                image: NetworkImage('https://i.stack.imgur.com/vhoa0.jpg'),
+                image: AssetImage('assets/images/trailer.png'),
                 fit: BoxFit.cover,
               ),
               boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
@@ -267,7 +267,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
                       children: const [
                         Icon(Icons.warning_amber_rounded, size: 14, color: AppColors.error),
                         SizedBox(width: 4),
-                        Text('12 Unidades Críticas', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                        Text('12 Unidades CrÃ­ticas', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                       ],
                     ),
                   ),
@@ -277,8 +277,8 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
           ),
           const SizedBox(height: 24),
 
-          // Sección: Alertas IoT Críticas
-          const Text('ALERTAS IOT CRÍTICAS', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textGrey, letterSpacing: 0.5)),
+          // SecciÃ³n: Alertas IoT CrÃ­ticas
+          const Text('ALERTAS IOT CRÃTICAS', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textGrey, letterSpacing: 0.5)),
           const SizedBox(height: 12),
 
           // Alerta interactiva que redirige al monitoreo IoT general
@@ -292,9 +292,9 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
             child: _buildIotAlert(
               isCritical: true,
               icon: Icons.thermostat,
-              title: 'Variación de Temperatura',
+              title: 'VariaciÃ³n de Temperatura',
               time: 'Ahora',
-              description: 'Cisterna A-12 detectó +3°C sobre el límite permitido.',
+              description: 'Cisterna A-12 detectÃ³ +3Â°C sobre el lÃ­mite permitido.',
             ),
           ),
 
@@ -302,32 +302,32 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
           _buildIotAlert(
             isCritical: false,
             icon: Icons.tire_repair,
-            title: 'Baja presión neumáticos',
+            title: 'Baja presiÃ³n neumÃ¡ticos',
             time: '15 min',
-            description: 'Unidad B-04 reporta presión 20 PSI en eje trasero.',
+            description: 'Unidad B-04 reporta presiÃ³n 20 PSI en eje trasero.',
           ),
           const SizedBox(height: 24),
 
-          // Sección: Despachos Recientes
+          // SecciÃ³n: Despachos Recientes
           const Text('DESPACHOS RECIENTES', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textGrey, letterSpacing: 0.5)),
           const SizedBox(height: 12),
           _buildDispatchItem(
             refCode: '#REF-8902-X',
             destination: 'Destino: Planta Norte',
-            driver: 'Conductor: A. Pérez',
+            driver: 'Conductor: A. PÃ©rez',
             status: 'EN RUTA',
             isCompleted: false,
           ),
           _buildDispatchItem(
             refCode: '#REF-8891-B',
-            destination: 'Destino: Centro Logístico',
-            driver: 'Conductor: M. López',
+            destination: 'Destino: Centro LogÃ­stico',
+            driver: 'Conductor: M. LÃ³pez',
             status: 'EN RUTA',
             isCompleted: false,
           ),
           _buildDispatchItem(
             refCode: '#REF-8875-A',
-            destination: 'Destino: Terminal Aéreo',
+            destination: 'Destino: Terminal AÃ©reo',
             driver: 'Conductor: C. Ruiz',
             status: 'COMPLETADO',
             isCompleted: true,
