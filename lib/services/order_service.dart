@@ -20,8 +20,8 @@ class OrderService {
     required String documentRef,
   }) async {
     final body = {
-      'productName': productName,
-      'quantityGallons': quantityGallons,
+      'fuelType': productName,
+      'gallons': quantityGallons,
       'documentRef': documentRef,
     };
 
