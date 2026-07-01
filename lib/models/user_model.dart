@@ -14,8 +14,8 @@
 /// ```
 class User {
   final int id;
-  final String email;
-  final String name;
+  String email;
+  String name;
   final String role; // "REQUESTER" or "PROVIDER"
   final String token;
   final String tokenType;

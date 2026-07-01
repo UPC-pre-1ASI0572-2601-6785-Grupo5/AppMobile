@@ -15,6 +15,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   final OrderService _orderService = OrderService();
   List<OrderModel> _orders = [];
   bool _isLoading = true;
+  bool _hasData = true;
 
   @override
   void initState() {
@@ -110,7 +111,33 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           const SizedBox(width: 16),
         ],
       ),
-      body: _isLoading ? const Center(child: CircularProgressIndicator(color: AppColors.primary)) : _buildPopulatedState(),
+      body: _isLoading 
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary)) 
+          : (_hasData ? _buildPopulatedState() : _buildEmptyState()),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: const BoxDecoration(color: Color(0xFFE8F8F5), shape: BoxShape.circle),
+              child: const Icon(Icons.analytics_outlined, size: 64, color: AppColors.primary),
+            ),
+            const SizedBox(height: 24),
+            const Text('Sincronización de Sensores de Flota Pendiente', textAlign: TextAlign.center, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+            const SizedBox(height: 12),
+            const Text('Conecta los sensores telemáticos de tus unidades para recibir análisis predictivos y reportes de rendimiento en tiempo real.', textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: AppColors.textGrey, height: 1.4)),
+            const SizedBox(height: 32),
+            SizedBox(width: double.infinity, child: ElevatedButton.icon(onPressed: () {}, icon: const Icon(Icons.add_link, color: Colors.white), label: const Text('Configurar Sensores IoT', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))))),
+          ],
+        ),
+      ),
     );
   }
 
@@ -169,6 +196,20 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary)),
           const SizedBox(height: 4),
           Text(subtitle, style: const TextStyle(fontSize: 10, color: AppColors.textGrey)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOptimizationTile(IconData icon, String title, String subtitle) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.borderLight)),
+      child: Row(
+        children: [
+          Container(padding: const EdgeInsets.all(8), decoration: const BoxDecoration(color: Color(0xFFF4F7F7), shape: BoxShape.circle), child: Icon(icon, size: 16, color: AppColors.textGrey)),
+          const SizedBox(width: 12),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textDark)), const SizedBox(height: 2), Text(subtitle, style: const TextStyle(fontSize: 10, color: AppColors.primary, fontWeight: FontWeight.bold))])),
         ],
       ),
     );
