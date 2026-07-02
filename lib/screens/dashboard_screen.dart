@@ -175,7 +175,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     final List<double> weekly = List.filled(7, 0.0);
     for (var order in _orders) {
-      final date = DateTime.tryParse(order.createdAt)?.toLocal();
+      String dateStr = order.createdAt;
+      if (!dateStr.endsWith('Z')) dateStr += 'Z';
+      final date = DateTime.tryParse(dateStr)?.toLocal();
       if (date != null) {
         // weekday 1 = Lunes, 7 = Domingo
         weekly[date.weekday - 1] += order.quantityGallons;

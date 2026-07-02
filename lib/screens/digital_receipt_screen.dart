@@ -221,7 +221,7 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
 
                   // Caja de la firma mostrando el trazo real pasado
                   Container(
-                    height: 120,
+                    height: 140,
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: const Color(0xFFF8FAFA),
@@ -231,13 +231,15 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
                     child: Stack(
                       children: [
                         // RENDERIZADO DE LA FIRMA REAL CAPTURADA
-                        Center(
-                          child: Container(
-                            width: double.infinity,
-                            height: double.infinity,
-                            padding: const EdgeInsets.all(8),
-                            child: CustomPaint(
-                              painter: VoucherSignatureViewerPainter(widget.signaturePoints),
+                        ClipRect(
+                          child: Center(
+                            child: Container(
+                              width: double.infinity,
+                              height: double.infinity,
+                              padding: const EdgeInsets.all(8),
+                              child: CustomPaint(
+                                painter: VoucherSignatureViewerPainter(widget.signaturePoints),
+                              ),
                             ),
                           ),
                         ),

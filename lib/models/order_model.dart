@@ -30,8 +30,8 @@ class OrderModel {
       documentRef: json['documentRef'] as String? ?? '',
       status: json['status'] as String? ?? 'PENDING',
       assignedTruckId: null,
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']).toString() : DateTime.now().toString(),
-      updatedAt: json['updatedAt'] as String? ?? '',
+      createdAt: json['createdAt']?.toString() ?? DateTime.now().toUtc().toIso8601String(),
+      updatedAt: json['updatedAt']?.toString() ?? '',
     );
   }
 
