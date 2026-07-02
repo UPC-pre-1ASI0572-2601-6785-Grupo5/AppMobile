@@ -8,8 +8,10 @@ import 'profile_screen.dart';
 import '../services/order_service.dart';
 import '../models/order_model.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({Key? key}) : super(key: key);
+  final int? initialIndex;
+  const DashboardScreen({Key? key, this.initialIndex}) : super(key: key);
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -26,7 +28,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
+    _selectedIndex = widget.initialIndex ?? 0;
+    _initializeIndex();
     _fetchDashboardData();
+  }
+
+  Future<void> _initializeIndex() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (widget.initialIndex != null) {
+      prefs.setInt('dashboard_index', widget.initialIndex!);
+    } else {
+      final savedIndex = prefs.getInt('dashboard_index');
+      if (savedIndex != null && mounted) {
+        setState(() {
+          _selectedIndex = savedIndex;
+        });
+      }
+    }
   }
 
   Future<void> _fetchDashboardData() async {
@@ -42,6 +60,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  void _onItemTapped(int index) async {
+    setState(() {
+      _selectedIndex = index;
+    });
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setInt('dashboard_index', index);
+  }
   List<Widget> get _pages => [
     _buildDashboardView(),
     const OrdersScreen(),
@@ -59,11 +84,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
+        onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.textGrey,

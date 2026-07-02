@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../constants/colors.dart';
+import 'dashboard_screen.dart';
 
 class DigitalReceiptScreen extends StatefulWidget {
   // RECIBE LOS PUNTOS REALES DE LA FIRMA DIBUJADA
@@ -292,22 +293,7 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.remove_red_eye_outlined, size: 18, color: AppColors.primary),
-                label: const Text('Ver Comprobante', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE8F8F5),
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
+
 
             Container(
               padding: const EdgeInsets.all(16),
@@ -362,11 +348,11 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
     return BottomNavigationBar(
       currentIndex: _selectedIndex,
       onTap: (index) {
-        if (index == 0) {
-          Navigator.popUntil(context, (route) => route.isFirst);
-        } else if (index != _selectedIndex) {
-          Navigator.pop(context);
-        }
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => DashboardScreen(initialIndex: index)),
+          (route) => false,
+        );
       },
       type: BottomNavigationBarType.fixed,
       selectedItemColor: AppColors.primary,

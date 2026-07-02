@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import 'provider_dispatches_screen.dart';
 import 'provider_fleet_screen.dart';
@@ -6,8 +6,11 @@ import 'iot_critical_alerts_screen.dart';
 import 'provider_profile_view.dart';      // <-- IMPORTANTE: La nueva vista de Perfil de Proveedor
 import 'iot_monitoring_screen.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 class ProviderDashboardScreen extends StatefulWidget {
-  const ProviderDashboardScreen({Key? key}) : super(key: key);
+  final int? initialIndex;
+  const ProviderDashboardScreen({Key? key, this.initialIndex}) : super(key: key);
 
   @override
   State<ProviderDashboardScreen> createState() => _ProviderDashboardScreenState();
@@ -15,6 +18,27 @@ class ProviderDashboardScreen extends StatefulWidget {
 
 class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
   int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialIndex ?? 0;
+    _initializeIndex();
+  }
+
+  Future<void> _initializeIndex() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (widget.initialIndex != null) {
+      prefs.setInt('provider_dashboard_index', widget.initialIndex!);
+    } else {
+      final savedIndex = prefs.getInt('provider_dashboard_index');
+      if (savedIndex != null && mounted) {
+        setState(() {
+          _selectedIndex = savedIndex;
+        });
+      }
+    }
+  }
 
   // Lista de pantallas para el proveedor con todas las pestañas conectadas
   late final List<Widget> _pages = [
@@ -107,10 +131,12 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
       ) : null,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        onTap: (index) {
+        onTap: (index) async {
           setState(() {
             _selectedIndex = index;
           });
+          final prefs = await SharedPreferences.getInstance();
+          prefs.setInt('provider_dashboard_index', index);
         },
         type: BottomNavigationBarType.fixed,
         selectedItemColor: AppColors.primary,

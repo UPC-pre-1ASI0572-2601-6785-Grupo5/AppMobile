@@ -470,7 +470,26 @@ class _TrackingScreenState extends State<TrackingScreen> {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: ElevatedButton.icon(
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: const Text('Contactar Soporte'),
+                                        content: const Text(
+                                            'Comunícate con nuestro centro logístico al:\n\n'
+                                            '📞 +1 800-555-0199\n'
+                                            '✉️ soporte@fueltrack.com\n\n'
+                                            'Atención 24/7 para incidencias en ruta.'
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(context),
+                                            child: const Text('Cerrar'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
                                   icon: const Icon(Icons.call_outlined, size: 18, color: Colors.white),
                                   label: const Text('Contactar', style: TextStyle(color: Colors.white)),
                                   style: ElevatedButton.styleFrom(

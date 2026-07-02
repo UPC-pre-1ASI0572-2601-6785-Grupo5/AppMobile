@@ -290,7 +290,7 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
                         // Vuelve al Dashboard inicial
                         Navigator.pushAndRemoveUntil(
                           context,
-                          MaterialPageRoute(builder: (context) => const DashboardScreen()),
+                          MaterialPageRoute(builder: (context) => const DashboardScreen(initialIndex: 0)),
                           (route) => false,
                         );
                       },
@@ -340,15 +340,11 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
     return BottomNavigationBar(
       currentIndex: _selectedIndex,
       onTap: (index) {
-        if (index == 0) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => const DashboardScreen()),
-            (route) => false,
-          );
-        } else if (index != _selectedIndex) {
-          Navigator.pop(context);
-        }
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => DashboardScreen(initialIndex: index)),
+          (route) => false,
+        );
       },
       type: BottomNavigationBarType.fixed,
       selectedItemColor: AppColors.primary,

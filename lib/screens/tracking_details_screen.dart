@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../constants/colors.dart';
+import 'dashboard_screen.dart';
 import 'fullscreen_map_screen.dart'; // Importación de la nueva pantalla
 
 class TrackingDetailsScreen extends StatefulWidget {
@@ -439,11 +440,11 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> {
     return BottomNavigationBar(
       currentIndex: _selectedIndex,
       onTap: (index) {
-        if (index == 0) {
-          Navigator.popUntil(context, (route) => route.isFirst); // Vuelve al inicio
-        } else if (index != _selectedIndex) {
-          Navigator.pop(context); // Vuelve a seguimiento si presiona otro
-        }
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => DashboardScreen(initialIndex: index)),
+          (route) => false,
+        );
       },
       type: BottomNavigationBarType.fixed,
       selectedItemColor: AppColors.primary,

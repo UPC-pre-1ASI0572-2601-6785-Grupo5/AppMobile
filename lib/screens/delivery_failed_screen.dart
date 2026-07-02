@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../constants/colors.dart';
+import 'dashboard_screen.dart';
 
 class DeliveryFailedScreen extends StatefulWidget {
   const DeliveryFailedScreen({Key? key}) : super(key: key);
@@ -250,11 +251,11 @@ class _DeliveryFailedScreenState extends State<DeliveryFailedScreen> {
     return BottomNavigationBar(
       currentIndex: _selectedIndex,
       onTap: (index) {
-        if (index == 0) {
-          Navigator.popUntil(context, (route) => route.isFirst);
-        } else if (index != _selectedIndex) {
-          Navigator.pop(context);
-        }
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => DashboardScreen(initialIndex: index)),
+          (route) => false,
+        );
       },
       type: BottomNavigationBarType.fixed,
       selectedItemColor: AppColors.primary,

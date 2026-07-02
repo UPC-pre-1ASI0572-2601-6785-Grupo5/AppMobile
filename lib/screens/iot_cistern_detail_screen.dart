@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../constants/colors.dart';
+import 'provider_dashboard_screen.dart';
 
 class IotCisternDetailScreen extends StatelessWidget {
   const IotCisternDetailScreen({Key? key}) : super(key: key);
@@ -436,6 +437,13 @@ class IotCisternDetailScreen extends StatelessWidget {
       // Bottom Navigation Bar
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 1, // Despachos o Flota, según donde lo integres
+        onTap: (index) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => ProviderDashboardScreen(initialIndex: index)),
+            (route) => false,
+          );
+        },
         type: BottomNavigationBarType.fixed,
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.textGrey,
