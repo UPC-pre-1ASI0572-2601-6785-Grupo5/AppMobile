@@ -329,41 +329,42 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     child: Text('No hay pedidos registrados', style: TextStyle(color: AppColors.textGrey)),
                   ),
                 )
-              else {
-                final filteredOrders = _orders.where((o) {
-                  if (_searchQuery.isNotEmpty && !o.id.toString().contains(_searchQuery)) return false;
-                  if (_selectedFilter == 'Todos') return true;
-                  if (_selectedFilter == 'Pendientes' && o.status == 'PENDING') return true;
-                  if (_selectedFilter == 'Aprobados' && o.status == 'APPROVED') return true;
-                  if (_selectedFilter == 'En ruta' && (o.status == 'DISPATCHED' || o.status == 'IN_ROUTE')) return true;
-                  if (_selectedFilter == 'Completados' && (o.status == 'COMPLETED' || o.status == 'DELIVERED')) return true;
-                  return false;
-                }).toList();
+              else Builder(
+                builder: (context) {
+                  final filteredOrders = _orders.where((o) {
+                    if (_searchQuery.isNotEmpty && !o.id.toString().contains(_searchQuery)) return false;
+                    if (_selectedFilter == 'Todos') return true;
+                    if (_selectedFilter == 'Pendientes' && o.status == 'PENDING') return true;
+                    if (_selectedFilter == 'Aprobados' && o.status == 'APPROVED') return true;
+                    if (_selectedFilter == 'En ruta' && (o.status == 'DISPATCHED' || o.status == 'IN_ROUTE')) return true;
+                    if (_selectedFilter == 'Completados' && (o.status == 'COMPLETED' || o.status == 'DELIVERED')) return true;
+                    return false;
+                  }).toList();
 
-                if (filteredOrders.isEmpty) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(40.0),
-                      child: Text('No hay pedidos que coincidan', style: TextStyle(color: AppColors.textGrey)),
-                    ),
-                  );
-                }
-
-                return ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: filteredOrders.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 16),
-                  itemBuilder: (context, index) {
-                    final order = filteredOrders[index];
-                    return _buildOrderCard(
-                      context,
-                      order: order,
+                  if (filteredOrders.isEmpty) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(40.0),
+                        child: Text('No hay pedidos que coincidan', style: TextStyle(color: AppColors.textGrey)),
+                      ),
                     );
-                  },
-                );
-              }
-                
+                  }
+
+                  return ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: filteredOrders.length,
+                    separatorBuilder: (context, index) => const SizedBox(height: 16),
+                    itemBuilder: (context, index) {
+                      final order = filteredOrders[index];
+                      return _buildOrderCard(
+                        context,
+                        order: order,
+                      );
+                    },
+                  );
+                },
+              ),
               const SizedBox(height: 24),
               Container(
                 width: double.infinity,
