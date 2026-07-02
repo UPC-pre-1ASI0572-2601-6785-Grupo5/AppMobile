@@ -178,13 +178,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final date = DateTime.tryParse(order.createdAt)?.toLocal();
       if (date != null) {
         // weekday 1 = Lunes, 7 = Domingo
-        weekly[date.weekday - 1] += order.quantityGallons;
+        weekly[date.weekday - 1] += 1;
       }
     }
-    
-    final maxGallons = weekly.reduce((a, b) => a > b ? a : b);
-    final List<double> weeklyNorm = maxGallons > 0 
-        ? weekly.map((g) => g > 0 ? ((g / maxGallons) * 100).clamp(8.0, 100.0) : 0.0).toList() 
+    final maxOrders = weekly.reduce((a, b) => a > b ? a : b);
+    final List<double> weeklyNorm = maxOrders > 0 
+        ? weekly.map((g) => g > 0 ? ((g / maxOrders) * 100).clamp(8.0, 100.0) : 0.0).toList() 
         : List.filled(7, 0.0);
 
     return RefreshIndicator(
@@ -375,7 +374,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     children: [
                       const Text('Tendencia de Consumo', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                       GestureDetector(
-                        onTap: () => _showInfoDialog('Tendencia de Consumo', 'Este gráfico de barras muestra la distribución del volumen de galones pedidos según el día de la semana, basado en tus pedidos históricos.'),
+                        onTap: () => _showInfoDialog('Tendencia de Consumo', 'Este gráfico de barras muestra la cantidad de pedidos realizados según el día de la semana, basado en tu historial de solicitudes.'),
                         child: const Icon(Icons.help_outline, color: AppColors.primary),
                       ),
                     ],
