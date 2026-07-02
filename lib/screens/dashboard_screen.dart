@@ -398,7 +398,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (_selectedFilter == 'Todos') return true;
       if (_selectedFilter == 'Pendientes' && o.status == 'PENDING_APPROVAL') return true;
       if (_selectedFilter == 'Aprobados' && o.status == 'APPROVED') return true;
-      if (_selectedFilter == 'En ruta' && (o.status == 'DISPATCHED' || o.status == 'IN_ROUTE')) return true;
+      if (_selectedFilter == 'En ruta' && (o.status == 'DISPATCHED' || o.status == 'IN_TRANSIT')) return true;
       if (_selectedFilter == 'Completados' && (o.status == 'COMPLETED' || o.status == 'DELIVERED')) return true;
       return false;
     }).toList();
@@ -428,7 +428,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           statusText = 'Aprobado';
           break;
         case 'DISPATCHED':
-        case 'IN_ROUTE':
+        case 'IN_TRANSIT':
           statusColor = AppColors.primary;
           statusText = 'En ruta';
           break;

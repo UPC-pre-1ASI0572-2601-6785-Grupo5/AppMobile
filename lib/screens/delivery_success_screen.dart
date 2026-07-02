@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import 'digital_receipt_screen.dart'; // Importación vital para navegar
+import 'dashboard_screen.dart';
 
 class DeliverySuccessScreen extends StatefulWidget {
   const DeliverySuccessScreen({Key? key}) : super(key: key);
@@ -287,7 +288,11 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
                     child: ElevatedButton.icon(
                       onPressed: () {
                         // Vuelve al Dashboard inicial
-                        Navigator.popUntil(context, (route) => route.isFirst);
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (context) => const DashboardScreen()),
+                          (route) => false,
+                        );
                       },
                       icon: const Icon(Icons.home_outlined, size: 18, color: AppColors.textDark),
                       label: const Text('Volver al Dashboard', style: TextStyle(color: AppColors.textDark)),
@@ -336,7 +341,11 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
       currentIndex: _selectedIndex,
       onTap: (index) {
         if (index == 0) {
-          Navigator.popUntil(context, (route) => route.isFirst);
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const DashboardScreen()),
+            (route) => false,
+          );
         } else if (index != _selectedIndex) {
           Navigator.pop(context);
         }

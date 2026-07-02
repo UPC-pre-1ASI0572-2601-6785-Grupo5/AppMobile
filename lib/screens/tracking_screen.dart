@@ -56,7 +56,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
       case 'PENDING': return 'Pendiente';
       case 'APPROVED': return 'Aprobado';
       case 'DISPATCHED': return 'En ruta';
-      case 'IN_ROUTE': return 'En ruta';
+      case 'IN_TRANSIT': return 'En ruta';
       case 'DELIVERED': return 'Entregado';
       case 'COMPLETED': return 'Completado';
       default: return rawStatus;
@@ -170,8 +170,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
     final order = _currentOrder!;
     
     // LOGICA DE ESTADOS PARA TIMELINE
-    final bool isConfirmed = order.status == 'APPROVED' || order.status == 'DISPATCHED' || order.status == 'IN_ROUTE' || order.status == 'DELIVERED' || order.status == 'COMPLETED';
-    final bool isInRoute = order.status == 'DISPATCHED' || order.status == 'IN_ROUTE' || order.status == 'DELIVERED' || order.status == 'COMPLETED';
+    final bool isConfirmed = order.status == 'APPROVED' || order.status == 'DISPATCHED' || order.status == 'IN_TRANSIT' || order.status == 'DELIVERED' || order.status == 'COMPLETED';
+    final bool isInRoute = order.status == 'DISPATCHED' || order.status == 'IN_TRANSIT' || order.status == 'DELIVERED' || order.status == 'COMPLETED';
     final bool isDelivered = order.status == 'DELIVERED' || order.status == 'COMPLETED';
 
     return Scaffold(
