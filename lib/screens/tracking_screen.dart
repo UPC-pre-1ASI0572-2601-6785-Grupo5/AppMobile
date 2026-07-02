@@ -7,6 +7,7 @@ import 'delivery_success_screen.dart';
 import 'alerts_screen.dart';
 import '../models/order_model.dart';
 import '../services/order_service.dart';
+import 'package:intl/intl.dart';
 
 class TrackingScreen extends StatefulWidget {
   final OrderModel? order;
@@ -18,6 +19,7 @@ class TrackingScreen extends StatefulWidget {
 
 class _TrackingScreenState extends State<TrackingScreen> {
   OrderModel? _currentOrder;
+  List<OrderModel> _activeOrders = [];
   bool _isLoading = true;
   final OrderService _orderService = OrderService();
 
@@ -28,21 +30,21 @@ class _TrackingScreenState extends State<TrackingScreen> {
       _currentOrder = widget.order;
       _isLoading = false;
     } else {
-      _fetchActiveOrder();
+      _fetchActiveOrders();
     }
   }
 
-  Future<void> _fetchActiveOrder() async {
+  Future<void> _fetchActiveOrders() async {
     try {
       final orders = await _orderService.getOrders();
-      // Filtrar el último pedido activo que no esté completado
-      final activeOrders = orders.where((o) => o.status != 'COMPLETED' && o.status != 'DELIVERED').toList();
-      if (activeOrders.isNotEmpty) {
-        // Asumiendo que el primero es el más reciente o iteramos por fecha (simplicidad: agarramos el primero)
-        _currentOrder = activeOrders.first;
+      _activeOrders = orders.where((o) => o.status != 'COMPLETED' && o.status != 'DELIVERED').toList();
+      _activeOrders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      
+      if (_activeOrders.length == 1) {
+        _currentOrder = _activeOrders.first;
       }
     } catch (e) {
-      debugPrint('Error fetching active order: $e');
+      debugPrint('Error fetching active orders: $e');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -51,10 +53,22 @@ class _TrackingScreenState extends State<TrackingScreen> {
   String _formatStatus(String rawStatus) {
     switch(rawStatus.toUpperCase()) {
       case 'PENDING': return 'Pendiente';
-      case 'CONFIRMED': return 'Confirmado';
-      case 'IN_ROUTE': return 'En Ruta';
+      case 'APPROVED': return 'Aprobado';
+      case 'DISPATCHED': return 'En ruta';
+      case 'IN_ROUTE': return 'En ruta';
       case 'DELIVERED': return 'Entregado';
+      case 'COMPLETED': return 'Completado';
       default: return rawStatus;
+    }
+  }
+
+  String _formatDate(String isoString) {
+    if (isoString.isEmpty) return 'Desconocida';
+    try {
+      final dt = DateTime.parse(isoString).toLocal();
+      return DateFormat('dd/MM/yyyy HH:mm').format(dt);
+    } catch (_) {
+      return isoString;
     }
   }
 
@@ -69,6 +83,70 @@ class _TrackingScreenState extends State<TrackingScreen> {
       );
     }
 
+    // SI NO HAY ORDEN SELECCIONADA Y HAY VARIAS ACTIVAS: MOSTRAR SELECTOR
+    if (_currentOrder == null && _activeOrders.isNotEmpty) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF7F9F9),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: canPop ? IconButton(
+            icon: const Icon(Icons.arrow_back, color: AppColors.textDark),
+            onPressed: () => Navigator.pop(context),
+          ) : const SizedBox.shrink(),
+          title: const Text('Seleccionar Pedido', style: TextStyle(color: AppColors.textDark, fontSize: 18, fontWeight: FontWeight.bold)),
+        ),
+        body: ListView.builder(
+          padding: const EdgeInsets.all(20),
+          itemCount: _activeOrders.length,
+          itemBuilder: (context, index) {
+            final o = _activeOrders[index];
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _currentOrder = o;
+                });
+              },
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.borderLight),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withAlpha(26),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.local_shipping, color: AppColors.primary),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Pedido #FT-2026-${o.id}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textDark)),
+                          const SizedBox(height: 4),
+                          Text('${_formatStatus(o.status)} • ${_formatDate(o.createdAt)}', style: const TextStyle(fontSize: 12, color: AppColors.textGrey)),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right, color: AppColors.textGrey),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    }
+
+    // SI NO HAY PEDIDOS ACTIVOS
     if (_currentOrder == null) {
       return Scaffold(
         backgroundColor: const Color(0xFFF7F9F9),
@@ -87,10 +165,13 @@ class _TrackingScreenState extends State<TrackingScreen> {
       );
     }
 
+    // MAPA Y DETALLE DE LA ORDEN SELECCIONADA
     final order = _currentOrder!;
-    final bool isConfirmed = order.status != 'PENDING';
-    final bool isInRoute = order.status == 'IN_ROUTE';
-    final bool isDelivered = order.status == 'DELIVERED';
+    
+    // LOGICA DE ESTADOS PARA TIMELINE
+    final bool isConfirmed = order.status == 'APPROVED' || order.status == 'DISPATCHED' || order.status == 'IN_ROUTE' || order.status == 'DELIVERED' || order.status == 'COMPLETED';
+    final bool isInRoute = order.status == 'DISPATCHED' || order.status == 'IN_ROUTE' || order.status == 'DELIVERED' || order.status == 'COMPLETED';
+    final bool isDelivered = order.status == 'DELIVERED' || order.status == 'COMPLETED';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9F9),
@@ -126,6 +207,16 @@ class _TrackingScreenState extends State<TrackingScreen> {
           ],
         ),
         actions: [
+          if (widget.order == null && _activeOrders.length > 1)
+            TextButton.icon(
+              onPressed: () {
+                setState(() {
+                  _currentOrder = null;
+                });
+              },
+              icon: const Icon(Icons.swap_horiz, size: 18, color: AppColors.primary),
+              label: const Text('Cambiar', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+            ),
           Stack(
             alignment: Alignment.center,
             children: [
@@ -148,11 +239,6 @@ class _TrackingScreenState extends State<TrackingScreen> {
                 ),
               ),
             ],
-          ),
-          const SizedBox(width: 8),
-          const CircleAvatar(
-            radius: 16,
-            backgroundImage: AssetImage('assets/images/logo.png'),
           ),
           const SizedBox(width: 16),
         ],
@@ -292,9 +378,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
                             style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textGrey, letterSpacing: 1),
                           ),
                           const SizedBox(height: 24),
-                          _buildTimelineStep(isCompleted: true, isActive: false, icon: Icons.playlist_add_check, title: 'Pedido Creado', subtitle: 'Confirmado', isLast: false),
+                          _buildTimelineStep(isCompleted: true, isActive: false, icon: Icons.playlist_add_check, title: 'Pedido Creado', subtitle: 'Registrado en sistema', isLast: false),
                           _buildTimelineStep(isCompleted: isConfirmed, isActive: !isConfirmed, icon: Icons.check, title: 'Pedido Aceptado', subtitle: isConfirmed ? 'Proveedor asignado' : 'Esperando confirmación', isLast: false),
-                          _buildTimelineStep(isCompleted: isInRoute || isDelivered, isActive: isInRoute, icon: Icons.location_on_outlined, title: 'En Ruta', subtitle: isInRoute ? 'Cerca de tu ubicación' : 'Aún no sale', isLast: false),
+                          _buildTimelineStep(isCompleted: isInRoute || isDelivered, isActive: isInRoute && !isDelivered, icon: Icons.location_on_outlined, title: 'En Ruta', subtitle: isInRoute ? 'Cerca de tu ubicación' : 'Aún no sale', isLast: false),
                           _buildTimelineStep(isCompleted: isDelivered, isActive: false, icon: Icons.inventory_2_outlined, title: 'Entregado', subtitle: 'Destino final', isLast: true),
                           const SizedBox(height: 24),
                           Container(

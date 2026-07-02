@@ -306,7 +306,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 });
               },
               decoration: InputDecoration(
-                hintText: 'Buscar pedido por código...',
+                hintText: 'Buscar por código (Ej. 12)...',
                 hintStyle: const TextStyle(fontSize: 14, color: AppColors.textGrey),
                 prefixIcon: const Icon(Icons.search, color: AppColors.textGrey),
                 filled: true,
@@ -322,8 +322,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Row(
                 children: [
                   _buildFilterChip('Todos'),
-                  _buildFilterChip('En ruta', apiStatus: 'DISPATCHED'),
                   _buildFilterChip('Pendientes', apiStatus: 'PENDING'),
+                  _buildFilterChip('Aprobados', apiStatus: 'APPROVED'),
+                  _buildFilterChip('En ruta', apiStatus: 'DISPATCHED'),
                   _buildFilterChip('Completados', apiStatus: 'COMPLETED'),
                 ],
               ),
@@ -415,9 +416,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         return false;
       }
       if (_selectedFilter == 'Todos') return true;
-      if (_selectedFilter == 'En ruta' && o.status == 'DISPATCHED') return true;
       if (_selectedFilter == 'Pendientes' && o.status == 'PENDING') return true;
-      if (_selectedFilter == 'Completados' && o.status == 'COMPLETED') return true;
+      if (_selectedFilter == 'Aprobados' && o.status == 'APPROVED') return true;
+      if (_selectedFilter == 'En ruta' && (o.status == 'DISPATCHED' || o.status == 'IN_ROUTE')) return true;
+      if (_selectedFilter == 'Completados' && (o.status == 'COMPLETED' || o.status == 'DELIVERED')) return true;
       return false;
     }).toList();
 
@@ -437,19 +439,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
       String statusText;
       switch (order.status) {
         case 'PENDING':
-          statusColor = const Color(0xFFF39C12); // Orange
+          statusColor = const Color(0xFFE67E22);
           statusText = 'Pendiente';
           break;
+        case 'APPROVED':
+          statusColor = const Color(0xFF1976D2);
+          statusText = 'Aprobado';
+          break;
         case 'DISPATCHED':
+        case 'IN_ROUTE':
           statusColor = AppColors.primary;
           statusText = 'En ruta';
           break;
         case 'COMPLETED':
+        case 'DELIVERED':
           statusColor = AppColors.textGrey;
           statusText = 'Completado';
           break;
         default:
-          statusColor = const Color(0xFF85C1E9); // Light Blue
+          statusColor = AppColors.textGrey;
           statusText = order.status;
       }
 

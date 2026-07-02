@@ -23,6 +23,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
   
   String _activeSort = 'Fecha'; // Can be 'Fecha', 'Estado', 'Codigo'
   bool _sortAscending = false;
+  
+  String _searchQuery = '';
+  String _selectedFilter = 'Todos';
 
   @override
   void initState() {
@@ -84,7 +87,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
     if (isoString.isEmpty) return 'Desconocida';
     try {
       final dt = DateTime.parse(isoString).toLocal();
-      return DateFormat('dd MMM yyyy', 'es').format(dt);
+      return DateFormat('dd/MM/yyyy HH:mm').format(dt);
     } catch (_) {
       return isoString;
     }
@@ -113,9 +116,11 @@ class _OrdersScreenState extends State<OrdersScreen> {
   String _getStatusTranslation(String status) {
     switch (status) {
       case 'PENDING': return 'Pendiente';
-      case 'APPROVED': return 'Confirmado';
+      case 'APPROVED': return 'Aprobado';
       case 'DISPATCHED': return 'En ruta';
+      case 'IN_ROUTE': return 'En ruta';
       case 'COMPLETED': return 'Completado';
+      case 'DELIVERED': return 'Entregado';
       default: return status;
     }
   }
@@ -252,13 +257,31 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   border: Border.all(color: AppColors.borderLight),
                 ),
                 child: TextField(
+                  onChanged: (val) {
+                    setState(() {
+                      _searchQuery = val.toLowerCase();
+                    });
+                  },
                   decoration: InputDecoration(
-                    hintText: 'Buscar #FT-2023...',
+                    hintText: 'Buscar por código (Ej. 12)...',
                     hintStyle: const TextStyle(color: AppColors.textGrey, fontSize: 14),
                     prefixIcon: const Icon(Icons.search, color: AppColors.textGrey),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(vertical: 14),
                   ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildStateFilterChip('Todos'),
+                    _buildStateFilterChip('Pendientes', apiStatus: 'PENDING'),
+                    _buildStateFilterChip('Aprobados', apiStatus: 'APPROVED'),
+                    _buildStateFilterChip('En ruta', apiStatus: 'DISPATCHED'),
+                    _buildStateFilterChip('Completados', apiStatus: 'COMPLETED'),
+                  ],
                 ),
               ),
               const SizedBox(height: 16),
@@ -306,20 +329,40 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     child: Text('No hay pedidos registrados', style: TextStyle(color: AppColors.textGrey)),
                   ),
                 )
-              else
-                ListView.separated(
+              else {
+                final filteredOrders = _orders.where((o) {
+                  if (_searchQuery.isNotEmpty && !o.id.toString().contains(_searchQuery)) return false;
+                  if (_selectedFilter == 'Todos') return true;
+                  if (_selectedFilter == 'Pendientes' && o.status == 'PENDING') return true;
+                  if (_selectedFilter == 'Aprobados' && o.status == 'APPROVED') return true;
+                  if (_selectedFilter == 'En ruta' && (o.status == 'DISPATCHED' || o.status == 'IN_ROUTE')) return true;
+                  if (_selectedFilter == 'Completados' && (o.status == 'COMPLETED' || o.status == 'DELIVERED')) return true;
+                  return false;
+                }).toList();
+
+                if (filteredOrders.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(40.0),
+                      child: Text('No hay pedidos que coincidan', style: TextStyle(color: AppColors.textGrey)),
+                    ),
+                  );
+                }
+
+                return ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _orders.length,
+                  itemCount: filteredOrders.length,
                   separatorBuilder: (context, index) => const SizedBox(height: 16),
                   itemBuilder: (context, index) {
-                    final order = _orders[index];
+                    final order = filteredOrders[index];
                     return _buildOrderCard(
                       context,
                       order: order,
                     );
                   },
-                ),
+                );
+              }
                 
               const SizedBox(height: 24),
               Container(
@@ -450,6 +493,27 @@ class _OrdersScreenState extends State<OrdersScreen> {
             Icon(isAscending ? Icons.arrow_upward : Icons.arrow_downward, size: 12, color: AppColors.primary),
           ]
         ],
+      ),
+    );
+  }
+
+  Widget _buildStateFilterChip(String label, {String? apiStatus}) {
+    bool isSelected = _selectedFilter == label;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedFilter = label;
+        });
+      },
+      child: Container(
+        margin: const EdgeInsets.only(right: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: isSelected ? AppColors.primary : AppColors.borderLight),
+        ),
+        child: Text(label, style: TextStyle(fontSize: 13, color: isSelected ? Colors.white : AppColors.textDark, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
       ),
     );
   }
