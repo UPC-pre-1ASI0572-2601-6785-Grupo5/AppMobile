@@ -548,11 +548,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         dateStr = order.createdAt;
       }
 
-      return _buildOrderItem('#FT-${order.id}', '${order.quantityGallons} Galones', dateStr, null, statusText, statusColor);
+      return _buildOrderItem('#FT-${order.id}', '${order.quantityGallons} Galones', dateStr, null, statusText, statusColor, order.isCapped);
     }).toList();
   }
 
-  Widget _buildOrderItem(String id, String amount, String date, String? eta, String status, Color statusColor) {
+  Widget _buildOrderItem(String id, String amount, String date, String? eta, String status, Color statusColor, [bool isCapped = false]) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -565,7 +565,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               Text(id, style: const TextStyle(fontSize: 12, color: AppColors.textGrey)),
               const SizedBox(height: 4),
-              Text(amount, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+              Row(
+                children: [
+                  Text(amount, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                  if (isCapped) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(4), border: Border.all(color: Colors.red.shade200)),
+                      child: const Text('Topado a 1000', style: TextStyle(fontSize: 10, color: Colors.red, fontWeight: FontWeight.bold)),
+                    ),
+                  ]
+                ],
+              ),
               const SizedBox(height: 8),
               Row(
                 children: [

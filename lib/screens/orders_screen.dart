@@ -509,7 +509,19 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('Volumen', style: TextStyle(fontSize: 10, color: AppColors.textGrey)),
-                  Text('${order.quantityGallons} Galones', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                  Row(
+                    children: [
+                      Text('${order.quantityGallons} Galones', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                      if (order.isCapped) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                          decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(4), border: Border.all(color: Colors.red.shade200)),
+                          child: const Text('Topado', style: TextStyle(fontSize: 9, color: Colors.red, fontWeight: FontWeight.bold)),
+                        ),
+                      ]
+                    ],
+                  ),
                 ],
               ),
             ],
