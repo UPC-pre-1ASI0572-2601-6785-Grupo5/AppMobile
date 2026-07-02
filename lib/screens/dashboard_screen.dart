@@ -184,7 +184,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     
     final maxGallons = weekly.reduce((a, b) => a > b ? a : b);
     final List<double> weeklyNorm = maxGallons > 0 
-        ? weekly.map((g) => (g / maxGallons) * 100).toList() 
+        ? weekly.map((g) => g > 0 ? ((g / maxGallons) * 100).clamp(8.0, 100.0) : 0.0).toList() 
         : List.filled(7, 0.0);
 
     return RefreshIndicator(
