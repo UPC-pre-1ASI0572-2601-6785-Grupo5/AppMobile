@@ -105,6 +105,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
   Color _getStatusColor(String status) {
     switch (status) {
+      case 'PENDING_APPROVAL': return const Color(0xFFE67E22);
       case 'PENDING': return const Color(0xFFE67E22);
       case 'APPROVED': return const Color(0xFF1976D2);
       case 'DISPATCHED': return const Color(0xFF006D3E);
@@ -115,6 +116,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
   String _getStatusTranslation(String status) {
     switch (status) {
+      case 'PENDING_APPROVAL': return 'Pendiente';
       case 'PENDING': return 'Pendiente';
       case 'APPROVED': return 'Aprobado';
       case 'DISPATCHED': return 'En ruta';
@@ -250,34 +252,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.borderLight),
-                ),
-                child: TextField(
-                  onChanged: (val) {
-                    setState(() {
-                      _searchQuery = val.toLowerCase();
-                    });
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Buscar por código (Ej. 12)...',
-                    hintStyle: const TextStyle(color: AppColors.textGrey, fontSize: 14),
-                    prefixIcon: const Icon(Icons.search, color: AppColors.textGrey),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
                     _buildStateFilterChip('Todos'),
-                    _buildStateFilterChip('Pendientes', apiStatus: 'PENDING'),
+                    _buildStateFilterChip('Pendientes', apiStatus: 'PENDING_APPROVAL'),
                     _buildStateFilterChip('Aprobados', apiStatus: 'APPROVED'),
                     _buildStateFilterChip('En ruta', apiStatus: 'DISPATCHED'),
                     _buildStateFilterChip('Completados', apiStatus: 'COMPLETED'),
@@ -332,9 +312,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
               else Builder(
                 builder: (context) {
                   final filteredOrders = _orders.where((o) {
-                    if (_searchQuery.isNotEmpty && !o.id.toString().contains(_searchQuery)) return false;
                     if (_selectedFilter == 'Todos') return true;
-                    if (_selectedFilter == 'Pendientes' && o.status == 'PENDING') return true;
+                    if (_selectedFilter == 'Pendientes' && o.status == 'PENDING_APPROVAL') return true;
                     if (_selectedFilter == 'Aprobados' && o.status == 'APPROVED') return true;
                     if (_selectedFilter == 'En ruta' && (o.status == 'DISPATCHED' || o.status == 'IN_ROUTE')) return true;
                     if (_selectedFilter == 'Completados' && (o.status == 'COMPLETED' || o.status == 'DELIVERED')) return true;

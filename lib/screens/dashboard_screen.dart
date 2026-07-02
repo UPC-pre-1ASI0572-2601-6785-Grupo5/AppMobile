@@ -412,11 +412,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   List<Widget> _buildDynamicOrdersList() {
     List<OrderModel> filtered = _orders.where((o) {
-      if (_searchQuery.isNotEmpty && !o.id.toString().contains(_searchQuery)) {
-        return false;
-      }
       if (_selectedFilter == 'Todos') return true;
-      if (_selectedFilter == 'Pendientes' && o.status == 'PENDING') return true;
+      if (_selectedFilter == 'Pendientes' && o.status == 'PENDING_APPROVAL') return true;
       if (_selectedFilter == 'Aprobados' && o.status == 'APPROVED') return true;
       if (_selectedFilter == 'En ruta' && (o.status == 'DISPATCHED' || o.status == 'IN_ROUTE')) return true;
       if (_selectedFilter == 'Completados' && (o.status == 'COMPLETED' || o.status == 'DELIVERED')) return true;
@@ -438,6 +435,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       Color statusColor;
       String statusText;
       switch (order.status) {
+        case 'PENDING_APPROVAL':
         case 'PENDING':
           statusColor = const Color(0xFFE67E22);
           statusText = 'Pendiente';
