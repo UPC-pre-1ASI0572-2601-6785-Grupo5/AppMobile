@@ -525,7 +525,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const TrackingScreen()),
+                      MaterialPageRoute(builder: (context) => TrackingScreen(order: order)),
                     );
                   },
                   child: const Text('Rastrear >', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary)),

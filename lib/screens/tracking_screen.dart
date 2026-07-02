@@ -4,22 +4,103 @@ import 'package:latlong2/latlong.dart';
 import '../constants/colors.dart';
 import 'tracking_details_screen.dart';
 import 'delivery_success_screen.dart';
-import 'alerts_screen.dart'; // <-- Importación agregada
+import 'alerts_screen.dart';
+import '../models/order_model.dart';
+import '../services/order_service.dart';
 
-class TrackingScreen extends StatelessWidget {
-  const TrackingScreen({Key? key}) : super(key: key);
+class TrackingScreen extends StatefulWidget {
+  final OrderModel? order;
+  const TrackingScreen({Key? key, this.order}) : super(key: key);
+
+  @override
+  State<TrackingScreen> createState() => _TrackingScreenState();
+}
+
+class _TrackingScreenState extends State<TrackingScreen> {
+  OrderModel? _currentOrder;
+  bool _isLoading = true;
+  final OrderService _orderService = OrderService();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.order != null) {
+      _currentOrder = widget.order;
+      _isLoading = false;
+    } else {
+      _fetchActiveOrder();
+    }
+  }
+
+  Future<void> _fetchActiveOrder() async {
+    try {
+      final orders = await _orderService.getOrders();
+      // Filtrar el último pedido activo que no esté completado
+      final activeOrders = orders.where((o) => o.status != 'COMPLETED' && o.status != 'DELIVERED').toList();
+      if (activeOrders.isNotEmpty) {
+        // Asumiendo que el primero es el más reciente o iteramos por fecha (simplicidad: agarramos el primero)
+        _currentOrder = activeOrders.first;
+      }
+    } catch (e) {
+      debugPrint('Error fetching active order: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  String _formatStatus(String rawStatus) {
+    switch(rawStatus.toUpperCase()) {
+      case 'PENDING': return 'Pendiente';
+      case 'CONFIRMED': return 'Confirmado';
+      case 'IN_ROUTE': return 'En Ruta';
+      case 'DELIVERED': return 'Entregado';
+      default: return rawStatus;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final bool canPop = Navigator.canPop(context);
+
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF7F9F9),
+        body: const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+      );
+    }
+
+    if (_currentOrder == null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF7F9F9),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: canPop ? IconButton(
+            icon: const Icon(Icons.arrow_back, color: AppColors.textDark),
+            onPressed: () => Navigator.pop(context),
+          ) : null,
+          title: const Text('Seguimiento', style: TextStyle(color: AppColors.textDark)),
+        ),
+        body: const Center(
+          child: Text('No tienes pedidos activos en este momento.', style: TextStyle(color: AppColors.textGrey)),
+        ),
+      );
+    }
+
+    final order = _currentOrder!;
+    final bool isConfirmed = order.status != 'PENDING';
+    final bool isInRoute = order.status == 'IN_ROUTE';
+    final bool isDelivered = order.status == 'DELIVERED';
+
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9F9),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
+        leading: canPop ? IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textDark),
           onPressed: () => Navigator.pop(context),
-        ),
+        ) : const SizedBox.shrink(),
         title: Row(
           children: [
             ClipRRect(
@@ -51,7 +132,6 @@ class TrackingScreen extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.notifications_none, color: AppColors.textDark),
                 onPressed: () {
-                  // MODIFICADO: Ahora abre las notificaciones
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const AlertsScreen()),
@@ -99,12 +179,12 @@ class TrackingScreen extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('#FT-2023-05', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                        Text('#FT-2026-${order.id}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
                         Row(
                           children: [
                             Container(width: 6, height: 6, decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle)),
                             const SizedBox(width: 4),
-                            const Text('En Ruta', style: TextStyle(fontSize: 12, color: AppColors.textGrey)),
+                            Text(_formatStatus(order.status), style: const TextStyle(fontSize: 12, color: AppColors.textGrey)),
                           ],
                         ),
                       ],
@@ -212,10 +292,10 @@ class TrackingScreen extends StatelessWidget {
                             style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textGrey, letterSpacing: 1),
                           ),
                           const SizedBox(height: 24),
-                          _buildTimelineStep(isCompleted: true, isActive: false, icon: Icons.check, title: 'Pedido Confirmado', subtitle: '09:15 AM', isLast: false),
-                          _buildTimelineStep(isCompleted: false, isActive: true, icon: Icons.location_on_outlined, title: 'En Ruta', subtitle: 'Cerca de tu ubicación', isLast: false),
-                          _buildTimelineStep(isCompleted: false, isActive: false, icon: Icons.access_time, title: 'Llegada Estimada', subtitle: '10:30 AM (Proyectado)', isLast: false),
-                          _buildTimelineStep(isCompleted: false, isActive: false, icon: Icons.inventory_2_outlined, title: 'Entregado', subtitle: 'Pendiente de firma', isLast: true),
+                          _buildTimelineStep(isCompleted: true, isActive: false, icon: Icons.playlist_add_check, title: 'Pedido Creado', subtitle: 'Confirmado', isLast: false),
+                          _buildTimelineStep(isCompleted: isConfirmed, isActive: !isConfirmed, icon: Icons.check, title: 'Pedido Aceptado', subtitle: isConfirmed ? 'Proveedor asignado' : 'Esperando confirmación', isLast: false),
+                          _buildTimelineStep(isCompleted: isInRoute || isDelivered, isActive: isInRoute, icon: Icons.location_on_outlined, title: 'En Ruta', subtitle: isInRoute ? 'Cerca de tu ubicación' : 'Aún no sale', isLast: false),
+                          _buildTimelineStep(isCompleted: isDelivered, isActive: false, icon: Icons.inventory_2_outlined, title: 'Entregado', subtitle: 'Destino final', isLast: true),
                           const SizedBox(height: 24),
                           Container(
                             padding: const EdgeInsets.all(16),
@@ -272,9 +352,9 @@ class TrackingScreen extends StatelessWidget {
                                 const SizedBox(height: 8),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: const [
-                                    Text('Capacidad', style: TextStyle(fontSize: 12, color: AppColors.textDark, fontWeight: FontWeight.w600)),
-                                    Text('12,000L', style: TextStyle(fontSize: 12, color: AppColors.textDark, fontWeight: FontWeight.bold)),
+                                  children: [
+                                    const Text('Capacidad Solicitada', style: TextStyle(fontSize: 12, color: AppColors.textDark, fontWeight: FontWeight.w600)),
+                                    Text('${order.quantityGallons} Galones', style: const TextStyle(fontSize: 12, color: AppColors.textDark, fontWeight: FontWeight.bold)),
                                   ],
                                 ),
                               ],

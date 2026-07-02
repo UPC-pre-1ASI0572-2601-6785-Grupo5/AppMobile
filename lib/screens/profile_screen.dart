@@ -357,6 +357,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showBillingDialog() {
+    String price = _currentPlan == 'Enterprise Pro' ? '299.00' : (_currentPlan == 'Pro' ? '199.00' : '99.00');
+    
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
@@ -372,16 +374,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ListTile(
                 leading: const Icon(Icons.receipt, color: AppColors.textGrey),
                 title: Text('Plan $_currentPlan - Mes Actual', style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: const Text('Pagado • \$299.00 USD'),
-                trailing: const Icon(Icons.download_rounded, color: AppColors.primary),
+                subtitle: Text('Pagado • \$$price USD'),
                 onTap: () {},
               ),
               const Divider(),
               ListTile(
                 leading: const Icon(Icons.receipt, color: AppColors.textGrey),
                 title: Text('Plan $_currentPlan - Mes Pasado', style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: const Text('Pagado • \$299.00 USD'),
-                trailing: const Icon(Icons.download_rounded, color: AppColors.primary),
+                subtitle: Text('Pagado • \$$price USD'),
                 onTap: () {},
               ),
               const SizedBox(height: 16),
@@ -568,7 +568,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Documentación Técnica'),
-        content: const Text('Aquí se mostraría la documentación completa (Manuales, Integración API, etc).'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            Text('• Guía de Integración API REST', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text('Endpoints disponibles, autenticación JWT, y esquemas de datos.\n', style: TextStyle(fontSize: 12)),
+            Text('• SLA y Tiempos de Respuesta', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text('Acuerdos de nivel de servicio para despachos y resolución de incidencias.\n', style: TextStyle(fontSize: 12)),
+            Text('• Manual de Sensores IoT', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text('Configuración y sincronización de sensores volumétricos con la aplicación.', style: TextStyle(fontSize: 12)),
+          ],
+        ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cerrar')),
         ],
