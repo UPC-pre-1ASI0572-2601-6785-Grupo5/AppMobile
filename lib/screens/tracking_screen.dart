@@ -52,6 +52,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
 
   String _formatStatus(String rawStatus) {
     switch(rawStatus.toUpperCase()) {
+      case 'PENDING_APPROVAL': return 'Pendiente';
       case 'PENDING': return 'Pendiente';
       case 'APPROVED': return 'Aprobado';
       case 'DISPATCHED': return 'En ruta';
@@ -90,7 +91,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
-          leading: canPop ? IconButton(
+          leading: (widget.order != null && canPop) ? IconButton(
             icon: const Icon(Icons.arrow_back, color: AppColors.textDark),
             onPressed: () => Navigator.pop(context),
           ) : const SizedBox.shrink(),
@@ -153,7 +154,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
-          leading: canPop ? IconButton(
+          leading: (widget.order != null && canPop) ? IconButton(
             icon: const Icon(Icons.arrow_back, color: AppColors.textDark),
             onPressed: () => Navigator.pop(context),
           ) : null,
@@ -178,7 +179,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: canPop ? IconButton(
+        leading: (widget.order != null && canPop) ? IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textDark),
           onPressed: () => Navigator.pop(context),
         ) : const SizedBox.shrink(),

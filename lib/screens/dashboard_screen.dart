@@ -299,24 +299,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            TextField(
-              onChanged: (val) {
-                setState(() {
-                  _searchQuery = val.toLowerCase();
-                });
-              },
-              decoration: InputDecoration(
-                hintText: 'Buscar por código (Ej. 12)...',
-                hintStyle: const TextStyle(fontSize: 14, color: AppColors.textGrey),
-                prefixIcon: const Icon(Icons.search, color: AppColors.textGrey),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.borderLight)),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary)),
-              ),
-            ),
-            const SizedBox(height: 16),
+
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
