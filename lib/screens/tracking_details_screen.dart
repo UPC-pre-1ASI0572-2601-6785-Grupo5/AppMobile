@@ -14,6 +14,22 @@ class TrackingDetailsScreen extends StatefulWidget {
 
 class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> {
   final int _selectedIndex = 2; // Seguimiento activo
+  final MapController _mapController = MapController();
+  double _currentZoom = 15.0;
+
+  void _zoomIn() {
+    setState(() {
+      _currentZoom = (_currentZoom + 1).clamp(1.0, 18.0);
+      _mapController.move(_mapController.camera.center, _currentZoom);
+    });
+  }
+
+  void _zoomOut() {
+    setState(() {
+      _currentZoom = (_currentZoom - 1).clamp(1.0, 18.0);
+      _mapController.move(_mapController.camera.center, _currentZoom);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -220,10 +236,11 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> {
                       child: Stack(
                         children: [
                           FlutterMap(
-                            options: const MapOptions(
-                              initialCenter: LatLng(-12.085, -76.96), // Refinería
-                              initialZoom: 15.0,
-                              interactionOptions: InteractionOptions(
+                            mapController: _mapController,
+                            options: MapOptions(
+                              initialCenter: const LatLng(-12.085, -76.96), // Refinería
+                              initialZoom: _currentZoom,
+                              interactionOptions: const InteractionOptions(
                                 flags: InteractiveFlag.all & ~InteractiveFlag.rotate, // Deshabilita rotación
                               ),
                             ),
@@ -275,16 +292,22 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> {
                             bottom: 8,
                             child: Column(
                               children: [
-                                Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(4)), boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 2)]),
-                                  child: const Icon(Icons.add, size: 16, color: AppColors.textDark),
+                                GestureDetector(
+                                  onTap: _zoomIn,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(4)), boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 2)]),
+                                    child: const Icon(Icons.add, size: 16, color: AppColors.textDark),
+                                  ),
                                 ),
                                 Container(height: 1, width: 24, color: AppColors.borderLight),
-                                Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(bottom: Radius.circular(4)), boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 2)]),
-                                  child: const Icon(Icons.remove, size: 16, color: AppColors.textDark),
+                                GestureDetector(
+                                  onTap: _zoomOut,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(bottom: Radius.circular(4)), boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 2)]),
+                                    child: const Icon(Icons.remove, size: 16, color: AppColors.textDark),
+                                  ),
                                 ),
                               ],
                             ),

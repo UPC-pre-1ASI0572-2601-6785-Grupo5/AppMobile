@@ -18,6 +18,9 @@ class TrackingScreen extends StatefulWidget {
 }
 
 class _TrackingScreenState extends State<TrackingScreen> {
+  final int _selectedIndex = 2; // Pestaña actual: Seguimiento
+  final MapController _mapController = MapController();
+  bool _isDarkMode = true;
   OrderModel? _currentOrder;
   List<OrderModel> _activeOrders = [];
   bool _isLoading = true;
@@ -297,13 +300,16 @@ class _TrackingScreenState extends State<TrackingScreen> {
                   right: 0,
                   height: 350,
                   child: FlutterMap(
+                    mapController: _mapController,
                     options: const MapOptions(
                       initialCenter: LatLng(-12.0464, -77.0428),
                       initialZoom: 14.0,
                     ),
                     children: [
                       TileLayer(
-                        urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+                        urlTemplate: _isDarkMode 
+                            ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+                            : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
                         userAgentPackageName: 'com.example.fueltrack',
                       ),
                       MarkerLayer(
@@ -339,9 +345,15 @@ class _TrackingScreenState extends State<TrackingScreen> {
                   left: 16,
                   child: Column(
                     children: [
-                      _buildMapFloatingButton(Icons.my_location),
+                      _buildMapFloatingButton(Icons.my_location, onTap: () {
+                        _mapController.move(const LatLng(-12.0464, -77.0428), 14.0);
+                      }),
                       const SizedBox(height: 8),
-                      _buildMapFloatingButton(Icons.layers_outlined),
+                      _buildMapFloatingButton(Icons.layers_outlined, onTap: () {
+                        setState(() {
+                          _isDarkMode = !_isDarkMode;
+                        });
+                      }),
                     ],
                   ),
                 ),
@@ -477,7 +489,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                         title: const Text('Contactar Soporte'),
                                         content: const Text(
                                             'Comunícate con nuestro centro logístico al:\n\n'
-                                            '📞 +1 800-555-0199\n'
+                                            '📞 +51 906 260 638\n'
                                             '✉️ soporte@fueltrack.com\n\n'
                                             'Atención 24/7 para incidencias en ruta.'
                                         ),
@@ -535,17 +547,20 @@ class _TrackingScreenState extends State<TrackingScreen> {
     );
   }
 
-  Widget _buildMapFloatingButton(IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withAlpha(26), blurRadius: 4, offset: const Offset(0, 2)),
-        ],
+  Widget _buildMapFloatingButton(IconData icon, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withAlpha(26), blurRadius: 4, offset: const Offset(0, 2)),
+          ],
+        ),
+        child: Icon(icon, color: AppColors.textDark, size: 20),
       ),
-      child: Icon(icon, color: AppColors.textDark, size: 20),
     );
   }
 

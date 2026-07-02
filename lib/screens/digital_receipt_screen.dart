@@ -294,6 +294,28 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
               ),
             ),
 
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const DashboardScreen(initialIndex: 0)),
+                    (route) => false,
+                  );
+                },
+                icon: const Icon(Icons.home_outlined, size: 18, color: AppColors.textDark),
+                label: const Text('Volver al Dashboard', style: TextStyle(color: AppColors.textDark)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFE8F8F5),
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
 
             Container(
               padding: const EdgeInsets.all(16),

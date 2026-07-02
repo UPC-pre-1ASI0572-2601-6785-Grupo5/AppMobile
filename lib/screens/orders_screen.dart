@@ -66,6 +66,14 @@ class _OrdersScreenState extends State<OrdersScreen> {
     _applySort();
   }
 
+  int _getStatusWeight(String status) {
+    if (status.startsWith('PENDING')) return 1;
+    if (status == 'APPROVED') return 2;
+    if (status == 'DISPATCHED' || status == 'IN_TRANSIT') return 3;
+    if (status == 'COMPLETED' || status == 'DELIVERED') return 4;
+    return 5;
+  }
+
   void _applySort() {
     setState(() {
       _orders.sort((a, b) {
@@ -73,7 +81,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
         if (_activeSort == 'Fecha') {
           comparison = a.createdAt.compareTo(b.createdAt);
         } else if (_activeSort == 'Estado') {
-          comparison = a.status.compareTo(b.status);
+          comparison = _getStatusWeight(a.status).compareTo(_getStatusWeight(b.status));
         } else if (_activeSort == 'Codigo') {
           comparison = a.id.compareTo(b.id);
         }

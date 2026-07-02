@@ -132,7 +132,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildDashboardView() {
-    return Scaffold(
+    // Calculos dinamicos
+    final totalGallons = _orders.fold(0.0, (sum, order) => sum + order.quantityGallons);
+    final burnRate = (totalGallons / 15000.0).clamp(0.0, 1.0); // Asume cuota 15000
+    
+    String abastecimientoStatus = 'Óptimo';
+    Color abastecimientoColor = AppColors.success;
+    String abastecimientoMsg = 'Niveles adecuados';
+    
+    if (burnRate > 0.8) {
+      abastecimientoStatus = 'Riesgo';
+      abastecimientoColor = AppColors.error;
+      abastecimientoMsg = 'Revisión requerida';
+    } else if (burnRate > 0.5) {
+      abastecimientoStatus = 'Estable';
+      abastecimientoColor = Colors.orange;
+      abastecimientoMsg = 'Consumo moderado';
+    }
+
+    final List<double> weekly = List.filled(7, 0.0);
+    for (var order in _orders) {
+      final date = DateTime.tryParse(order.createdAt);
+      if (date != null) {
+        // weekday 1 = Lunes, 7 = Domingo
+        weekly[date.weekday - 1] += order.quantityGallons;
+      }
+    }
+    
+    final maxGallons = weekly.reduce((a, b) => a > b ? a : b);
+    final List<double> weeklyNorm = maxGallons > 0 
+        ? weekly.map((g) => (g / maxGallons) * 100).toList() 
+        : List.filled(7, 0.0);
+
+    return RefreshIndicator(
+      onRefresh: _fetchDashboardData,
+      child: Scaffold(
       backgroundColor: const Color(0xFFF7F9F9),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -262,9 +296,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       children: [
                         Row(children: const [Icon(Icons.local_fire_department_outlined, size: 14, color: AppColors.textGrey), SizedBox(width: 4), Text('Burn Rate', style: TextStyle(fontSize: 12, color: AppColors.textGrey))]),
                         const SizedBox(height: 8),
-                        const Text('78%', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                        Text('${(burnRate * 100).toStringAsFixed(0)}%', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                         const SizedBox(height: 8),
-                        LinearProgressIndicator(value: 0.78, backgroundColor: AppColors.borderLight, color: AppColors.primary, minHeight: 4),
+                        LinearProgressIndicator(value: burnRate, backgroundColor: AppColors.borderLight, color: burnRate > 0.8 ? AppColors.error : AppColors.primary, minHeight: 4),
                       ],
                     ),
                   ),
@@ -279,9 +313,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       children: [
                         Row(children: const [Icon(Icons.ev_station_outlined, size: 14, color: AppColors.textGrey), SizedBox(width: 4), Text('Abastecimiento', style: TextStyle(fontSize: 12, color: AppColors.textGrey))]),
                         const SizedBox(height: 8),
-                        const Text('Riesgo', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.error)),
+                        Text(abastecimientoStatus, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: abastecimientoColor)),
                         const SizedBox(height: 4),
-                        const Text('Revisión requerida', style: TextStyle(fontSize: 10, color: AppColors.error, fontWeight: FontWeight.bold)),
+                        Text(abastecimientoMsg, style: TextStyle(fontSize: 10, color: abastecimientoColor, fontWeight: FontWeight.bold)),
                       ],
                     ),
                   ),
@@ -307,13 +341,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      _buildChartBar('Lun', 40, AppColors.primary.withAlpha(76)),
-                      _buildChartBar('Mar', 60, AppColors.primary.withAlpha(102)),
-                      _buildChartBar('Mie', 30, AppColors.primary.withAlpha(128)),
-                      _buildChartBar('Jue', 70, AppColors.primary.withAlpha(178)),
-                      _buildChartBar('Vie', 100, AppColors.primary),
-                      _buildChartBar('Sab', 80, AppColors.primary.withAlpha(153)),
-                      _buildChartBar('Dom', 50, AppColors.primary.withAlpha(76)),
+                      _buildChartBar('Lun', weeklyNorm[0], weeklyNorm[0] > 0 ? AppColors.primary : AppColors.borderLight),
+                      _buildChartBar('Mar', weeklyNorm[1], weeklyNorm[1] > 0 ? AppColors.primary.withAlpha(200) : AppColors.borderLight),
+                      _buildChartBar('Mie', weeklyNorm[2], weeklyNorm[2] > 0 ? AppColors.primary.withAlpha(200) : AppColors.borderLight),
+                      _buildChartBar('Jue', weeklyNorm[3], weeklyNorm[3] > 0 ? AppColors.primary.withAlpha(200) : AppColors.borderLight),
+                      _buildChartBar('Vie', weeklyNorm[4], weeklyNorm[4] > 0 ? AppColors.primary : AppColors.borderLight),
+                      _buildChartBar('Sab', weeklyNorm[5], weeklyNorm[5] > 0 ? AppColors.primary.withAlpha(150) : AppColors.borderLight),
+                      _buildChartBar('Dom', weeklyNorm[6], weeklyNorm[6] > 0 ? AppColors.primary.withAlpha(100) : AppColors.borderLight),
                     ],
                   ),
                 ],
@@ -363,7 +397,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         },
         child: const Icon(Icons.add, color: Colors.white),
       ),
-    );
+    ));
   }
 
   Widget _buildMetricCard({required String title, required String value, required String subtitle, required Color subtitleColor, required IconData icon}) {
