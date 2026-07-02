@@ -26,7 +26,7 @@ class OrderModel {
       id: json['id'] as int,
       requesterId: json['requesterId'] as int,
       productName: json['fuelType'] as String? ?? 'Desconocido',
-      quantityGallons: _parseGallons(json['gallons']),
+      quantityGallons: (json['gallons'] as num?)?.toDouble() ?? 0.0,
       documentRef: json['documentRef'] as String? ?? '',
       status: json['status'] as String? ?? 'PENDING',
       assignedTruckId: null,
@@ -49,10 +49,4 @@ class OrderModel {
     };
   }
 
-  static double _parseGallons(dynamic jsonValue) {
-    double g = (jsonValue as num?)?.toDouble() ?? 0.0;
-    // Hard limit para descartar outliers gigantes como pruebas de estrés (ej. 6969696969)
-    if (g > 1000000000) return 1000.0;
-    return g;
-  }
 }
