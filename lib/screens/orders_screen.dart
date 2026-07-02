@@ -94,9 +94,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
   String _formatDate(String isoString) {
     if (isoString.isEmpty) return 'Desconocida';
     try {
-      String dateStr = isoString;
-      if (!dateStr.endsWith('Z')) dateStr += 'Z';
-      final dt = DateTime.parse(dateStr).toLocal();
+      final dt = DateTime.parse(isoString).toLocal();
       return DateFormat('dd/MM/yyyy HH:mm').format(dt);
     } catch (_) {
       return isoString;
@@ -106,9 +104,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
   String _formatTime(String isoString) {
     if (isoString.isEmpty) return 'N/A';
     try {
-      String dateStr = isoString;
-      if (!dateStr.endsWith('Z')) dateStr += 'Z';
-      final dt = DateTime.parse(dateStr).toLocal();
+      final dt = DateTime.parse(isoString).toLocal();
       return DateFormat('HH:mm').format(dt);
     } catch (_) {
       return isoString;
