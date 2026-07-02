@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
-import 'login_screen.dart'; // Importamos tu pantalla de login para cerrar sesión
+import 'login_screen.dart';
 import '../services/session_manager.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -11,6 +11,17 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  // --- Local State for simulation ---
+  String _currentPlan = 'Enterprise Pro';
+  bool _mfaEnabled = true;
+  final List<Map<String, String>> _sedes = [
+    {'name': 'Sede Norte - Principal', 'address': 'Parque Industrial, Nave 4'},
+    {'name': 'Sede Sur - Distribución', 'address': 'Puerto Logístico A-12'}
+  ];
+  final List<Map<String, String>> _tickets = [
+    {'title': 'Revisión de sensor #882 y Facturación Oct', 'status': 'Abierto'}
+  ];
+
   @override
   Widget build(BuildContext context) {
     final user = SessionManager.instance.user;
@@ -18,7 +29,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final userRole = user?.isProvider == true ? 'Proveedor' : 'Cliente';
     final userEmail = user?.email ?? '';
     
-    // Igual que las demás, sin Scaffold ni AppBar propio para no duplicar
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20.0),
       child: Column(
@@ -109,35 +119,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.borderLight)),
             child: Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: const Color(0xFFE8F8F5), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFFB2EBF2))),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text('PLAN ACTUAL', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary, letterSpacing: 0.5)),
-                            SizedBox(height: 4),
-                            Text('Enterprise Pro', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                          ],
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                          decoration: BoxDecoration(color: const Color(0xFF006D3E), borderRadius: BorderRadius.circular(20)),
-                          child: const Text('ACTIVO', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                        ),
-                      ],
+                InkWell(
+                  onTap: _showPlanSelectionDialog,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(color: const Color(0xFFE8F8F5), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFFB2EBF2))),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('PLAN ACTUAL', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary, letterSpacing: 0.5)),
+                              const SizedBox(height: 4),
+                              Text(_currentPlan, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                decoration: BoxDecoration(color: const Color(0xFF006D3E), borderRadius: BorderRadius.circular(20)),
+                                child: const Text('CAMBIAR', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          )
+                        ],
+                      ),
                     ),
                   ),
                 ),
                 const Divider(height: 1, color: AppColors.borderLight),
-                _buildListTile(Icons.receipt_long_outlined, 'Facturación y Recibos'),
-                const Divider(height: 1, color: AppColors.borderLight),
-                _buildListTile(Icons.credit_card_outlined, 'Métodos de Pago', trailingText: 'VISA **** 4242'),
+                _buildListTile(Icons.receipt_long_outlined, 'Facturación y Recibos', onTap: _showBillingDialog),
               ],
             ),
           ),
@@ -154,14 +169,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text('Configuración de Sedes', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                 ],
               ),
-              const Text('Añadir\nNueva', textAlign: TextAlign.right, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary)),
+              InkWell(
+                onTap: _showAddSedeDialog,
+                child: const Text('Añadir\nNueva', textAlign: TextAlign.right, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary)),
+              )
             ],
           ),
           const SizedBox(height: 12),
-          _buildSedeCard('Sede Norte - Principal', 'Parque Industrial, Nave 4'),
-          const SizedBox(height: 8),
-          _buildSedeCard('Sede Sur - Distribución', 'Puerto Logístico A-12'),
-          const SizedBox(height: 24),
+          ..._sedes.asMap().entries.map((entry) {
+            int index = entry.key;
+            var sede = entry.value;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: _buildSedeCard(sede['name']!, sede['address']!, index),
+            );
+          }).toList(),
+          const SizedBox(height: 16),
 
           // 4. Seguridad y Privacidad
           Row(
@@ -176,11 +199,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.borderLight)),
             child: Column(
               children: [
-                _buildSecurityTile(Icons.lock_outline, 'Contraseña', 'Último cambio: hace 3 meses', 'Cambiar ahora', AppColors.primary, null),
+                _buildSecurityTile(Icons.lock_outline, 'Contraseña', 'Protege el acceso a tu cuenta', 'Cambiar ahora', AppColors.primary, null, onTap: _showChangePasswordDialog),
                 const Divider(height: 1, color: AppColors.borderLight),
-                _buildSecurityTile(Icons.verified_user_outlined, 'MFA (2FA)', 'Autenticación por SMS y App', 'Configurar', AppColors.primary, 'ACTIVADO'),
-                const Divider(height: 1, color: AppColors.borderLight),
-                _buildSecurityTile(Icons.devices_outlined, 'Sesiones', '3 dispositivos activos', 'Cerrar otras sesiones', AppColors.error, null),
+                _buildSecurityTile(Icons.verified_user_outlined, 'MFA (2FA)', 'Autenticación en dos pasos', _mfaEnabled ? 'Desactivar' : 'Configurar', _mfaEnabled ? AppColors.error : AppColors.primary, _mfaEnabled ? 'ACTIVADO' : 'INACTIVO', onTap: _showMfaDialog),
               ],
             ),
           ),
@@ -204,7 +225,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () {},
+                        onPressed: _showSupportChatDialog,
                         icon: const Icon(Icons.chat_bubble_outline, size: 16, color: Colors.white),
                         label: const Text('Chat de Ayuda', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                         style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF006D3E), elevation: 0, padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -213,7 +234,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: _showOpenTicketDialog,
                         style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD4EFDF), elevation: 0, padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                         child: const Text('Abrir Ticket', style: TextStyle(color: Color(0xFF006D3E), fontSize: 12, fontWeight: FontWeight.bold)),
                       ),
@@ -221,31 +242,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                _buildSupportTile(Icons.menu_book_outlined, 'Documentación Técnica', 'Guías de uso y configuración de API', false),
+                _buildSupportTile(Icons.menu_book_outlined, 'Documentación Técnica', 'Guías de uso y configuración', false, onTap: _showTechDocsDialog),
                 const SizedBox(height: 8),
-                _buildSupportTile(Icons.confirmation_num_outlined, 'Tickets Abiertos (2)', 'Revisión de sensor #882 y Facturación Oct', true),
+                _buildSupportTile(Icons.confirmation_num_outlined, 'Tickets Abiertos (${_tickets.length})', 'Visualiza tus solicitudes recientes', true, onTap: _showTicketsDialog),
               ],
             ),
           ),
           const SizedBox(height: 32),
 
-          // 6. BOTÓN DE CERRAR SESIÓN (FUNCIONAL)
+          // 6. BOTÓN DE CERRAR SESIÓN
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              // Aquí está la magia: Borramos todo el stack de rutas y lo mandamos al Login
               onPressed: () {
                 SessionManager.instance.clear();
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (context) => const LoginScreen()),
-                      (Route<dynamic> route) => false, // Esto destruye el historial previo
+                      (Route<dynamic> route) => false,
                 );
               },
               icon: const Icon(Icons.logout, color: AppColors.error),
               label: const Text('Cerrar Sesión', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold, fontSize: 16)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFFEBEE), // Fondo rojito
+                backgroundColor: const Color(0xFFFFEBEE),
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -257,6 +277,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
+
+  // --- DIALOGS (Simulation Methods) ---
 
   void _showEditProfileDialog(BuildContext context, String currentName, String currentEmail) {
     final nameController = TextEditingController(text: currentName);
@@ -290,12 +312,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
               onPressed: () {
-                // Actualización simulada localmente (aquí iría el llamado a tu API)
                 SessionManager.instance.user?.name = nameController.text;
                 SessionManager.instance.user?.email = emailController.text;
                 setState(() {});
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Perfil actualizado exitosamente')));
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Perfil actualizado (Localmente)')));
               },
               child: const Text('Guardar'),
             ),
@@ -305,9 +326,259 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  void _showPlanSelectionDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Seleccionar Plan'),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setDialogState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: ['Basic', 'Pro', 'Enterprise Pro'].map((plan) {
+                  return RadioListTile<String>(
+                    title: Text(plan),
+                    value: plan,
+                    groupValue: _currentPlan,
+                    onChanged: (val) {
+                      setState(() => _currentPlan = val!);
+                      setDialogState(() => _currentPlan = val!); // Update dialog UI
+                      Navigator.pop(context);
+                    },
+                  );
+                }).toList(),
+              );
+            }
+          ),
+        );
+      }
+    );
+  }
+
+  void _showBillingDialog() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Facturación y Recibos', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.receipt, color: AppColors.textGrey),
+                title: Text('Plan $_currentPlan - Mes Actual', style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: const Text('Pagado • \$299.00 USD'),
+                trailing: const Icon(Icons.download_rounded, color: AppColors.primary),
+                onTap: () {},
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.receipt, color: AppColors.textGrey),
+                title: Text('Plan $_currentPlan - Mes Pasado', style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: const Text('Pagado • \$299.00 USD'),
+                trailing: const Icon(Icons.download_rounded, color: AppColors.primary),
+                onTap: () {},
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      }
+    );
+  }
+
+  void _showAddSedeDialog() {
+    final nameCtrl = TextEditingController();
+    final addressCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Añadir Sede'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Nombre de Sede')),
+            const SizedBox(height: 12),
+            TextField(controller: addressCtrl, decoration: const InputDecoration(labelText: 'Dirección')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _sedes.add({'name': nameCtrl.text.isEmpty ? 'Sede Nueva' : nameCtrl.text, 'address': addressCtrl.text.isEmpty ? 'Sin dirección' : addressCtrl.text});
+              });
+              Navigator.pop(context);
+            },
+            child: const Text('Añadir')
+          ),
+        ],
+      )
+    );
+  }
+
+  void _showEditSedeDialog(int index) {
+    final nameCtrl = TextEditingController(text: _sedes[index]['name']);
+    final addressCtrl = TextEditingController(text: _sedes[index]['address']);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Editar Sede'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Nombre de Sede')),
+            const SizedBox(height: 12),
+            TextField(controller: addressCtrl, decoration: const InputDecoration(labelText: 'Dirección')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () {
+            setState(() => _sedes.removeAt(index));
+            Navigator.pop(context);
+          }, child: const Text('Eliminar', style: TextStyle(color: AppColors.error))),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _sedes[index] = {'name': nameCtrl.text, 'address': addressCtrl.text};
+              });
+              Navigator.pop(context);
+            },
+            child: const Text('Guardar')
+          ),
+        ],
+      )
+    );
+  }
+
+  void _showChangePasswordDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cambiar Contraseña'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            TextField(obscureText: true, decoration: InputDecoration(labelText: 'Contraseña Actual')),
+            SizedBox(height: 12),
+            TextField(obscureText: true, decoration: InputDecoration(labelText: 'Nueva Contraseña')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contraseña actualizada exitosamente (Simulado)')));
+            },
+            child: const Text('Actualizar')
+          ),
+        ],
+      )
+    );
+  }
+
+  void _showMfaDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(_mfaEnabled ? 'Desactivar 2FA' : 'Configurar 2FA'),
+        content: Text(_mfaEnabled ? '¿Estás seguro de que deseas desactivar la autenticación de dos factores? Tu cuenta será menos segura.' : 'Se te enviará un código SMS a tu teléfono registrado cada vez que inicies sesión.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: _mfaEnabled ? AppColors.error : AppColors.primary),
+            onPressed: () {
+              setState(() => _mfaEnabled = !_mfaEnabled);
+              Navigator.pop(context);
+            },
+            child: Text(_mfaEnabled ? 'Desactivar' : 'Activar')
+          ),
+        ],
+      )
+    );
+  }
+
+  void _showSupportChatDialog() {
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Iniciando chat de soporte (Simulado)...')));
+  }
+
+  void _showOpenTicketDialog() {
+    final titleCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Abrir Ticket'),
+        content: TextField(
+          controller: titleCtrl,
+          decoration: const InputDecoration(labelText: 'Asunto del problema'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _tickets.insert(0, {'title': titleCtrl.text.isEmpty ? 'Ticket sin asunto' : titleCtrl.text, 'status': 'Abierto'});
+              });
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ticket creado exitosamente')));
+            },
+            child: const Text('Enviar')
+          ),
+        ],
+      )
+    );
+  }
+
+  void _showTicketsDialog() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Tickets Abiertos', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
+              const SizedBox(height: 16),
+              if (_tickets.isEmpty) const Text('No hay tickets abiertos.')
+              else ..._tickets.map((t) => ListTile(
+                leading: const Icon(Icons.confirmation_num, color: AppColors.primary),
+                title: Text(t['title']!, style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text('Estado: ${t['status']}'),
+              )).toList(),
+              const SizedBox(height: 24),
+            ],
+          ),
+        );
+      }
+    );
+  }
+
+  void _showTechDocsDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Documentación Técnica'),
+        content: const Text('Aquí se mostraría la documentación completa (Manuales, Integración API, etc).'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cerrar')),
+        ],
+      )
+    );
+  }
+
   // ===================== WIDGETS REUTILIZABLES =====================
 
-  Widget _buildListTile(IconData icon, String title, {String? trailingText}) {
+  Widget _buildListTile(IconData icon, String title, {String? trailingText, VoidCallback? onTap}) {
     return ListTile(
       leading: Icon(icon, color: AppColors.textGrey, size: 20),
       title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textDark)),
@@ -319,11 +590,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const Icon(Icons.chevron_right, color: AppColors.textGrey, size: 20),
         ],
       ),
-      onTap: () {},
+      onTap: onTap,
     );
   }
 
-  Widget _buildSedeCard(String title, String subtitle) {
+  Widget _buildSedeCard(String title, String subtitle, int index) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.borderLight)),
@@ -345,73 +616,82 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
           ),
-          const Icon(Icons.settings_outlined, color: AppColors.textDark, size: 20),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSecurityTile(IconData icon, String title, String subtitle, String actionText, Color actionColor, String? badge) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: AppColors.primary, size: 20),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                    if (badge != null) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(color: const Color(0xFF006D3E), borderRadius: BorderRadius.circular(20)),
-                        child: Text(badge, style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
-                      ),
-                    ]
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textGrey)),
-                const SizedBox(height: 8),
-                Text(actionText, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: actionColor)),
-              ],
-            ),
+          InkWell(
+            onTap: () => _showEditSedeDialog(index),
+            child: const Icon(Icons.settings_outlined, color: AppColors.textDark, size: 20),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSupportTile(IconData icon, String title, String subtitle, bool isLink) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.borderLight)),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: const BoxDecoration(color: Color(0xFFF4F7F7), shape: BoxShape.circle),
-            child: Icon(icon, color: AppColors.textGrey, size: 20),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                const SizedBox(height: 2),
-                Text(subtitle, style: const TextStyle(fontSize: 11, color: AppColors.textGrey)),
-              ],
+  Widget _buildSecurityTile(IconData icon, String title, String subtitle, String actionText, Color actionColor, String? badge, {VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: AppColors.primary, size: 20),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                      if (badge != null) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(color: const Color(0xFF006D3E), borderRadius: BorderRadius.circular(20)),
+                          child: Text(badge, style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                        ),
+                      ]
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textGrey)),
+                  const SizedBox(height: 8),
+                  Text(actionText, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: actionColor)),
+                ],
+              ),
             ),
-          ),
-          if (isLink) const Icon(Icons.open_in_new, color: AppColors.textGrey, size: 16),
-        ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSupportTile(IconData icon, String title, String subtitle, bool isLink, {VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.borderLight)),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: const BoxDecoration(color: Color(0xFFF4F7F7), shape: BoxShape.circle),
+              child: Icon(icon, color: AppColors.textGrey, size: 20),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                  const SizedBox(height: 2),
+                  Text(subtitle, style: const TextStyle(fontSize: 11, color: AppColors.textGrey)),
+                ],
+              ),
+            ),
+            if (isLink) const Icon(Icons.open_in_new, color: AppColors.textGrey, size: 16),
+          ],
+        ),
       ),
     );
   }
