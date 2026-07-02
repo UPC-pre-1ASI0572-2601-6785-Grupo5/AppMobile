@@ -131,6 +131,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  void _showInfoDialog(String title, String content) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.info_outline, color: AppColors.primary),
+            const SizedBox(width: 8),
+            Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Text(content, style: const TextStyle(color: AppColors.textDark, height: 1.4)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Entendido', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDashboardView() {
     // Calculos dinamicos
     final totalGallons = _orders.fold(0.0, (sum, order) => sum + order.quantityGallons);
@@ -152,7 +175,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     final List<double> weekly = List.filled(7, 0.0);
     for (var order in _orders) {
-      final date = DateTime.tryParse(order.createdAt);
+      final date = DateTime.tryParse(order.createdAt)?.toLocal();
       if (date != null) {
         // weekday 1 = Lunes, 7 = Domingo
         weekly[date.weekday - 1] += order.quantityGallons;
@@ -294,7 +317,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(children: const [Icon(Icons.local_fire_department_outlined, size: 14, color: AppColors.textGrey), SizedBox(width: 4), Text('Burn Rate', style: TextStyle(fontSize: 12, color: AppColors.textGrey))]),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(children: const [Icon(Icons.local_fire_department_outlined, size: 14, color: AppColors.textGrey), SizedBox(width: 4), Text('Burn Rate', style: TextStyle(fontSize: 12, color: AppColors.textGrey))]),
+                            GestureDetector(
+                              onTap: () => _showInfoDialog('Burn Rate', 'El "Burn Rate" indica la velocidad con la que estás consumiendo tu cuota mensual estimada de combustible. Un porcentaje alto significa que podrías requerir un nuevo pedido pronto.'),
+                              child: const Icon(Icons.help_outline, size: 16, color: AppColors.textGrey),
+                            ),
+                          ],
+                        ),
                         const SizedBox(height: 8),
                         Text('${(burnRate * 100).toStringAsFixed(0)}%', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                         const SizedBox(height: 8),
@@ -311,7 +343,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(children: const [Icon(Icons.ev_station_outlined, size: 14, color: AppColors.textGrey), SizedBox(width: 4), Text('Abastecimiento', style: TextStyle(fontSize: 12, color: AppColors.textGrey))]),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(children: const [Icon(Icons.ev_station_outlined, size: 14, color: AppColors.textGrey), SizedBox(width: 4), Text('Abastecimiento', style: TextStyle(fontSize: 12, color: AppColors.textGrey))]),
+                            GestureDetector(
+                              onTap: () => _showInfoDialog('Estado de Abastecimiento', 'Muestra la salud actual de tu inventario basado en el Burn Rate. Te alerta si estás en riesgo de quedarte sin combustible antes de tu próximo ciclo de compra.'),
+                              child: const Icon(Icons.help_outline, size: 16, color: AppColors.textGrey),
+                            ),
+                          ],
+                        ),
                         const SizedBox(height: 8),
                         Text(abastecimientoStatus, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: abastecimientoColor)),
                         const SizedBox(height: 4),
@@ -331,9 +372,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      Text('Tendencia de Consumo', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                      Icon(Icons.trending_up, color: AppColors.primary),
+                    children: [
+                      const Text('Tendencia de Consumo', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                      GestureDetector(
+                        onTap: () => _showInfoDialog('Tendencia de Consumo', 'Este gráfico de barras muestra la distribución del volumen de galones pedidos según el día de la semana, basado en tus pedidos históricos.'),
+                        child: const Icon(Icons.help_outline, color: AppColors.primary),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 24),

@@ -193,28 +193,30 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
                           child: Stack(
                             children: [
                               // Detector de gestos para dibujar
-                              GestureDetector(
-                                onPanStart: (details) {
-                                  setState(() {
-                                    _signaturePoints.add(details.localPosition);
-                                  });
-                                },
-                                onPanUpdate: (details) {
-                                  setState(() {
-                                    _signaturePoints.add(details.localPosition);
-                                  });
-                                },
-                                onPanEnd: (details) {
-                                  setState(() {
-                                    _signaturePoints.add(null); // Separador de trazos
-                                  });
-                                },
-                                child: Container(
-                                  color: Colors.transparent, // Asegura que capture los gestos en toda el área
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                  child: CustomPaint(
-                                    painter: InteractiveSignaturePainter(_signaturePoints),
+                              ClipRect(
+                                child: GestureDetector(
+                                  onPanStart: (details) {
+                                    setState(() {
+                                      _signaturePoints.add(details.localPosition);
+                                    });
+                                  },
+                                  onPanUpdate: (details) {
+                                    setState(() {
+                                      _signaturePoints.add(details.localPosition);
+                                    });
+                                  },
+                                  onPanEnd: (details) {
+                                    setState(() {
+                                      _signaturePoints.add(null); // Separador de trazos
+                                    });
+                                  },
+                                  child: Container(
+                                    color: Colors.transparent, // Asegura que capture los gestos en toda el área
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    child: CustomPaint(
+                                      painter: InteractiveSignaturePainter(_signaturePoints),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -270,7 +272,7 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
                         // NAVEGACIÓN A LA PANTALLA DEL VOUCHER
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const DigitalReceiptScreen(signaturePoints: [],)),
+                          MaterialPageRoute(builder: (context) => DigitalReceiptScreen(signaturePoints: _signaturePoints)),
                         );
                       },
                       icon: const Icon(Icons.description_outlined, size: 18),
