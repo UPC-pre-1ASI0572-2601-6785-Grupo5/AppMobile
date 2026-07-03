@@ -201,32 +201,7 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
           ),
           const SizedBox(height: 16),
 
-          // ==========================================
-          // GESTIÓN DE ROLES
-          // ==========================================
-          _buildSectionCard(
-            title: 'Gestión de Roles',
-            icon: Icons.people_outline,
-            trailing: InkWell(
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Agregar rol (Simulado)')));
-              },
-              child: const Icon(Icons.add, color: AppColors.textDark, size: 22),
-            ),
-            child: Column(
-              children: [
-                _buildRoleItem('JP', 'Juan Pérez', 'Operador Senior', const Color(0xFFD4EFDF), const Color(0xFF006D3E)),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  child: Divider(color: AppColors.borderLight, height: 1),
-                ),
-                _buildRoleItem('MG', 'María García', 'Analista de Datos', const Color(0xFFF4F7F7), AppColors.textDark),
-                const SizedBox(height: 16),
-                const Text('3 usuarios adicionales con acceso limitado', style: TextStyle(fontSize: 11, color: AppColors.textGrey)),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
+
 
           // ==========================================
           // NOTIFICACIONES
@@ -435,8 +410,27 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Documentación Técnica'),
-        content: const Text('Aquí se mostraría la documentación completa (Manuales, Integración API para Proveedores, etc).'),
+        title: const Text('Documentación Técnica de la API'),
+        content: const SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Arquitectura de Integración', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary)),
+              SizedBox(height: 8),
+              Text('FuelTrack expone una API RESTful alojada en Render (https://fueltrack-backend-api.onrender.com).'),
+              SizedBox(height: 12),
+              Text('1. Autenticación (JWT)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              Text('Todos los endpoints seguros requieren un token JWT enviado en el header de la solicitud HTTP: Authorization: Bearer <tu_token_jwt>. Los tokens expiran en 24h.'),
+              SizedBox(height: 12),
+              Text('2. Endpoints Principales', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              Text('• GET /api/v1/orders - Lista de pedidos activos.\n• PATCH /api/v1/orders/{id}/dispatch - Iniciar despacho de un pedido.\n• PATCH /api/v1/orders/{id}/deliver - Marcar como entregado con firma digital.'),
+              SizedBox(height: 12),
+              Text('3. Monitoreo IoT', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              Text('Los datos de telemetría (temperatura, ubicación, velocidad) se envían vía WebSockets al backend de FuelTrack para reflejarse en tiempo real en la plataforma.'),
+            ],
+          ),
+        ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cerrar')),
         ],
@@ -502,29 +496,7 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
     );
   }
 
-  Widget _buildRoleItem(String initials, String name, String role, Color bgAvatar, Color textAvatar) {
-    return Row(
-      children: [
-        CircleAvatar(
-          radius: 18,
-          backgroundColor: bgAvatar,
-          child: Text(initials, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: textAvatar)),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-              const SizedBox(height: 2),
-              Text(role, style: const TextStyle(fontSize: 11, color: AppColors.textGrey)),
-            ],
-          ),
-        ),
-        const Icon(Icons.chevron_right, color: AppColors.textGrey, size: 20),
-      ],
-    );
-  }
+
 
   Widget _buildSupportTile(IconData icon, String title, String subtitle, bool isLink, {VoidCallback? onTap}) {
     return InkWell(

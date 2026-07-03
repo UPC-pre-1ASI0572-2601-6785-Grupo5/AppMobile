@@ -6,7 +6,10 @@ import 'iot_critical_alerts_screen.dart';
 import 'provider_profile_view.dart';      // <-- IMPORTANTE: La nueva vista de Perfil de Proveedor
 import 'iot_monitoring_screen.dart';
 
+import '../services/order_service.dart';
+import '../models/order_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 
 class ProviderDashboardScreen extends StatefulWidget {
   final int? initialIndex;
@@ -18,6 +21,9 @@ class ProviderDashboardScreen extends StatefulWidget {
 
 class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
   int _selectedIndex = 0;
+  bool _isLoading = true;
+  List<OrderModel> _orders = [];
+  final OrderService _orderService = OrderService();
 
   @override
   void initState() {
@@ -38,16 +44,23 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
         });
       }
     }
+    _fetchOrders();
   }
 
-  // Lista de pantallas para el proveedor con todas las pestañas conectadas
-  late final List<Widget> _pages = [
-    _buildProviderDashboardView(),          // Ãndice 0: Inicio Proveedor
-    const ProviderDispatchesScreen(),       // Ãndice 1: Gestión de Despachos
-    const ProviderFleetScreen(),            // Ãndice 2: Panel de Flota (Conductores y Cisternas)
-    const IotCriticalAlertsScreen(),        // Ãndice 3: Centro de Alertas Críticas
-    const ProviderProfileView(),            // Ãndice 4: Perfil Corporativo
-  ];
+  Future<void> _fetchOrders() async {
+    setState(() => _isLoading = true);
+    try {
+      final orders = await _orderService.getOrders();
+      if (mounted) {
+        setState(() {
+          _orders = orders;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -118,7 +131,13 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
       ),
       body: IndexedStack(
         index: _selectedIndex,
-        children: _pages,
+        children: [
+          _buildProviderDashboardView(),          // Índice 0: Inicio Proveedor
+          const ProviderDispatchesScreen(),       // Índice 1: Gestión de Despachos
+          const ProviderFleetScreen(),            // Índice 2: Panel de Flota
+          const IotCriticalAlertsScreen(),        // Índice 3: Alertas Críticas
+          const ProviderProfileView(),            // Índice 4: Perfil Corporativo
+        ],
       ),
       floatingActionButton: _selectedIndex == 0 ? FloatingActionButton(
         backgroundColor: AppColors.primary,
@@ -181,6 +200,17 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
   }
 
   Widget _buildProviderDashboardView() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+    }
+
+    final activeOrders = _orders.where((o) => o.status == 'DISPATCHED' || o.status == 'IN_TRANSIT').length;
+    final pendingOrders = _orders.where((o) => o.status == 'PENDING_APPROVAL').length;
+    final totalProjected = _orders.where((o) => o.status != 'COMPLETED' && o.status != 'DELIVERED').fold(0.0, (sum, o) => sum + o.quantityGallons);
+
+    List<OrderModel> recentDispatches = _orders.where((o) => o.status != 'PENDING' && o.status != 'PENDING_APPROVAL').toList();
+    recentDispatches.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Column(
@@ -206,10 +236,10 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text('Entregas Activas', style: TextStyle(fontSize: 14, color: AppColors.textGrey, fontWeight: FontWeight.bold)),
-                    SizedBox(height: 8),
-                    Text('42', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                  children: [
+                    const Text('Entregas Activas', style: TextStyle(fontSize: 14, color: AppColors.textGrey, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    Text('$activeOrders', style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                   ],
                 ),
                 Container(
@@ -337,26 +367,84 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
           // Sección: Despachos Recientes
           const Text('DESPACHOS RECIENTES', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textGrey, letterSpacing: 0.5)),
           const SizedBox(height: 12),
-          _buildDispatchItem(
-            refCode: '#REF-8902-X',
-            destination: 'Destino: Planta Norte',
-            driver: 'Conductor: A. Pérez',
-            status: 'EN RUTA',
-            isCompleted: false,
-          ),
-          _buildDispatchItem(
-            refCode: '#REF-8891-B',
-            destination: 'Destino: Centro Logístico',
-            driver: 'Conductor: M. López',
-            status: 'EN RUTA',
-            isCompleted: false,
-          ),
-          _buildDispatchItem(
-            refCode: '#REF-8875-A',
-            destination: 'Destino: Terminal Aéreo',
-            driver: 'Conductor: C. Ruiz',
-            status: 'COMPLETADO',
-            isCompleted: true,
+          if (recentDispatches.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(child: Text('No hay despachos recientes', style: TextStyle(color: AppColors.textGrey))),
+            )
+          else
+            ...recentDispatches.take(5).map((order) {
+              String statusText = order.status;
+              if (statusText == 'DISPATCHED' || statusText == 'IN_TRANSIT') statusText = 'EN RUTA';
+              if (statusText == 'COMPLETED' || statusText == 'DELIVERED') statusText = 'COMPLETADO';
+              
+              return _buildDispatchItem(
+                refCode: '#FT-${order.id}',
+                destination: '${order.quantityGallons} Galones',
+                driver: 'Documento: ${order.documentRef.isEmpty ? "N/A" : order.documentRef}',
+                status: statusText,
+                isCompleted: statusText == 'COMPLETADO',
+              );
+            }).toList(),
+          const SizedBox(height: 24),
+
+          // Tarjeta Resumen Verde
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color(0xFF006D3E),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('RESUMEN DEL DÍA', style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                const SizedBox(height: 4),
+                Text('${(totalProjected / 1000).toStringAsFixed(1)}k Lts', style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                const Text('Despachos totales proyectados', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withAlpha(26), // Transparente claro
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Activos', style: TextStyle(color: Colors.white70, fontSize: 11)),
+                            const SizedBox(height: 4),
+                            Text('$activeOrders', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withAlpha(26),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Pendientes', style: TextStyle(color: Colors.white70, fontSize: 11)),
+                            const SizedBox(height: 4),
+                            Text('$pendingOrders', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 80),
         ],
