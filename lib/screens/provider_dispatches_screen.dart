@@ -260,10 +260,6 @@ class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> {
       );
     }).toList();
   }
-        ],
-      ),
-    );
-  }
 
   // ====== WIDGETS REUTILIZABLES DE ESTA PANTALLA ======
 
