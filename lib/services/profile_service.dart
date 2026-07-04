@@ -142,7 +142,7 @@ class ProfileService {
   }
 
   Future<void> _updateLocalUser(User user) async {
-    final token = SessionManager.instance.token ?? '';
+    final token = (user.token.isNotEmpty) ? user.token : (SessionManager.instance.token ?? '');
     user = User(
       id: user.id,
       email: user.email,
