@@ -4,7 +4,7 @@ import 'package:latlong2/latlong.dart';
 import '../constants/colors.dart';
 import '../services/order_service.dart';
 import '../services/profile_service.dart';
-import '../utils/session_manager.dart';
+import '../services/session_manager.dart';
 import 'order_confirmation_screen.dart';
 import 'order_failed_screen.dart';
 
