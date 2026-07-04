@@ -562,8 +562,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
                           const SizedBox(height: 48),
                         ],
                       ),
-                    );
-                  },
+                    ),
+                  );
+                },
                 ),
               ],
             ),
