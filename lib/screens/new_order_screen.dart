@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -29,6 +30,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
   bool _isLoadingSites = true;
   bool _isLoadingMap = false;
   LatLng _targetLocation = const LatLng(-12.0464, -77.0428);
+  String _calculatedEta = "24 - 48 Horas";
   final MapController _mapController = MapController();
 
   @override
@@ -70,10 +72,40 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
         _targetLocation = location;
         _isLoadingMap = false;
       });
+      _calculateEta(location);
       try {
         _mapController.move(_targetLocation, 14.0);
       } catch (_) {}
     }
+  }
+
+  void _calculateEta(LatLng target) {
+    const double originLat = -12.0464;
+    const double originLng = -77.0428;
+    
+    double dLat = (target.latitude - originLat) * pi / 180.0;
+    double dLng = (target.longitude - originLng) * pi / 180.0;
+    
+    double a = sin(dLat/2) * sin(dLat/2) +
+               cos(originLat * pi / 180.0) * cos(target.latitude * pi / 180.0) *
+               sin(dLng/2) * sin(dLng/2);
+    double c = 2 * atan2(sqrt(a), sqrt(1-a));
+    double distanceKm = 6371 * c;
+    
+    double hours = distanceKm / 40.0;
+    if (hours < 0.5) hours = 0.5; // Mínimo 30 min
+    
+    int totalMinutes = (hours * 60).round();
+    
+    setState(() {
+      if (totalMinutes < 60) {
+        _calculatedEta = "$totalMinutes min";
+      } else {
+        int h = totalMinutes ~/ 60;
+        int m = totalMinutes % 60;
+        _calculatedEta = m > 0 ? "${h}h ${m}m" : "${h}h";
+      }
+    });
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -131,7 +163,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => OrderConfirmationScreen(order: createdOrder)),
+        MaterialPageRoute(builder: (context) => OrderConfirmationScreen(order: createdOrder, eta: _calculatedEta)),
       );
     } catch (e) {
       if (!mounted) return;
@@ -370,9 +402,9 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
 
             Row(
                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-               children: const [
-                 Text('Tiempo estimado de entrega', style: TextStyle(fontSize: 12, color: AppColors.textGrey)),
-                 Text('24 - 48 Horas', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primary)),
+               children: [
+                 const Text('Tiempo estimado de entrega', style: TextStyle(fontSize: 12, color: AppColors.textGrey)),
+                 Text(_calculatedEta, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primary)),
                ],
             ),
             const SizedBox(height: 16),

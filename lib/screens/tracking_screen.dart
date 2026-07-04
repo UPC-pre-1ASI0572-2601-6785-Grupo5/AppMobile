@@ -314,11 +314,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
           Expanded(
             child: Stack(
               children: [
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 350,
+                Positioned.fill(
                   child: FlutterMap(
                     mapController: _mapController,
                     options: MapOptions(
@@ -386,22 +382,23 @@ class _TrackingScreenState extends State<TrackingScreen> {
                     ],
                   ),
                 ),
-                Positioned(
-                  top: 250,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    decoration: const BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                        boxShadow: [
-                          BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -5)),
-                        ]
-                    ),
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
+                DraggableScrollableSheet(
+                  initialChildSize: 0.5,
+                  minChildSize: 0.1,
+                  maxChildSize: 0.9,
+                  builder: (context, scrollController) {
+                    return Container(
+                      decoration: const BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                          boxShadow: [
+                            BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -5)),
+                          ]
+                      ),
+                      child: SingleChildScrollView(
+                        controller: scrollController,
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Center(
@@ -565,8 +562,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
                           const SizedBox(height: 48),
                         ],
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ],
             ),

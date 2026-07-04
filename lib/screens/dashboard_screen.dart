@@ -11,7 +11,8 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 class DashboardScreen extends StatefulWidget {
   final int? initialIndex;
-  const DashboardScreen({Key? key, this.initialIndex}) : super(key: key);
+  final OrderModel? trackingOrder;
+  const DashboardScreen({Key? key, this.initialIndex, this.trackingOrder}) : super(key: key);
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -70,7 +71,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List<Widget> get _pages => [
     _buildDashboardView(),
     const OrdersScreen(),
-    const TrackingScreen(),
+    TrackingScreen(order: widget.trackingOrder),
     const AnalyticsScreen(),
     const ProfileScreen(),
   ];

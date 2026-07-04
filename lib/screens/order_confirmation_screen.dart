@@ -7,7 +7,8 @@ import '../models/order_model.dart';
 
 class OrderConfirmationScreen extends StatelessWidget {
   final OrderModel order;
-  const OrderConfirmationScreen({Key? key, required this.order}) : super(key: key);
+  final String eta;
+  const OrderConfirmationScreen({Key? key, required this.order, required this.eta}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -160,7 +161,7 @@ class OrderConfirmationScreen extends StatelessWidget {
                 children: [
                   const Text('CÓDIGO', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textGrey, letterSpacing: 1)),
                   const SizedBox(height: 4),
-                  const Text('#FT-8892', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                  Text('#FT-${order.id ?? '0000'}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
                   const SizedBox(height: 16),
 
                   // Pequeño divisor o espacio
@@ -169,7 +170,7 @@ class OrderConfirmationScreen extends StatelessWidget {
 
                   const Text('VOLUMEN', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textGrey, letterSpacing: 1)),
                   const SizedBox(height: 4),
-                  const Text('5,000 L', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                  Text('${order.quantityGallons} L', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                   const SizedBox(height: 16),
 
                   Container(height: 1, width: 40, color: AppColors.borderLight),
@@ -179,10 +180,10 @@ class OrderConfirmationScreen extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Icon(Icons.access_time, size: 14, color: AppColors.textDark),
-                      SizedBox(width: 4),
-                      Text('45 min', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                    children: [
+                      const Icon(Icons.access_time, size: 14, color: AppColors.textDark),
+                      const SizedBox(width: 4),
+                      Text(eta, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                     ],
                   ),
                 ],
@@ -195,10 +196,11 @@ class OrderConfirmationScreen extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  // AHORA ESTE BOTÓN TE LLEVA DIRECTAMENTE AL SEGUIMIENTO DEL PEDIDO CREADO
-                  Navigator.push(
+                  // AHORA ESTE BOTÓN TE LLEVA DIRECTAMENTE AL SEGUIMIENTO DEL PEDIDO CREADO EN EL DASHBOARD
+                  Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(builder: (context) => TrackingScreen(order: order)),
+                    MaterialPageRoute(builder: (context) => DashboardScreen(initialIndex: 2, trackingOrder: order)),
+                    (route) => false,
                   );
                 },
                 icon: const Icon(Icons.local_shipping_outlined, color: Colors.white, size: 18),
