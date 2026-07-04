@@ -3,8 +3,28 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../constants/colors.dart';
 
-class FullscreenMapScreen extends StatelessWidget {
-  const FullscreenMapScreen({Key? key}) : super(key: key);
+class FullscreenMapScreen extends StatefulWidget {
+  final LatLng targetLocation;
+  final LatLng truckPosition;
+
+  const FullscreenMapScreen({
+    Key? key,
+    required this.targetLocation,
+    required this.truckPosition,
+  }) : super(key: key);
+
+  @override
+  State<FullscreenMapScreen> createState() => _FullscreenMapScreenState();
+}
+
+class _FullscreenMapScreenState extends State<FullscreenMapScreen> {
+  final MapController _mapController = MapController();
+
+  void _centerMap() {
+    try {
+      _mapController.move(widget.truckPosition, 14.0);
+    } catch (_) {}
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,9 +42,10 @@ class FullscreenMapScreen extends StatelessWidget {
         ),
       ),
       body: FlutterMap(
-        options: const MapOptions(
-          initialCenter: LatLng(-12.065, -76.98), // Centro de la vista ajustado
-          initialZoom: 13.5,
+        mapController: _mapController,
+        options: MapOptions(
+          initialCenter: widget.targetLocation,
+          initialZoom: 13.0,
         ),
         children: [
           TileLayer(
@@ -36,11 +57,11 @@ class FullscreenMapScreen extends StatelessWidget {
           PolygonLayer(
             polygons: [
               Polygon(
-                points: const [
-                  LatLng(-12.082, -76.964),
-                  LatLng(-12.082, -76.956),
-                  LatLng(-12.088, -76.956),
-                  LatLng(-12.088, -76.964),
+                points: [
+                  LatLng(widget.targetLocation.latitude + 0.003, widget.targetLocation.longitude - 0.004),
+                  LatLng(widget.targetLocation.latitude + 0.003, widget.targetLocation.longitude + 0.004),
+                  LatLng(widget.targetLocation.latitude - 0.003, widget.targetLocation.longitude + 0.004),
+                  LatLng(widget.targetLocation.latitude - 0.003, widget.targetLocation.longitude - 0.004),
                 ],
                 color: AppColors.primary.withAlpha(51),
                 borderColor: AppColors.primary,
@@ -48,23 +69,17 @@ class FullscreenMapScreen extends StatelessWidget {
               ),
             ],
           ),
-          // Ruta trazada (Ahora simulando curvas por las calles)
+          // Ruta trazada (Línea directa entre origen y destino para visualización rápida)
           PolylineLayer(
             polylines: [
               Polyline(
-                points: const [
-                  LatLng(-12.0464, -77.0000), // Posición actual de la Cisterna
-                  LatLng(-12.0485, -76.9960), // Curva calle 1
-                  LatLng(-12.0520, -76.9930), // Ingreso a vía principal
-                  LatLng(-12.0580, -76.9880), // Siguiendo la vía
-                  LatLng(-12.0640, -76.9820), // Curva ligera
-                  LatLng(-12.0720, -76.9740), // Tramo recto largo
-                  LatLng(-12.0780, -76.9680), // Desvío hacia la planta
-                  LatLng(-12.0810, -76.9620), // Acercándose a la puerta
-                  LatLng(-12.0850, -76.9600), // Refinería (Destino final)
+                points: [
+                  const LatLng(-12.085, -76.96), // Origen
+                  widget.targetLocation, // Destino
                 ],
-                color: AppColors.primary,
+                color: AppColors.primary.withAlpha(128),
                 strokeWidth: 4,
+                isDotted: true,
               ),
             ],
           ),
@@ -72,7 +87,7 @@ class FullscreenMapScreen extends StatelessWidget {
             markers: [
               // Marcador de la Geocerca
               Marker(
-                point: const LatLng(-12.085, -76.96),
+                point: widget.targetLocation,
                 width: 120,
                 height: 30,
                 child: Container(
@@ -89,7 +104,7 @@ class FullscreenMapScreen extends StatelessWidget {
               ),
               // Marcador del Camión
               Marker(
-                point: const LatLng(-12.0464, -77.00),
+                point: widget.truckPosition,
                 width: 60,
                 height: 60,
                 child: Column(
@@ -115,9 +130,7 @@ class FullscreenMapScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.primary,
-        onPressed: () {
-          // Lógica futura para centrar ubicación
-        },
+        onPressed: _centerMap,
         child: const Icon(Icons.my_location, color: Colors.white),
       ),
     );

@@ -6,6 +6,9 @@ import 'dashboard_screen.dart';
 import 'fullscreen_map_screen.dart'; // Importación de la nueva pantalla
 import '../models/order_model.dart';
 
+import 'dart:math';
+import '../services/geocoding_service.dart';
+
 class TrackingDetailsScreen extends StatefulWidget {
   final OrderModel order;
   const TrackingDetailsScreen({Key? key, required this.order}) : super(key: key);
@@ -14,10 +17,64 @@ class TrackingDetailsScreen extends StatefulWidget {
   State<TrackingDetailsScreen> createState() => _TrackingDetailsScreenState();
 }
 
-class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> {
+class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with TickerProviderStateMixin {
   final int _selectedIndex = 2; // Seguimiento activo
   final MapController _mapController = MapController();
+  late AnimationController _animController;
+  late Animation<double> _anim;
+  
+  LatLng _truckPosition = const LatLng(-12.085, -76.96); // Refinería
+  LatLng _targetLocation = const LatLng(-12.085, -76.96);
+  String _destinationName = 'Planta Refinería Sur';
+  bool _isLoadingMap = true;
   double _currentZoom = 15.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(vsync: this, duration: const Duration(seconds: 10));
+    _anim = Tween<double>(begin: 0, end: 1).animate(_animController)
+      ..addListener(() {
+        if (mounted) {
+          setState(() {
+            double lat = (-12.085) + (_targetLocation.latitude - (-12.085)) * _anim.value;
+            double lng = (-76.96) + (_targetLocation.longitude - (-76.96)) * _anim.value;
+            _truckPosition = LatLng(lat, lng);
+          });
+        }
+      });
+    _resolveDestination();
+  }
+
+  Future<void> _resolveDestination() async {
+    String rawRef = widget.order.documentRef;
+    String addr = 'Planta Refinería Sur';
+    if (rawRef.contains(' | ')) {
+      addr = rawRef.split(' | ')[0];
+    } else if (rawRef.isNotEmpty) {
+      addr = rawRef;
+    }
+    
+    final loc = await GeocodingService.instance.getCoordinatesFromAddress(addr);
+    if (mounted) {
+      setState(() {
+        _targetLocation = loc;
+        _destinationName = addr;
+        _truckPosition = const LatLng(-12.085, -76.96); // Origen
+        _isLoadingMap = false;
+      });
+      _animController.forward(from: 0);
+      try {
+        _mapController.move(_targetLocation, 13.0);
+      } catch (_) {}
+    }
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
 
   void _zoomIn() {
     setState(() {
@@ -127,7 +184,7 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> {
                           children: [
                             Expanded(child: _buildInfoBox('Capacidad\nSolicitada', '${widget.order.quantityGallons} Gal')),
                             const SizedBox(width: 12),
-                            Expanded(child: _buildInfoBox('Estado', widget.order.status)),
+                            Expanded(child: _buildInfoBox('Estado', _formatStatus(widget.order.status), valueColor: _getStatusColor(widget.order.status))),
                           ],
                         ),
                         const SizedBox(height: 12),
@@ -222,7 +279,7 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> {
                 children: [
                   const Text('GEOCERCA DE DESTINO', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textGrey, letterSpacing: 1)),
                   const SizedBox(height: 4),
-                  const Text('Planta Refinería Sur', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                  Text(_destinationName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                   const SizedBox(height: 16),
 
                   // Mapa Interactivo Real embebido en la tarjeta
@@ -240,54 +297,60 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> {
                           FlutterMap(
                             mapController: _mapController,
                             options: MapOptions(
-                              initialCenter: const LatLng(-12.085, -76.96), // Refinería
-                              initialZoom: _currentZoom,
-                              interactionOptions: const InteractionOptions(
-                                flags: InteractiveFlag.all & ~InteractiveFlag.rotate, // Deshabilita rotación
+                                initialCenter: _targetLocation,
+                                initialZoom: 13.0,
+                                interactionOptions: const InteractionOptions(flags: InteractiveFlag.none),
                               ),
-                            ),
-                            children: [
-                              TileLayer(
-                                urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-                                userAgentPackageName: 'com.example.fueltrack',
-                              ),
-                              PolygonLayer(
-                                polygons: [
-                                  Polygon(
-                                    points: const [
-                                      LatLng(-12.082, -76.964),
-                                      LatLng(-12.082, -76.956),
-                                      LatLng(-12.088, -76.956),
-                                      LatLng(-12.088, -76.964),
-                                    ],
-                                    color: AppColors.primary.withAlpha(51), // Equivalente a opacity 0.2
-                                    borderColor: AppColors.primary,
-                                    borderStrokeWidth: 2,
-                                  ),
-                                ],
-                              ),
-                              MarkerLayer(
-                                markers: [
-                                  Marker(
-                                    point: const LatLng(-12.085, -76.96),
-                                    width: 120,
-                                    height: 30,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(12),
-                                        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
-                                      ),
-                                      child: const Center(
-                                        child: Text('ZONA DE ENTREGA', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                              children: [
+                                TileLayer(
+                                  urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+                                  userAgentPackageName: 'com.example.fueltrack',
+                                ),
+                                PolygonLayer(
+                                  polygons: [
+                                    Polygon(
+                                      points: [
+                                        LatLng(_targetLocation.latitude + 0.003, _targetLocation.longitude - 0.004),
+                                        LatLng(_targetLocation.latitude + 0.003, _targetLocation.longitude + 0.004),
+                                        LatLng(_targetLocation.latitude - 0.003, _targetLocation.longitude + 0.004),
+                                        LatLng(_targetLocation.latitude - 0.003, _targetLocation.longitude - 0.004),
+                                      ],
+                                      color: AppColors.primary.withAlpha(51),
+                                      borderColor: AppColors.primary,
+                                      borderStrokeWidth: 2,
+                                    ),
+                                  ],
+                                ),
+                                MarkerLayer(
+                                  markers: [
+                                    Marker(
+                                      point: _targetLocation,
+                                      width: 120,
+                                      height: 30,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(12),
+                                          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
+                                        ),
+                                        child: const Center(
+                                          child: Text('ZONA DE ENTREGA', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+                                    Marker(
+                                      point: _truckPosition,
+                                      width: 40,
+                                      height: 40,
+                                      child: const Icon(Icons.local_shipping, color: AppColors.primary, size: 36),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          if (_isLoadingMap)
+                            const Center(child: CircularProgressIndicator(color: AppColors.primary)),
                           // Controles de zoom
                           Positioned(
                             right: 8,
@@ -349,7 +412,7 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const FullscreenMapScreen()),
+                          MaterialPageRoute(builder: (context) => FullscreenMapScreen(targetLocation: _targetLocation, truckPosition: _truckPosition)),
                         );
                       },
                       icon: const Icon(Icons.fullscreen, size: 18),
@@ -372,7 +435,7 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> {
     );
   }
 
-  Widget _buildInfoBox(String label, String value) {
+  Widget _buildInfoBox(String label, String value, {Color? valueColor}) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -384,10 +447,32 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> {
         children: [
           Text(label, style: const TextStyle(fontSize: 10, color: AppColors.textGrey)),
           const SizedBox(height: 4),
-          Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary)),
+          Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: valueColor ?? AppColors.primary)),
         ],
       ),
     );
+  }
+
+  String _formatStatus(String status) {
+    switch (status) {
+      case 'PENDING_APPROVAL': return 'PENDIENTE';
+      case 'APPROVED': return 'APROBADO';
+      case 'IN_TRANSIT': return 'EN RUTA';
+      case 'DELIVERED': return 'ENTREGADO';
+      case 'REJECTED': return 'RECHAZADO';
+      default: return status;
+    }
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'PENDING_APPROVAL': return Colors.orange;
+      case 'APPROVED': return AppColors.success;
+      case 'IN_TRANSIT': return AppColors.primary;
+      case 'DELIVERED': return Colors.teal;
+      case 'REJECTED': return AppColors.error;
+      default: return AppColors.textDark;
+    }
   }
 
   Widget _buildSensorPill(IconData icon, String text) {
