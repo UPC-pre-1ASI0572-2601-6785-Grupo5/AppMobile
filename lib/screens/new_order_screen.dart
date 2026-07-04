@@ -3,6 +3,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../constants/colors.dart';
 import '../services/order_service.dart';
+import '../services/profile_service.dart';
+import '../utils/session_manager.dart';
 import 'order_confirmation_screen.dart';
 import 'order_failed_screen.dart';
 
@@ -15,12 +17,45 @@ class NewOrderScreen extends StatefulWidget {
 
 class _NewOrderScreenState extends State<NewOrderScreen> {
   final OrderService _orderService = OrderService();
+  final ProfileService _profileService = ProfileService();
   final TextEditingController _qtyController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
   
   String _selectedFuel = 'Diésel';
-  String _selectedAddress = 'Planta Industrial Norte - Sector B';
+  String? _selectedAddress;
+  List<Map<String, dynamic>> _userSites = [];
   bool _isLoading = false;
+  bool _isLoadingSites = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSites();
+  }
+
+  Future<void> _loadSites() async {
+    final user = SessionManager.instance.user;
+    if (user != null) {
+      try {
+        final sites = await _profileService.getSites(user.id);
+        if (mounted) {
+          setState(() {
+            _userSites = sites;
+            if (sites.isNotEmpty) {
+              _selectedAddress = sites.first['address'];
+            }
+            _isLoadingSites = false;
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() => _isLoadingSites = false);
+        }
+      }
+    } else {
+      if (mounted) setState(() => _isLoadingSites = false);
+    }
+  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -71,7 +106,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
       await _orderService.createOrder(
         productName: _selectedFuel,
         quantityGallons: qty,
-        documentRef: '$_selectedAddress | ${_dateController.text}',
+        documentRef: '${_selectedAddress ?? "Sin Sede"} | ${_dateController.text}',
       );
       
       if (!mounted) return;
@@ -197,22 +232,29 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                   const Icon(Icons.map_outlined, color: AppColors.primary),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: _selectedAddress,
-                        isExpanded: true,
-                        icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.textGrey),
-                        items: ['Planta Industrial Norte - Sector B', 'Sede Central Sur'].map((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value, style: const TextStyle(fontSize: 14, color: AppColors.textDark)),
-                          );
-                        }).toList(),
-                        onChanged: (val) {
-                          if (val != null) setState(() => _selectedAddress = val);
-                        },
-                      ),
-                    ),
+                    child: _isLoadingSites
+                        ? const Center(child: Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                          ))
+                        : _userSites.isEmpty
+                            ? const Text('No tienes sedes registradas. Añade una en tu Perfil.', style: TextStyle(color: Colors.red, fontSize: 12))
+                            : DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  value: _selectedAddress,
+                                  isExpanded: true,
+                                  icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.textGrey),
+                                  items: _userSites.map((site) {
+                                    return DropdownMenuItem<String>(
+                                      value: site['address'] as String,
+                                      child: Text(site['name'] + ' - ' + site['address'], style: const TextStyle(fontSize: 14, color: AppColors.textDark), overflow: TextOverflow.ellipsis),
+                                    );
+                                  }).toList(),
+                                  onChanged: (val) {
+                                    if (val != null) setState(() => _selectedAddress = val);
+                                  },
+                                ),
+                              ),
                   ),
                 ],
               ),

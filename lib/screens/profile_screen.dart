@@ -469,10 +469,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
           ElevatedButton(
             onPressed: () async {
+              final address = addressCtrl.text.trim().toLowerCase();
+              if (nameCtrl.text.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('El nombre de la sede es obligatorio')));
+                return;
+              }
+              if (address.length < 10) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('La dirección debe tener al menos 10 caracteres')));
+                return;
+              }
+              if (!address.contains('av') && !address.contains('calle') && !address.contains('jr') && !address.contains('mz') && !address.contains('lote') && !address.contains('km')) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Por favor, ingresa una dirección válida (ej. Av., Calle, Jr., Mz., Lote)')));
+                return;
+              }
+
               final user = SessionManager.instance.user;
               if (user != null) {
                 try {
-                  await _profileService.addSite(user.id, nameCtrl.text, addressCtrl.text);
+                  await _profileService.addSite(user.id, nameCtrl.text.trim(), addressCtrl.text.trim());
                   await _loadProfileData(); // Reload sites
                   Navigator.pop(context);
                 } catch (e) {
