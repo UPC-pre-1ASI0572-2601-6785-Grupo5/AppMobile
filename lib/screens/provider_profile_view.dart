@@ -335,6 +335,7 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
                     // Se actualiza en el backend
                     await _profileService.updateProfile(user.id, {
                       'companyName': nameController.text,
+                      'email': emailController.text,
                       'taxId': rfcController.text,
                       'address': addressController.text,
                     });

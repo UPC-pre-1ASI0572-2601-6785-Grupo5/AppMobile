@@ -353,6 +353,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 if (user != null) {
                   try {
                     await _profileService.updateProfile(user.id, {
+                      'fullName': nameController.text,
+                      'email': emailController.text,
                       'companyName': companyController.text,
                     });
                     setState(() {});

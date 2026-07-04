@@ -4,7 +4,9 @@ import '../constants/colors.dart';
 import '../constants/strings.dart';
 import '../services/auth_service.dart';
 import 'forgot_password_screen.dart';
-import 'mfa_verification_screen.dart'; // IMPORTACIÓN AÑADIDA
+import 'mfa_verification_screen.dart';
+import 'dashboard_screen.dart';
+import 'provider_dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -67,13 +69,23 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       if (user != null) {
-        // Navegación a la pantalla de Verificación MFA
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const MfaVerificationScreen(),
-          ),
-        );
+        if (user.mfaEnabled) {
+          // Navegación a la pantalla de Verificación MFA
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const MfaVerificationScreen(),
+            ),
+          );
+        } else {
+          // Navegación directa al dashboard
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => user.isProvider ? const ProviderDashboardScreen() : const DashboardScreen(),
+            ),
+          );
+        }
       }
     } catch (e) {
       if (!mounted) return;
@@ -94,13 +106,23 @@ class _LoginScreenState extends State<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Accediendo a Demo como ${user.name}'), backgroundColor: AppColors.success),
         );
-        // Navegar a MFA después del demo login exitoso
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const MfaVerificationScreen(),
-          ),
-        );
+        if (user.mfaEnabled) {
+          // Navegar a MFA
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const MfaVerificationScreen(),
+            ),
+          );
+        } else {
+          // Navegación directa al dashboard
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => user.isProvider ? const ProviderDashboardScreen() : const DashboardScreen(),
+            ),
+          );
+        }
       }
     } catch (e) {
       if (!mounted) return;
