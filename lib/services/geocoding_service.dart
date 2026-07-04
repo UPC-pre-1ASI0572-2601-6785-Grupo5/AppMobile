@@ -15,8 +15,13 @@ class GeocodingService {
     }
 
     try {
+      String query = address;
+      if (!query.toLowerCase().contains('lima') && !query.toLowerCase().contains('peru')) {
+        query = '$query, Lima, Peru';
+      }
+      
       final uri = Uri.parse(
-          'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(address)}&format=json&limit=1');
+          'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(query)}&format=json&limit=1');
       
       final response = await http.get(
         uri,

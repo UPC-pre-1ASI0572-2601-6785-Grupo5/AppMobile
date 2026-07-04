@@ -72,6 +72,36 @@ class _TrackingScreenState extends State<TrackingScreen> {
     }
   }
 
+  Future<void> _cancelOrder(int id) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cancelar Pedido'),
+        content: const Text('¿Estás seguro de que deseas cancelar este pedido?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Sí, cancelar')),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      setState(() => _isLoading = true);
+      try {
+        await _orderService.cancelOrder(id);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pedido cancelado correctamente')));
+        setState(() {
+          _currentOrder = null;
+        });
+        _fetchActiveOrders();
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al cancelar: $e')));
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   String _formatStatus(String rawStatus) {
     switch(rawStatus.toUpperCase()) {
       case 'PENDING_APPROVAL': return 'Pendiente';
@@ -397,6 +427,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                       ),
                       child: SingleChildScrollView(
                         controller: scrollController,
+                        physics: const ClampingScrollPhysics(),
                         padding: const EdgeInsets.all(24),
                         child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -559,6 +590,23 @@ class _TrackingScreenState extends State<TrackingScreen> {
                               ),
                             ),
                           ),
+                          if (!isConfirmed) ...[
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                onPressed: () => _cancelOrder(order.id!),
+                                icon: const Icon(Icons.cancel_outlined, size: 18, color: AppColors.error),
+                                label: const Text('Cancelar Pedido', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold)),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFFDE8E8),
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                ),
+                              ),
+                            ),
+                          ],
                           const SizedBox(height: 48),
                         ],
                       ),
