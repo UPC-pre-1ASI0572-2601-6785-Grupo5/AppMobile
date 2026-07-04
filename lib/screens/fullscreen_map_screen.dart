@@ -71,15 +71,15 @@ class _FullscreenMapScreenState extends State<FullscreenMapScreen> {
           ),
           // Ruta trazada (Línea directa entre origen y destino para visualización rápida)
           PolylineLayer(
-            polylines: [
-              Polyline(
+            polylines: <Polyline<Object>>[
+              Polyline<Object>(
                 points: [
                   const LatLng(-12.085, -76.96), // Origen
                   widget.targetLocation, // Destino
                 ],
                 color: AppColors.primary.withAlpha(128),
                 strokeWidth: 4,
-                isDotted: true,
+                pattern: const StrokePattern.dashed(segments: [10, 10]),
               ),
             ],
           ),
