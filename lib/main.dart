@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'config/theme.dart';
 import 'constants/strings.dart';
 import 'screens/signup_screen.dart';
+import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/provider_dashboard_screen.dart';
 import 'services/session_manager.dart';
@@ -20,7 +21,7 @@ class FuelTrackApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget initialScreen = const SignUpScreen();
+    Widget initialScreen = const LoginScreen();
     
     if (SessionManager.instance.isLoggedIn) {
       final user = SessionManager.instance.user;
