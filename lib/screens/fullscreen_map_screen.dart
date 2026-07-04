@@ -79,7 +79,7 @@ class _FullscreenMapScreenState extends State<FullscreenMapScreen> {
                 ],
                 color: AppColors.primary.withAlpha(128),
                 strokeWidth: 4,
-                pattern: const StrokePattern.dashed(segments: [10, 10]),
+                pattern: StrokePattern.dashed(segments: const [10.0, 10.0]),
               ),
             ],
           ),
