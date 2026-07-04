@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/user_model.dart';
 import 'auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'session_manager.dart';
 import '../config/api_config.dart';
 
 class ProfileService {
@@ -10,8 +11,7 @@ class ProfileService {
   final String _baseUrl = '${ApiConfig.baseUrl}/api/v1';
 
   Future<Map<String, String>> _getHeaders() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
+    final token = SessionManager.instance.token;
     return {
       'Content-Type': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',
@@ -142,9 +142,7 @@ class ProfileService {
   }
 
   Future<void> _updateLocalUser(User user) async {
-    final prefs = await SharedPreferences.getInstance();
-    // Preserve token
-    final token = prefs.getString('auth_token') ?? '';
+    final token = SessionManager.instance.token ?? '';
     user = User(
       id: user.id,
       email: user.email,
@@ -159,6 +157,6 @@ class ProfileService {
       mfaEnabled: user.mfaEnabled,
       subscriptionPlan: user.subscriptionPlan,
     );
-    await prefs.setString('user_data', jsonEncode(user.toJson()));
+    await SessionManager.instance.saveSession(token: token, user: user);
   }
 }
