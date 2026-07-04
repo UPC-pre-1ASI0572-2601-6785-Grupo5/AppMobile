@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import 'order_history_screen.dart';
 import 'dashboard_screen.dart';
+import 'tracking_screen.dart';
+import '../models/order_model.dart';
 
 class OrderConfirmationScreen extends StatelessWidget {
-  const OrderConfirmationScreen({Key? key}) : super(key: key);
+  final OrderModel order;
+  const OrderConfirmationScreen({Key? key, required this.order}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -192,10 +195,10 @@ class OrderConfirmationScreen extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  // AHORA ESTE BOTÓN TE LLEVA DIRECTAMENTE AL HISTORIAL DE PEDIDOS
+                  // AHORA ESTE BOTÓN TE LLEVA DIRECTAMENTE AL SEGUIMIENTO DEL PEDIDO CREADO
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const OrderHistoryScreen()),
+                    MaterialPageRoute(builder: (context) => TrackingScreen(order: order)),
                   );
                 },
                 icon: const Icon(Icons.local_shipping_outlined, color: Colors.white, size: 18),

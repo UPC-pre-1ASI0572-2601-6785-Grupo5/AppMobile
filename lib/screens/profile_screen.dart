@@ -530,12 +530,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
             }
           }, child: const Text('Eliminar', style: TextStyle(color: AppColors.error))),
+          IconButton(
+            icon: const Icon(Icons.cancel, color: AppColors.textGrey),
+            tooltip: 'Cancelar',
+            onPressed: () => Navigator.pop(context),
+          ),
           ElevatedButton(
-            onPressed: () {
-              // Edit isn't implemented in API in this demo, just close
-              Navigator.pop(context);
+            onPressed: () async {
+              try {
+                if (_sedes[index]['id'] != null) {
+                  await _profileService.updateSite(
+                    _sedes[index]['id'],
+                    nameCtrl.text.trim(),
+                    addressCtrl.text.trim(),
+                  );
+                  await _loadProfileData();
+                }
+                Navigator.pop(context);
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+              }
             },
-            child: const Text('Cerrar')
+            child: const Text('Guardar')
           ),
         ],
       )

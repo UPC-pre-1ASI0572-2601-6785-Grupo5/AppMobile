@@ -5,6 +5,7 @@ import '../constants/colors.dart';
 import '../services/order_service.dart';
 import '../services/profile_service.dart';
 import '../services/session_manager.dart';
+import '../services/geocoding_service.dart';
 import 'order_confirmation_screen.dart';
 import 'order_failed_screen.dart';
 
@@ -26,6 +27,9 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
   List<Map<String, dynamic>> _userSites = [];
   bool _isLoading = false;
   bool _isLoadingSites = true;
+  bool _isLoadingMap = false;
+  LatLng _targetLocation = const LatLng(-12.0464, -77.0428);
+  final MapController _mapController = MapController();
 
   @override
   void initState() {
@@ -43,6 +47,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
             _userSites = sites;
             if (sites.isNotEmpty) {
               _selectedAddress = sites.first['address'];
+              _resolveLocation(_selectedAddress!);
             }
             _isLoadingSites = false;
           });
@@ -54,6 +59,20 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
       }
     } else {
       if (mounted) setState(() => _isLoadingSites = false);
+    }
+  }
+
+  Future<void> _resolveLocation(String address) async {
+    setState(() => _isLoadingMap = true);
+    final location = await GeocodingService.instance.getCoordinatesFromAddress(address);
+    if (mounted) {
+      setState(() {
+        _targetLocation = location;
+        _isLoadingMap = false;
+      });
+      try {
+        _mapController.move(_targetLocation, 14.0);
+      } catch (_) {}
     }
   }
 
@@ -103,7 +122,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await _orderService.createOrder(
+      final createdOrder = await _orderService.createOrder(
         productName: _selectedFuel,
         quantityGallons: qty,
         documentRef: '${_selectedAddress ?? "Sin Sede"} | ${_dateController.text}',
@@ -112,7 +131,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const OrderConfirmationScreen()),
+        MaterialPageRoute(builder: (context) => OrderConfirmationScreen(order: createdOrder)),
       );
     } catch (e) {
       if (!mounted) return;
@@ -251,7 +270,10 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                                     );
                                   }).toList(),
                                   onChanged: (val) {
-                                    if (val != null) setState(() => _selectedAddress = val);
+                                    if (val != null) {
+                                      setState(() => _selectedAddress = val);
+                                      _resolveLocation(val);
+                                    }
                                   },
                                 ),
                               ),
@@ -293,10 +315,11 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                 child: Stack(
                   children: [
                     FlutterMap(
-                      options: const MapOptions(
-                        initialCenter: LatLng(-12.0464, -77.0428),
+                      mapController: _mapController,
+                      options: MapOptions(
+                        initialCenter: _targetLocation,
                         initialZoom: 14.0,
-                        interactionOptions: InteractionOptions(flags: InteractiveFlag.none),
+                        interactionOptions: const InteractionOptions(flags: InteractiveFlag.none),
                       ),
                       children: [
                         TileLayer(
@@ -306,7 +329,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                         MarkerLayer(
                           markers: [
                             Marker(
-                              point: const LatLng(-12.0464, -77.0428),
+                              point: _targetLocation,
                               width: 40,
                               height: 40,
                               child: const Icon(Icons.location_on, color: AppColors.primary, size: 36),
@@ -315,6 +338,10 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                         ),
                       ],
                     ),
+                    if (_isLoadingMap)
+                      const Center(
+                        child: CircularProgressIndicator(color: AppColors.primary),
+                      ),
                     Positioned(
                       bottom: 12,
                       left: 12,

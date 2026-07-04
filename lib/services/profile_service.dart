@@ -131,6 +131,21 @@ class ProfileService {
     }
   }
 
+  Future<void> updateSite(int siteId, String name, String address) async {
+    final response = await http.put(
+      Uri.parse('$_baseUrl/sites/$siteId'),
+      headers: await _getHeaders(),
+      body: jsonEncode({
+        'name': name,
+        'address': address,
+        'active': true
+      }),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Error al actualizar sede');
+    }
+  }
+
   Future<void> deleteSite(int siteId) async {
     final response = await http.delete(
       Uri.parse('$_baseUrl/sites/$siteId'),
