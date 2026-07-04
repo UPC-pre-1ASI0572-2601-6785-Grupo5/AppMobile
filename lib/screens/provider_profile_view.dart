@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import 'login_screen.dart';
 import '../services/session_manager.dart';
-
+import '../services/profile_service.dart';
+import '../models/user_model.dart';
 class ProviderProfileView extends StatefulWidget {
   const ProviderProfileView({Key? key}) : super(key: key);
 
@@ -22,11 +23,43 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
     {'title': 'Problemas con el despacho #4092', 'status': 'Abierto'}
   ];
 
+  final ProfileService _profileService = ProfileService();
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileData();
+  }
+
+  Future<void> _loadProfileData() async {
+    final user = SessionManager.instance.user;
+    if (user != null) {
+      try {
+        final updatedUser = await _profileService.fetchUserProfile(user.id);
+        setState(() {
+          _mfaEnabled = updatedUser.mfaEnabled;
+          _isLoading = false;
+        });
+      } catch (e) {
+        setState(() => _isLoading = false);
+      }
+    } else {
+      setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator(color: Color(0xFF006D3E)));
+    }
+
     final user = SessionManager.instance.user;
-    final companyName = user?.name ?? 'Empresa Proveedora';
+    final companyName = user?.companyName ?? user?.name ?? 'Empresa Proveedora';
     final userEmail = user?.email ?? 'admin@fueltrack-corp.com';
+    final rfc = user?.taxId ?? 'FSI990101TX4';
+    final address = user?.address ?? 'Av. Logística 450, Ciudad Industrial';
     
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -100,11 +133,11 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
               children: [
                 _buildInfoField('Razón Social', companyName),
                 const SizedBox(height: 16),
-                _buildInfoField('RFC / Identificación Fiscal', 'FSI990101TX4'),
+                _buildInfoField('RFC / Identificación Fiscal', rfc),
                 const SizedBox(height: 16),
                 _buildInfoField('Correo Corporativo', userEmail),
                 const SizedBox(height: 16),
-                _buildInfoField('Ubicación Central', 'Av. Logística 450, Ciudad Industrial'),
+                _buildInfoField('Ubicación Central', address),
                 const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,
@@ -255,6 +288,8 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
   void _showEditProfileDialog(BuildContext context, String currentName, String currentEmail) {
     final nameController = TextEditingController(text: currentName);
     final emailController = TextEditingController(text: currentEmail);
+    final rfcController = TextEditingController(text: SessionManager.instance.user?.taxId ?? '');
+    final addressController = TextEditingController(text: SessionManager.instance.user?.address ?? '');
     
     showDialog(
       context: context,
@@ -274,6 +309,16 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
                 controller: emailController,
                 decoration: const InputDecoration(labelText: 'Correo Corporativo'),
               ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: rfcController,
+                decoration: const InputDecoration(labelText: 'RFC / Identificación Fiscal'),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: addressController,
+                decoration: const InputDecoration(labelText: 'Dirección Central'),
+              ),
             ],
           ),
           actions: [
@@ -283,12 +328,23 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF006D3E)),
-              onPressed: () {
-                SessionManager.instance.user?.name = nameController.text;
-                SessionManager.instance.user?.email = emailController.text;
-                setState(() {});
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Información actualizada exitosamente (Local)')));
+              onPressed: () async {
+                final user = SessionManager.instance.user;
+                if (user != null) {
+                  try {
+                    // Se actualiza en el backend
+                    await _profileService.updateProfile(user.id, {
+                      'companyName': nameController.text,
+                      'taxId': rfcController.text,
+                      'address': addressController.text,
+                    });
+                    setState(() {});
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Información actualizada exitosamente')));
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                  }
+                }
               },
               child: const Text('Guardar', style: TextStyle(color: Colors.white)),
             ),
@@ -299,25 +355,36 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
   }
 
   void _showChangePasswordDialog() {
+    final currentController = TextEditingController();
+    final newController = TextEditingController();
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Cambiar Contraseña'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: const [
-            TextField(obscureText: true, decoration: InputDecoration(labelText: 'Contraseña Actual')),
-            SizedBox(height: 12),
-            TextField(obscureText: true, decoration: InputDecoration(labelText: 'Nueva Contraseña')),
+          children: [
+            TextField(controller: currentController, obscureText: true, decoration: const InputDecoration(labelText: 'Contraseña Actual')),
+            const SizedBox(height: 12),
+            TextField(controller: newController, obscureText: true, decoration: const InputDecoration(labelText: 'Nueva Contraseña')),
           ],
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF006D3E)),
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contraseña actualizada exitosamente (Simulado)')));
+            onPressed: () async {
+              final user = SessionManager.instance.user;
+              if (user != null) {
+                try {
+                  await _profileService.changePassword(user.id, currentController.text, newController.text);
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contraseña actualizada exitosamente')));
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+                }
+              }
             },
             child: const Text('Actualizar', style: TextStyle(color: Colors.white))
           ),
@@ -336,9 +403,17 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: _mfaEnabled ? AppColors.error : const Color(0xFF006D3E)),
-            onPressed: () {
-              setState(() => _mfaEnabled = !_mfaEnabled);
-              Navigator.pop(context);
+            onPressed: () async {
+              final user = SessionManager.instance.user;
+              if (user != null) {
+                try {
+                  await _profileService.toggleMfa(user.id, !_mfaEnabled);
+                  setState(() => _mfaEnabled = !_mfaEnabled);
+                  Navigator.pop(context);
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+                }
+              }
             },
             child: Text(_mfaEnabled ? 'Desactivar' : 'Activar', style: const TextStyle(color: Colors.white))
           ),

@@ -20,6 +20,14 @@ class User {
   final String token;
   final String tokenType;
 
+  // New profile fields
+  String? companyName;
+  String? taxId;
+  String? phone;
+  String? address;
+  bool mfaEnabled;
+  String? subscriptionPlan;
+
   User({
     required this.id,
     required this.email,
@@ -27,6 +35,12 @@ class User {
     required this.role,
     required this.token,
     required this.tokenType,
+    this.companyName,
+    this.taxId,
+    this.phone,
+    this.address,
+    this.mfaEnabled = false,
+    this.subscriptionPlan,
   });
 
   /// Creates a [User] from the backend `AuthResponse` JSON.
@@ -36,8 +50,14 @@ class User {
       email: json['email'] as String,
       name: json['name'] as String,
       role: json['role'] as String,
-      token: json['token'] as String,
+      token: json['token'] as String? ?? '',
       tokenType: json['tokenType'] as String? ?? 'Bearer',
+      companyName: json['companyName'] as String?,
+      taxId: json['taxId'] as String?,
+      phone: json['phone'] as String?,
+      address: json['address'] as String?,
+      mfaEnabled: json['mfaEnabled'] as bool? ?? false,
+      subscriptionPlan: json['subscriptionPlan'] as String?,
     );
   }
 
@@ -49,6 +69,12 @@ class User {
       'role': role,
       'token': token,
       'tokenType': tokenType,
+      'companyName': companyName,
+      'taxId': taxId,
+      'phone': phone,
+      'address': address,
+      'mfaEnabled': mfaEnabled,
+      'subscriptionPlan': subscriptionPlan,
     };
   }
 

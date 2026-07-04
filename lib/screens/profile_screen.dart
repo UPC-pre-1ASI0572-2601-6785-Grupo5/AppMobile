@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import 'login_screen.dart';
 import '../services/session_manager.dart';
-
+import '../services/profile_service.dart';
+import '../models/user_model.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
 
@@ -14,16 +15,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // --- Local State for simulation ---
   String _currentPlan = 'Enterprise Pro';
   bool _mfaEnabled = true;
-  final List<Map<String, String>> _sedes = [
-    {'name': 'Sede Norte - Principal', 'address': 'Parque Industrial, Nave 4'},
-    {'name': 'Sede Sur - Distribución', 'address': 'Puerto Logístico A-12'}
-  ];
+  List<Map<String, dynamic>> _sedes = [];
   final List<Map<String, String>> _tickets = [
     {'title': 'Revisión de sensor #882 y Facturación Oct', 'status': 'Abierto'}
   ];
 
+  final ProfileService _profileService = ProfileService();
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileData();
+  }
+
+  Future<void> _loadProfileData() async {
+    final user = SessionManager.instance.user;
+    if (user != null) {
+      try {
+        final updatedUser = await _profileService.fetchUserProfile(user.id);
+        final sites = await _profileService.getSites(user.id);
+        setState(() {
+          _mfaEnabled = updatedUser.mfaEnabled;
+          _currentPlan = updatedUser.subscriptionPlan ?? 'Starter';
+          _sedes = sites;
+          _isLoading = false;
+        });
+      } catch (e) {
+        setState(() => _isLoading = false);
+      }
+    } else {
+      setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+    }
+
     final user = SessionManager.instance.user;
     final userName = user?.name ?? 'Usuario';
     final userRole = user?.isProvider == true ? 'Proveedor' : 'Cliente';
@@ -283,6 +314,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showEditProfileDialog(BuildContext context, String currentName, String currentEmail) {
     final nameController = TextEditingController(text: currentName);
     final emailController = TextEditingController(text: currentEmail);
+    final companyController = TextEditingController(text: SessionManager.instance.user?.companyName ?? '');
     
     showDialog(
       context: context,
@@ -302,6 +334,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 controller: emailController,
                 decoration: const InputDecoration(labelText: 'Correo Electrónico'),
               ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: companyController,
+                decoration: const InputDecoration(labelText: 'Razón Social'),
+              ),
             ],
           ),
           actions: [
@@ -311,12 +348,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-              onPressed: () {
-                SessionManager.instance.user?.name = nameController.text;
-                SessionManager.instance.user?.email = emailController.text;
-                setState(() {});
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Perfil actualizado (Localmente)')));
+              onPressed: () async {
+                final user = SessionManager.instance.user;
+                if (user != null) {
+                  try {
+                    await _profileService.updateProfile(user.id, {
+                      'companyName': companyController.text,
+                    });
+                    setState(() {});
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Perfil actualizado')));
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                  }
+                }
               },
               child: const Text('Guardar'),
             ),
@@ -341,10 +386,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     title: Text(plan),
                     value: plan,
                     groupValue: _currentPlan,
-                    onChanged: (val) {
-                      setState(() => _currentPlan = val!);
-                      setDialogState(() => _currentPlan = val!); // Update dialog UI
-                      Navigator.pop(context);
+                    onChanged: (val) async {
+                      if (val != null) {
+                        final user = SessionManager.instance.user;
+                        if (user != null) {
+                          try {
+                            await _profileService.changeSubscriptionPlan(user.id, val);
+                            setState(() => _currentPlan = val);
+                            setDialogState(() => _currentPlan = val);
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Plan actualizado')));
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                          }
+                        }
+                      }
                     },
                   );
                 }).toList(),
@@ -410,11 +466,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
           ElevatedButton(
-            onPressed: () {
-              setState(() {
-                _sedes.add({'name': nameCtrl.text.isEmpty ? 'Sede Nueva' : nameCtrl.text, 'address': addressCtrl.text.isEmpty ? 'Sin dirección' : addressCtrl.text});
-              });
-              Navigator.pop(context);
+            onPressed: () async {
+              final user = SessionManager.instance.user;
+              if (user != null) {
+                try {
+                  await _profileService.addSite(user.id, nameCtrl.text, addressCtrl.text);
+                  await _loadProfileData(); // Reload sites
+                  Navigator.pop(context);
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                }
+              }
             },
             child: const Text('Añadir')
           ),
@@ -439,18 +501,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () {
-            setState(() => _sedes.removeAt(index));
-            Navigator.pop(context);
+          TextButton(onPressed: () async {
+            try {
+              if (_sedes[index]['id'] != null) {
+                await _profileService.deleteSite(_sedes[index]['id']);
+                await _loadProfileData();
+              }
+              Navigator.pop(context);
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+            }
           }, child: const Text('Eliminar', style: TextStyle(color: AppColors.error))),
           ElevatedButton(
             onPressed: () {
-              setState(() {
-                _sedes[index] = {'name': nameCtrl.text, 'address': addressCtrl.text};
-              });
+              // Edit isn't implemented in API in this demo, just close
               Navigator.pop(context);
             },
-            child: const Text('Guardar')
+            child: const Text('Cerrar')
           ),
         ],
       )
@@ -458,24 +525,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showChangePasswordDialog() {
+    final currentCtrl = TextEditingController();
+    final newCtrl = TextEditingController();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Cambiar Contraseña'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: const [
-            TextField(obscureText: true, decoration: InputDecoration(labelText: 'Contraseña Actual')),
-            SizedBox(height: 12),
-            TextField(obscureText: true, decoration: InputDecoration(labelText: 'Nueva Contraseña')),
+          children: [
+            TextField(controller: currentCtrl, obscureText: true, decoration: const InputDecoration(labelText: 'Contraseña Actual')),
+            const SizedBox(height: 12),
+            TextField(controller: newCtrl, obscureText: true, decoration: const InputDecoration(labelText: 'Nueva Contraseña')),
           ],
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
           ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contraseña actualizada exitosamente (Simulado)')));
+            onPressed: () async {
+              final user = SessionManager.instance.user;
+              if (user != null) {
+                try {
+                  await _profileService.changePassword(user.id, currentCtrl.text, newCtrl.text);
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contraseña actualizada')));
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                }
+              }
             },
             child: const Text('Actualizar')
           ),
@@ -494,9 +571,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: _mfaEnabled ? AppColors.error : AppColors.primary),
-            onPressed: () {
-              setState(() => _mfaEnabled = !_mfaEnabled);
-              Navigator.pop(context);
+            onPressed: () async {
+              final user = SessionManager.instance.user;
+              if (user != null) {
+                try {
+                  await _profileService.toggleMfa(user.id, !_mfaEnabled);
+                  setState(() => _mfaEnabled = !_mfaEnabled);
+                  Navigator.pop(context);
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                }
+              }
             },
             child: Text(_mfaEnabled ? 'Desactivar' : 'Activar')
           ),
