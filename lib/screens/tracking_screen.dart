@@ -524,7 +524,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                   onPressed: () {
                                     Navigator.push(
                                       context,
-                                      MaterialPageRoute(builder: (context) => const TrackingDetailsScreen()),
+                                      MaterialPageRoute(builder: (context) => TrackingDetailsScreen(order: order)),
                                     );
                                   },
                                   icon: const Icon(Icons.remove_red_eye_outlined, size: 18, color: Colors.white),

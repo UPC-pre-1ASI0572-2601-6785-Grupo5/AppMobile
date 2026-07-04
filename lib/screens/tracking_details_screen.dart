@@ -4,9 +4,11 @@ import 'package:latlong2/latlong.dart';
 import '../constants/colors.dart';
 import 'dashboard_screen.dart';
 import 'fullscreen_map_screen.dart'; // Importación de la nueva pantalla
+import '../models/order_model.dart';
 
 class TrackingDetailsScreen extends StatefulWidget {
-  const TrackingDetailsScreen({Key? key}) : super(key: key);
+  final OrderModel order;
+  const TrackingDetailsScreen({Key? key, required this.order}) : super(key: key);
 
   @override
   State<TrackingDetailsScreen> createState() => _TrackingDetailsScreenState();
@@ -98,13 +100,13 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> {
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Expanded(
+                            Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Unidad Cisterna TX-402', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                                  SizedBox(height: 4),
-                                  Text('Modelo: Scania G450\nPremium Logistics', style: TextStyle(fontSize: 12, color: AppColors.textGrey, height: 1.4)),
+                                  Text(widget.order.assignedTruckId != null ? 'Unidad Cisterna ${widget.order.assignedTruckId}' : 'Unidad No Asignada', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                                  const SizedBox(height: 4),
+                                  const Text('Modelo: Pendiente\nPremium Logistics', style: TextStyle(fontSize: 12, color: AppColors.textGrey, height: 1.4)),
                                 ],
                               ),
                             ),
@@ -114,7 +116,7 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> {
                                 color: AppColors.primary.withAlpha(38),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Text('ID:\n#99281-\nFL', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                              child: Text('ID:\n#${widget.order.id}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary)),
                             ),
                           ],
                         ),
@@ -123,9 +125,9 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> {
                         // Grid de Capacidades
                         Row(
                           children: [
-                            Expanded(child: _buildInfoBox('Capacidad', '32,000 L')),
+                            Expanded(child: _buildInfoBox('Capacidad\nSolicitada', '${widget.order.quantityGallons} Gal')),
                             const SizedBox(width: 12),
-                            Expanded(child: _buildInfoBox('Carga Actual', '28,500 L')),
+                            Expanded(child: _buildInfoBox('Estado', widget.order.status)),
                           ],
                         ),
                         const SizedBox(height: 12),

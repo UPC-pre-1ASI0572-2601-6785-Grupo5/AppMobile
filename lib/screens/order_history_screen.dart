@@ -13,14 +13,35 @@ class OrderHistoryScreen extends StatefulWidget {
 }
 
 class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
-  List<dynamic> _orders = [];
+  List<dynamic> _allOrders = [];
+  List<dynamic> _filteredOrders = [];
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
   bool _isLoading = true;
   String? _error;
 
   @override
   void initState() {
     super.initState();
+    _searchController.addListener(_onSearchChanged);
     _fetchOrders();
+  }
+
+  void _onSearchChanged() {
+    setState(() {
+      _searchQuery = _searchController.text.toLowerCase();
+      _filteredOrders = _allOrders.where((order) {
+        final id = '#${order['id'] ?? ''}'.toLowerCase();
+        final name = (order['name']?.toString() ?? '').toLowerCase();
+        return id.contains(_searchQuery) || name.contains(_searchQuery);
+      }).toList();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchOrders() async {
@@ -47,7 +68,9 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         setState(() {
-          _orders = data;
+          _allOrders = data;
+          _filteredOrders = data;
+          _onSearchChanged(); // Apply current search if any
           _isLoading = false;
         });
       } else {
@@ -136,6 +159,20 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
               const Text('Historial de Pedidos', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textDark)),
               const SizedBox(height: 4),
               const Text('Consulta y descarga registros de suministros\nfinalizados.', style: TextStyle(fontSize: 12, color: AppColors.textGrey, height: 1.4)),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Buscar por código o nombre...',
+                  prefixIcon: const Icon(Icons.search, color: AppColors.primary),
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.borderLight)),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.borderLight)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary)),
+                ),
+              ),
               const SizedBox(height: 24),
 
               if (_isLoading)
@@ -155,23 +192,31 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                     ),
                   ),
                 )
-              else if (_orders.isEmpty)
+              else if (_allOrders.isEmpty)
                   const Center(
                     child: Padding(
                       padding: EdgeInsets.all(32),
                       child: Text('No hay pedidos registrados', style: TextStyle(color: AppColors.textGrey)),
                     ),
                   )
+              else if (_filteredOrders.isEmpty)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(32),
+                      child: Text('No se encontraron resultados', style: TextStyle(color: AppColors.textGrey)),
+                    ),
+                  )
                 else
                   ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _orders.length,
+                    itemCount: _filteredOrders.length,
                     separatorBuilder: (context, index) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
-                      final order = _orders[index];
+                      final order = _filteredOrders[index];
                       return _buildHistoryCard(
                         id: '#${order['id'] ?? ''}',
+                        name: order['name']?.toString() ?? '',
                         date: order['createdAt'] != null ? order['createdAt'].substring(0, 10) : 'N/A',
                         time: order['createdAt'] != null && order['createdAt'].length > 16 ? order['createdAt'].substring(11, 16) : 'N/A',
                         fuel: order['fuelType']?.toString() ?? 'Desconocido',
@@ -182,8 +227,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                   ),
 
               const SizedBox(height: 24),
-              if (!_isLoading && _orders.isNotEmpty)
-                Center(child: Text('Mostrando ${_orders.length} resultados', style: const TextStyle(fontSize: 11, color: AppColors.textGrey))),
+              if (!_isLoading && _filteredOrders.isNotEmpty)
+                Center(child: Text('Mostrando ${_filteredOrders.length} resultados', style: const TextStyle(fontSize: 11, color: AppColors.textGrey))),
               const SizedBox(height: 40),
             ],
           ),
@@ -192,7 +237,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     );
   }
 
-  Widget _buildHistoryCard({required String id, required String date, required String time, required String fuel, required String qty, required String status}) {
+  Widget _buildHistoryCard({required String id, required String name, required String date, required String time, required String fuel, required String qty, required String status}) {
     Color statusColor = AppColors.primary;
     if (status == 'PENDING') statusColor = Colors.orange;
     if (status == 'CANCELLED') statusColor = AppColors.error;
@@ -219,6 +264,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                     children: [
                       const Text('ID:', style: TextStyle(fontSize: 10, color: AppColors.textGrey, fontWeight: FontWeight.bold)),
                       Text(id, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                      if (name.isNotEmpty)
+                        Text(name, style: const TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w500)),
                     ],
                   ),
                 ],

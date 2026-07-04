@@ -16,11 +16,13 @@ class OrderService {
 
   Future<OrderModel> createOrder({
     required String productName,
+    required String name,
     required double quantityGallons,
     required String documentRef,
   }) async {
     final body = {
       'fuelType': productName,
+      'name': name,
       'gallons': quantityGallons,
       'documentRef': documentRef,
     };

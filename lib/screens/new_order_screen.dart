@@ -22,6 +22,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
   final ProfileService _profileService = ProfileService();
   final TextEditingController _qtyController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
   
   String _selectedFuel = 'Diésel';
   String? _selectedAddress;
@@ -156,6 +157,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
     try {
       final createdOrder = await _orderService.createOrder(
         productName: _selectedFuel,
+        name: _nameController.text.trim(),
         quantityGallons: qty,
         documentRef: '${_selectedAddress ?? "Sin Sede"} | ${_dateController.text}',
       );
@@ -180,6 +182,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
   void dispose() {
     _qtyController.dispose();
     _dateController.dispose();
+    _nameController.dispose();
     super.dispose();
   }
 
@@ -234,6 +237,21 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                     ),
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            const Text('Nombre del Pedido (Opcional)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textDark)),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                hintText: 'Ej. Pedido Mensual Norte',
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.borderLight)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.borderLight)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary)),
               ),
             ),
             const SizedBox(height: 24),
