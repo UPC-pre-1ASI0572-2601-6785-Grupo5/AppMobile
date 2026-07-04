@@ -3,10 +3,11 @@ import 'package:http/http.dart' as http;
 import '../models/user_model.dart';
 import 'auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../config/api_config.dart';
 
 class ProfileService {
-  // Configured dynamically if env exists, but for now we hardcode Render URL
-  final String _baseUrl = 'https://backend-npu7.onrender.com/api/v1';
+  // Use the central API config
+  final String _baseUrl = '${ApiConfig.baseUrl}/api/v1';
 
   Future<Map<String, String>> _getHeaders() async {
     final prefs = await SharedPreferences.getInstance();
