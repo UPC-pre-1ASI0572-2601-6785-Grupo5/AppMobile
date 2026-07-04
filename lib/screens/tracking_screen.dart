@@ -7,6 +7,7 @@ import 'delivery_success_screen.dart';
 import 'alerts_screen.dart';
 import '../models/order_model.dart';
 import '../services/order_service.dart';
+import '../services/geocoding_service.dart';
 import 'package:intl/intl.dart';
 
 class TrackingScreen extends StatefulWidget {
@@ -24,6 +25,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
   OrderModel? _currentOrder;
   List<OrderModel> _activeOrders = [];
   bool _isLoading = true;
+  bool _isLoadingMapLocation = false;
+  LatLng _targetLocation = const LatLng(-12.0464, -77.0428);
   final OrderService _orderService = OrderService();
 
   @override
@@ -32,6 +35,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
     if (widget.order != null) {
       _currentOrder = widget.order;
       _isLoading = false;
+      _resolveLocation(_currentOrder!.documentRef);
     } else {
       _fetchActiveOrders();
     }
@@ -45,11 +49,26 @@ class _TrackingScreenState extends State<TrackingScreen> {
       
       if (_activeOrders.length == 1) {
         _currentOrder = _activeOrders.first;
+        _resolveLocation(_currentOrder!.documentRef);
       }
     } catch (e) {
       debugPrint('Error fetching active orders: $e');
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _resolveLocation(String address) async {
+    setState(() => _isLoadingMapLocation = true);
+    final location = await GeocodingService.instance.getCoordinatesFromAddress(address);
+    if (mounted) {
+      setState(() {
+        _targetLocation = location;
+        _isLoadingMapLocation = false;
+      });
+      try {
+        _mapController.move(_targetLocation, 14.0);
+      } catch (_) {}
     }
   }
 
@@ -110,6 +129,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                 setState(() {
                   _currentOrder = o;
                 });
+                _resolveLocation(o.documentRef);
               },
               child: Container(
                 margin: const EdgeInsets.only(bottom: 16),
@@ -301,8 +321,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
                   height: 350,
                   child: FlutterMap(
                     mapController: _mapController,
-                    options: const MapOptions(
-                      initialCenter: LatLng(-12.0464, -77.0428),
+                    options: MapOptions(
+                      initialCenter: _targetLocation,
                       initialZoom: 14.0,
                     ),
                     children: [
@@ -315,7 +335,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                       MarkerLayer(
                         markers: [
                           Marker(
-                            point: const LatLng(-12.0464, -77.0428),
+                            point: _targetLocation,
                             width: 60,
                             height: 60,
                             child: Column(
@@ -340,13 +360,22 @@ class _TrackingScreenState extends State<TrackingScreen> {
                     ],
                   ),
                 ),
+                if (_isLoadingMapLocation)
+                  Positioned(
+                    top: 150,
+                    left: 0,
+                    right: 0,
+                    child: const Center(
+                      child: CircularProgressIndicator(color: AppColors.primary),
+                    ),
+                  ),
                 Positioned(
                   top: 16,
                   left: 16,
                   child: Column(
                     children: [
                       _buildMapFloatingButton(Icons.my_location, onTap: () {
-                        _mapController.move(const LatLng(-12.0464, -77.0428), 14.0);
+                        _mapController.move(_targetLocation, 14.0);
                       }),
                       const SizedBox(height: 8),
                       _buildMapFloatingButton(Icons.layers_outlined, onTap: () {

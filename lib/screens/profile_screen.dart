@@ -350,10 +350,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
               onPressed: () async {
                 final newEmail = emailController.text.trim();
-                if (newEmail.isEmpty || !newEmail.contains('@') || !newEmail.contains('.')) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Por favor, ingresa un correo electrónico válido')));
-                  return;
-                }
 
                 final user = SessionManager.instance.user;
                 if (user != null) {
