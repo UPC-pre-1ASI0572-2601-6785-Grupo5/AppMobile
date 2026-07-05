@@ -15,7 +15,8 @@ class ProviderDispatchesScreen extends StatefulWidget {
   State<ProviderDispatchesScreen> createState() => _ProviderDispatchesScreenState();
 }
 
-class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> {
+class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
   String _selectedFilter = 'Todos';
   bool _isLoading = true;
   List<OrderModel> _orders = [];
@@ -24,7 +25,14 @@ class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> {
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     _fetchOrders();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchOrders() async {
@@ -54,79 +62,83 @@ class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 1. Buscador
-          Container(
+    return Column(
+      children: [
+        // 1. Buscador (Opcional, lo mantenemos arriba de los tabs)
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Container(
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: AppColors.borderLight),
             ),
-            child: TextField(
+            child: const TextField(
               decoration: InputDecoration(
                 hintText: 'Buscar por ID, Cliente o Destino...',
-                hintStyle: const TextStyle(color: AppColors.textGrey, fontSize: 13),
-                prefixIcon: const Icon(Icons.search, color: AppColors.textGrey, size: 20),
+                hintStyle: TextStyle(color: AppColors.textGrey, fontSize: 13),
+                prefixIcon: Icon(Icons.search, color: AppColors.textGrey, size: 20),
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                contentPadding: EdgeInsets.symmetric(vertical: 14),
               ),
             ),
           ),
-          const SizedBox(height: 16),
-
-          // 2. Botón Nuevo Despacho
-          Center(
-            child: ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const NewOrderScreen()),
-                );
-              },
-              icon: const Icon(Icons.add, color: Colors.white, size: 18),
-              label: const Text('Nuevo Despacho', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF006D3E),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                elevation: 0,
+        ),
+        
+        // 2. Tabs: Disponibles y Mis Pedidos
+        TabBar(
+          controller: _tabController,
+          labelColor: const Color(0xFF006D3E),
+          unselectedLabelColor: AppColors.textGrey,
+          indicatorColor: const Color(0xFF006D3E),
+          indicatorWeight: 3,
+          tabs: const [
+            Tab(text: 'Disponibles'),
+            Tab(text: 'Mis Pedidos'),
+          ],
+        ),
+        
+        // 3. Vistas de Tabs
+        Expanded(
+          child: _isLoading 
+            ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+            : TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildAvailableOrdersView(),
+                  _buildMyOrdersView(),
+                ],
               ),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // 3. Filtros (Chips)
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _buildFilterChip('Todos'),
-                _buildFilterChip('Pendientes'),
-                _buildFilterChip('En Ruta'),
-                _buildFilterChip('Completados'),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          if (_isLoading)
-            const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator(color: AppColors.primary)))
-          else ..._buildDynamicOrdersList(),
-
-          const SizedBox(height: 80),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  List<Widget> _buildDynamicOrdersList() {
-    List<OrderModel> filtered = _orders.where((o) {
+  Widget _buildAvailableOrdersView() {
+    // Pedidos sin proveedor (providerId == null) y en estado PENDING_APPROVAL
+    List<OrderModel> availableOrders = _orders.where((o) => o.providerId == null && (o.status == 'PENDING_APPROVAL' || o.status == 'PENDING')).toList();
+    availableOrders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    if (availableOrders.isEmpty) {
+      return const Center(child: Text('No hay pedidos disponibles por el momento.', style: TextStyle(color: AppColors.textGrey)));
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: availableOrders.length,
+      itemBuilder: (context, index) {
+        return _buildOrderCard(availableOrders[index], true);
+      },
+    );
+  }
+
+  Widget _buildMyOrdersView() {
+    // Pedidos que fueron aceptados por mi (providerId != null)
+    List<OrderModel> myOrders = _orders.where((o) => o.providerId != null).toList();
+
+    // Filtros de Mis Pedidos
+    List<OrderModel> filtered = myOrders.where((o) {
       if (_selectedFilter == 'Todos') return true;
-      if (_selectedFilter == 'Pendientes' && (o.status == 'PENDING_APPROVAL' || o.status == 'PENDING')) return true;
       if (_selectedFilter == 'En Ruta' && (o.status == 'DISPATCHED' || o.status == 'IN_TRANSIT')) return true;
       if (_selectedFilter == 'Completados' && (o.status == 'COMPLETED' || o.status == 'DELIVERED')) return true;
       return false;
@@ -134,37 +146,76 @@ class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> {
 
     filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-    if (filtered.isEmpty) {
-      return [
-        const Padding(
-          padding: EdgeInsets.all(32.0),
-          child: Center(child: Text('No hay despachos que coincidan con tu búsqueda', style: TextStyle(color: AppColors.textGrey))),
-        )
-      ];
-    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Chips de filtros
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildFilterChip('Todos'),
+                _buildFilterChip('En Ruta'),
+                _buildFilterChip('Completados'),
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          child: filtered.isEmpty
+              ? const Center(child: Text('No tienes pedidos en esta categoría.', style: TextStyle(color: AppColors.textGrey)))
+              : ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: filtered.length,
+                  itemBuilder: (context, index) {
+                    return _buildOrderCard(filtered[index], false);
+                  },
+                ),
+        ),
+      ],
+    );
+  }
 
-    return filtered.map((order) {
-      Color statusBgColor;
-      Color statusTextColor;
-      String statusText;
-      Widget actions;
+  Widget _buildOrderCard(OrderModel order, bool isAvailableView) {
 
-      bool isCompleted = false;
+    Color statusBgColor;
+    Color statusTextColor;
+    String statusText;
+    Widget actions;
 
+    bool isCompleted = false;
+
+    if (isAvailableView) {
+      statusBgColor = const Color(0xFFFFEBEE);
+      statusTextColor = AppColors.error;
+      statusText = 'Disponible';
+      actions = Row(
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () async {
+                // LLAMAR A LA API PARA ACEPTAR PEDIDO
+                // Aceptarlo debería cambiar el estado a APPROVED y asignarme el providerId
+                // Actualmente no hay método de aprobar en orderService, pero podemos simularlo o si está, usarlo.
+                // Reemplazaremos esto una vez se implemente en OrderService, pero el UI necesita funcionar
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF006D3E),
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              child: const Text('Aceptar Pedido', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(child: _buildOutlinedButton('Ver Detalles')),
+        ],
+      );
+    } else {
       switch (order.status) {
-        case 'PENDING_APPROVAL':
-        case 'PENDING':
-          statusBgColor = const Color(0xFFFFEBEE);
-          statusTextColor = AppColors.error;
-          statusText = 'Pendiente';
-          actions = Row(
-            children: [
-              Expanded(child: _buildSolidButton('Aprobar', const Color(0xFF006D3E), Colors.white)),
-              const SizedBox(width: 12),
-              Expanded(child: _buildOutlinedButton('Ver Detalles')),
-            ],
-          );
-          break;
         case 'APPROVED':
           statusBgColor = const Color(0xFFD4EFDF);
           statusTextColor = const Color(0xFF006D3E);
@@ -224,8 +275,9 @@ class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> {
           statusText = order.status;
           actions = const SizedBox();
       }
+    }
 
-      return Padding(
+    return Padding(
         padding: const EdgeInsets.only(bottom: 16.0),
         child: _buildDispatchCard(
           id: '#FT-${order.id}',
@@ -258,7 +310,6 @@ class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> {
           actions: actions,
         ),
       );
-    }).toList();
   }
 
   // ====== WIDGETS REUTILIZABLES DE ESTA PANTALLA ======

@@ -15,6 +15,7 @@ class OrderModel {
   final String? dispatchedAt;
   final String? completedAt;
   final String? securityHash;
+  final int? providerId;
 
   OrderModel({
     required this.id,
@@ -33,6 +34,7 @@ class OrderModel {
     this.dispatchedAt,
     this.completedAt,
     this.securityHash,
+    this.providerId,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -62,6 +64,7 @@ class OrderModel {
       dispatchedAt: json['dispatchedAt']?.toString(),
       completedAt: json['completedAt']?.toString(),
       securityHash: json['securityHash']?.toString(),
+      providerId: json['providerId'] as int?,
     );
   }
 
@@ -81,6 +84,7 @@ class OrderModel {
       'dispatchedAt': dispatchedAt,
       'completedAt': completedAt,
       'securityHash': securityHash,
+      'providerId': providerId,
     };
   }
 
