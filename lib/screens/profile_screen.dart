@@ -276,18 +276,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 _buildSecurityTile(Icons.lock_outline, 'Contraseña', 'Protege el acceso a tu cuenta', 'Cambiar ahora', AppColors.primary, null, onTap: _showChangePasswordDialog),
                 const Divider(height: 1, color: AppColors.borderLight),
-                _buildSecurityTile(Icons.verified_user_outlined, 'MFA (2FA)', 'Autenticación en dos pasos', _mfaEnabled ? 'Desactivar' : 'Configurar', _mfaEnabled ? AppColors.error : AppColors.primary, _mfaEnabled ? 'ACTIVADO' : 'INACTIVO', onTap: _showMfaDialog),
+                _buildSecurityTile(Icons.verified_user_outlined, 'MFA (2FA)', 'Autenticación en dos pasos', _mfaEnabled ? 'Desactivar' : 'Configurar', _mfaEnabled ? AppColors.error : AppColors.primary, _mfaEnabled ? 'ACTIVADO' : 'INACTIVO', badgeColor: _mfaEnabled ? const Color(0xFF006D3E) : AppColors.error, onTap: _showMfaDialog),
               ],
             ),
           ),
           const SizedBox(height: 24),
 
-          // 5. Centro de Soporte
+          // 5. Contáctanos
           Row(
             children: const [
               Icon(Icons.support_agent, color: AppColors.primary, size: 20),
               SizedBox(width: 8),
-              Text('Centro de Soporte', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+              Text('Contáctanos', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
             ],
           ),
           const SizedBox(height: 12),
@@ -296,30 +296,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.borderLight)),
             child: Column(
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: _showSupportChatDialog,
-                        icon: const Icon(Icons.chat_bubble_outline, size: 16, color: Colors.white),
-                        label: const Text('Chat de Ayuda', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF006D3E), elevation: 0, padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: _showOpenTicketDialog,
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD4EFDF), elevation: 0, padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                        child: const Text('Abrir Ticket', style: TextStyle(color: Color(0xFF006D3E), fontSize: 12, fontWeight: FontWeight.bold)),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                _buildSupportTile(Icons.menu_book_outlined, 'Documentación Técnica', 'Guías de uso y configuración', false, onTap: _showTechDocsDialog),
+                _buildSupportTile(Icons.email_outlined, 'Correo Electrónico', 'soporte@fueltrack.com.pe', false),
                 const SizedBox(height: 8),
-                _buildSupportTile(Icons.confirmation_num_outlined, 'Tickets Abiertos (${_tickets.length})', 'Visualiza tus solicitudes recientes', true, onTap: _showTicketsDialog),
+                _buildSupportTile(Icons.phone_outlined, 'Línea de Atención', '+51 987 654 321', false),
+                const SizedBox(height: 8),
+                _buildSupportTile(Icons.menu_book_outlined, 'Documentación Técnica', 'Guías de uso y configuración', true, onTap: _showTechDocsDialog),
               ],
             ),
           ),
@@ -668,63 +649,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _showSupportChatDialog() {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Iniciando chat de soporte (Simulado)...')));
-  }
 
-  void _showOpenTicketDialog() {
-    final titleCtrl = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Abrir Ticket'),
-        content: TextField(
-          controller: titleCtrl,
-          decoration: const InputDecoration(labelText: 'Asunto del problema'),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                _tickets.insert(0, {'title': titleCtrl.text.isEmpty ? 'Ticket sin asunto' : titleCtrl.text, 'status': 'Abierto'});
-              });
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ticket creado exitosamente')));
-            },
-            child: const Text('Enviar')
-          ),
-        ],
-      )
-    );
-  }
-
-  void _showTicketsDialog() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Tickets Abiertos', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
-              const SizedBox(height: 16),
-              if (_tickets.isEmpty) const Text('No hay tickets abiertos.')
-              else ..._tickets.map((t) => ListTile(
-                leading: const Icon(Icons.confirmation_num, color: AppColors.primary),
-                title: Text(t['title']!, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text('Estado: ${t['status']}'),
-              )).toList(),
-              const SizedBox(height: 24),
-            ],
-          ),
-        );
-      }
-    );
-  }
 
   void _showTechDocsDialog() {
     showDialog(
@@ -799,7 +724,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildSecurityTile(IconData icon, String title, String subtitle, String actionText, Color actionColor, String? badge, {VoidCallback? onTap}) {
+  Widget _buildSecurityTile(IconData icon, String title, String subtitle, String actionText, Color actionColor, String? badge, {Color? badgeColor, VoidCallback? onTap}) {
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -820,7 +745,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(color: const Color(0xFF006D3E), borderRadius: BorderRadius.circular(20)),
+                          decoration: BoxDecoration(color: badgeColor ?? const Color(0xFF006D3E), borderRadius: BorderRadius.circular(20)),
                           child: Text(badge, style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
                         ),
                       ]

@@ -5,8 +5,9 @@ import '../services/session_manager.dart';
 import '../services/profile_service.dart';
 import '../models/user_model.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+
 class ProviderProfileView extends StatefulWidget {
   const ProviderProfileView({Key? key}) : super(key: key);
 
@@ -40,12 +41,10 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
     final user = SessionManager.instance.user;
     if (user != null) {
       try {
-        final prefs = await SharedPreferences.getInstance();
-        final path = prefs.getString('profile_image_${user.id}');
         final updatedUser = await _profileService.fetchUserProfile(user.id);
         setState(() {
           _mfaEnabled = updatedUser.mfaEnabled;
-          _profileImagePath = path;
+          _profileImagePath = updatedUser.profilePicture;
           _isLoading = false;
         });
       } catch (e) {
@@ -62,11 +61,17 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
     if (pickedFile != null) {
       final user = SessionManager.instance.user;
       if (user != null) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('profile_image_${user.id}', pickedFile.path);
-        setState(() {
-          _profileImagePath = pickedFile.path;
-        });
+        final bytes = await pickedFile.readAsBytes();
+        final base64Img = 'data:image/png;base64,' + base64Encode(bytes);
+        try {
+          await _profileService.updateProfile(user.id, {'profilePicture': base64Img});
+          setState(() {
+            _profileImagePath = base64Img;
+          });
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Foto actualizada')));
+        } catch (e) {
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        }
       }
     }
   }
@@ -104,9 +109,11 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
                         child: CircleAvatar(
                           radius: 44,
                           backgroundColor: Colors.white,
-                          backgroundImage: _profileImagePath != null 
-                              ? NetworkImage(_profileImagePath!) as ImageProvider
-                              : const AssetImage('assets/images/trailer.png'),
+                          backgroundImage: _profileImagePath != null
+                              ? (_profileImagePath!.startsWith('data:image')
+                                  ? MemoryImage(base64Decode(_profileImagePath!.split(',')[1]))
+                                  : NetworkImage(_profileImagePath!))
+                              : NetworkImage('https://api.dicebear.com/7.x/bottts/png?seed=$userEmail') as ImageProvider,
                         ),
                       ),
                     ),
@@ -197,18 +204,18 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
               children: [
                 Container(
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(color: const Color(0xFFE8F8F5), borderRadius: BorderRadius.circular(8)),
+                  decoration: BoxDecoration(color: _mfaEnabled ? const Color(0xFFE8F8F5) : const Color(0xFFFDE8E8), borderRadius: BorderRadius.circular(8)),
                   child: Row(
                     children: [
-                      const Icon(Icons.security, color: Color(0xFF006D3E), size: 18),
+                      Icon(Icons.security, color: _mfaEnabled ? const Color(0xFF006D3E) : AppColors.error, size: 18),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(_mfaEnabled ? 'MFA Activado' : 'MFA Desactivado', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF006D3E))),
+                            Text(_mfaEnabled ? 'MFA Activado' : 'MFA Desactivado', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _mfaEnabled ? const Color(0xFF006D3E) : AppColors.error)),
                             const SizedBox(height: 2),
-                            Text(_mfaEnabled ? 'Tu cuenta está protegida por Autenticación de Dos Factores.' : 'Habilita 2FA para mayor seguridad.', style: const TextStyle(fontSize: 11, color: Color(0xFF006D3E))),
+                            Text(_mfaEnabled ? 'Tu cuenta está protegida por Autenticación de Dos Factores.' : 'Habilita 2FA para mayor seguridad.', style: TextStyle(fontSize: 11, color: _mfaEnabled ? const Color(0xFF006D3E) : AppColors.error)),
                           ],
                         ),
                       ),
@@ -228,57 +235,18 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
           const SizedBox(height: 16),
 
           // ==========================================
-          // CENTRO DE SOPORTE (Añadido para el proveedor)
+          // CENTRO DE SOPORTE (Contáctanos)
           // ==========================================
           _buildSectionCard(
-            title: 'Centro de Soporte',
+            title: 'Contáctanos',
             icon: Icons.support_agent,
             child: Column(
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: _showSupportChatDialog,
-                        icon: const Icon(Icons.chat_bubble_outline, size: 16, color: Colors.white),
-                        label: const Text('Chat de Ayuda', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF006D3E), elevation: 0, padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: _showOpenTicketDialog,
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD4EFDF), elevation: 0, padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                        child: const Text('Abrir Ticket', style: TextStyle(color: Color(0xFF006D3E), fontSize: 11, fontWeight: FontWeight.bold)),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                _buildSupportTile(Icons.menu_book_outlined, 'Documentación Técnica', 'Guías de uso de la API', false, onTap: _showTechDocsDialog),
+                _buildSupportTile(Icons.email_outlined, 'Correo Electrónico', 'soporte@fueltrack.com.pe', false),
                 const SizedBox(height: 8),
-                _buildSupportTile(Icons.confirmation_num_outlined, 'Tickets Abiertos (${_tickets.length})', 'Tus solicitudes recientes', true, onTap: _showTicketsDialog),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-
-
-          // ==========================================
-          // NOTIFICACIONES
-          // ==========================================
-          _buildSectionCard(
-            title: 'Notificaciones',
-            icon: Icons.tune,
-            child: Column(
-              children: [
-                _buildNotificationToggle('Alertas de Stock Crítico', 'Notificar al caer el 15%', _stockAlerts, (val) => setState(() => _stockAlerts = val)),
+                _buildSupportTile(Icons.phone_outlined, 'Línea de Atención', '+51 987 654 321', false),
                 const SizedBox(height: 8),
-                _buildNotificationToggle('Reportes Mensuales', 'Envío por correo electrónico', _monthlyReports, (val) => setState(() => _monthlyReports = val)),
-                const SizedBox(height: 8),
-                _buildNotificationToggle('Inicios de Sesión', 'Alertas de seguridad push', _loginAlerts, (val) => setState(() => _loginAlerts = val)),
+                _buildSupportTile(Icons.menu_book_outlined, 'Documentación Técnica', 'Guías de uso de la API', true, onTap: _showTechDocsDialog),
               ],
             ),
           ),
@@ -359,6 +327,18 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF006D3E)),
               onPressed: () async {
+                final address = addressController.text.trim().toLowerCase();
+                if (address.isNotEmpty) {
+                  if (address.length < 10) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('La dirección debe tener al menos 10 caracteres')));
+                    return;
+                  }
+                  if (!address.contains('av') && !address.contains('calle') && !address.contains('jr') && !address.contains('mz') && !address.contains('lote') && !address.contains('km')) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Por favor, ingresa una dirección válida (ej. Av., Calle, Jr., Mz., Lote)')));
+                    return;
+                  }
+                }
+
                 final user = SessionManager.instance.user;
                 if (user != null) {
                   try {
@@ -453,64 +433,7 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
     );
   }
 
-  void _showSupportChatDialog() {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Iniciando chat de soporte para Proveedor...')));
-  }
 
-  void _showOpenTicketDialog() {
-    final titleCtrl = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Abrir Ticket'),
-        content: TextField(
-          controller: titleCtrl,
-          decoration: const InputDecoration(labelText: 'Asunto del problema'),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF006D3E)),
-            onPressed: () {
-              setState(() {
-                _tickets.insert(0, {'title': titleCtrl.text.isEmpty ? 'Ticket sin asunto' : titleCtrl.text, 'status': 'Abierto'});
-              });
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ticket creado exitosamente')));
-            },
-            child: const Text('Enviar', style: TextStyle(color: Colors.white))
-          ),
-        ],
-      )
-    );
-  }
-
-  void _showTicketsDialog() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Tickets Abiertos', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
-              const SizedBox(height: 16),
-              if (_tickets.isEmpty) const Text('No hay tickets abiertos.')
-              else ..._tickets.map((t) => ListTile(
-                leading: const Icon(Icons.confirmation_num, color: AppColors.primary),
-                title: Text(t['title']!, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text('Estado: ${t['status']}'),
-              )).toList(),
-              const SizedBox(height: 24),
-            ],
-          ),
-        );
-      }
-    );
-  }
 
   void _showTechDocsDialog() {
     showDialog(
@@ -635,25 +558,4 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
     );
   }
 
-  Widget _buildNotificationToggle(String title, String subtitle, bool value, ValueChanged<bool> onChanged) {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textDark)),
-              const SizedBox(height: 2),
-              Text(subtitle, style: const TextStyle(fontSize: 11, color: AppColors.textGrey)),
-            ],
-          ),
-        ),
-        Switch.adaptive(
-          value: value,
-          onChanged: onChanged,
-          activeColor: const Color(0xFF006D3E),
-        ),
-      ],
-    );
-  }
 }
