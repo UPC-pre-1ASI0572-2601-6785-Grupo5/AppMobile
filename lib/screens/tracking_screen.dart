@@ -411,7 +411,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                             points: [_currentTruckLocation, _targetLocation],
                             color: AppColors.primary,
                             strokeWidth: 4.0,
-                            pattern: const StrokePattern.dashed(segments: [10, 10]),
+                            pattern: StrokePattern.dashed(segments: [10.0, 10.0]),
                           ),
                         ],
                       ),
