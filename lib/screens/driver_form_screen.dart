@@ -18,7 +18,6 @@ class _DriverFormScreenState extends State<DriverFormScreen> {
 
   late TextEditingController _nameController;
   late TextEditingController _licenseController;
-  String _status = 'AVAILABLE';
   bool _isLoading = false;
 
   @override
@@ -26,7 +25,6 @@ class _DriverFormScreenState extends State<DriverFormScreen> {
     super.initState();
     _nameController = TextEditingController(text: widget.driver?.name ?? '');
     _licenseController = TextEditingController(text: widget.driver?.licenseNumber ?? '');
-    _status = widget.driver?.status ?? 'AVAILABLE';
   }
 
   @override
@@ -47,7 +45,7 @@ class _DriverFormScreenState extends State<DriverFormScreen> {
         providerId: widget.driver?.providerId,
         name: _nameController.text.trim(),
         licenseNumber: _licenseController.text.trim(),
-        status: _status,
+        status: widget.driver?.status ?? 'AVAILABLE',
         profilePicture: widget.driver?.profilePicture,
         drivingMinutes: widget.driver?.drivingMinutes ?? 0,
         restingMinutesLeft: widget.driver?.restingMinutesLeft ?? 0,
@@ -134,26 +132,6 @@ class _DriverFormScreenState extends State<DriverFormScreen> {
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                       ),
                       validator: (v) => v!.isEmpty ? 'Requerido' : null,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text('Estado', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                    const SizedBox(height: 8),
-                    DropdownButtonFormField<String>(
-                      value: _status,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                      ),
-                      items: const [
-                        DropdownMenuItem(value: 'AVAILABLE', child: Text('Disponible')),
-                        DropdownMenuItem(value: 'ON_ROUTE', child: Text('En Ruta')),
-                        DropdownMenuItem(value: 'RESTING', child: Text('Descansando')),
-                        DropdownMenuItem(value: 'FATIGUE', child: Text('Fatiga')),
-                      ],
-                      onChanged: (v) {
-                        if (v != null) setState(() => _status = v);
-                      },
                     ),
                     const SizedBox(height: 32),
                     SizedBox(

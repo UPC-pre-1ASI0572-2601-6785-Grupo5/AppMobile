@@ -8,8 +8,8 @@ class DriverModel {
   final String licenseNumber;
   final String? profilePicture;
   final String status;
-  final int drivingMinutes;
-  final int restingMinutesLeft;
+  final int completedTripsSinceRest;
+  final String? restingUntil;
 
   DriverModel({
     this.id,
@@ -17,9 +17,9 @@ class DriverModel {
     required this.name,
     required this.licenseNumber,
     this.profilePicture,
-    required this.status,
-    this.drivingMinutes = 0,
-    this.restingMinutesLeft = 0,
+    this.status = 'AVAILABLE',
+    this.completedTripsSinceRest = 0,
+    this.restingUntil,
   });
 
   factory DriverModel.fromJson(Map<String, dynamic> json) {
@@ -30,8 +30,8 @@ class DriverModel {
       licenseNumber: json['licenseNumber'] ?? '',
       profilePicture: json['profilePicture'],
       status: json['status'] ?? 'AVAILABLE',
-      drivingMinutes: json['drivingMinutes'] ?? 0,
-      restingMinutesLeft: json['restingMinutesLeft'] ?? 0,
+      completedTripsSinceRest: json['completedTripsSinceRest'] ?? 0,
+      restingUntil: json['restingUntil'],
     );
   }
 
@@ -43,8 +43,8 @@ class DriverModel {
       'licenseNumber': licenseNumber,
       if (profilePicture != null) 'profilePicture': profilePicture,
       'status': status,
-      'drivingMinutes': drivingMinutes,
-      'restingMinutesLeft': restingMinutesLeft,
+      'completedTripsSinceRest': completedTripsSinceRest,
+      if (restingUntil != null) 'restingUntil': restingUntil,
     };
   }
 }
@@ -61,6 +61,8 @@ class TankModel {
   final String valveStatus;
   final double tirePressurePsi;
   final double speedKmh;
+  final int completedTripsSinceMaintenance;
+  final String? maintenanceUntil;
 
   TankModel({
     this.id,
@@ -74,6 +76,8 @@ class TankModel {
     this.valveStatus = 'CLOSED',
     this.tirePressurePsi = 32.0,
     this.speedKmh = 0.0,
+    this.completedTripsSinceMaintenance = 0,
+    this.maintenanceUntil,
   });
 
   factory TankModel.fromJson(Map<String, dynamic> json) {
@@ -88,7 +92,9 @@ class TankModel {
       smartLockStatus: json['smartLockStatus'] ?? 'LOCKED',
       valveStatus: json['valveStatus'] ?? 'CLOSED',
       tirePressurePsi: (json['tirePressurePsi'] ?? 32.0).toDouble(),
-      speedKmh: (json['speedKmh'] ?? 0.0).toDouble(),
+      speedKmh: (json['speedKmh'] as num?)?.toDouble() ?? 0.0,
+      completedTripsSinceMaintenance: json['completedTripsSinceMaintenance'] ?? 0,
+      maintenanceUntil: json['maintenanceUntil'],
     );
   }
 
@@ -105,6 +111,8 @@ class TankModel {
       'valveStatus': valveStatus,
       'tirePressurePsi': tirePressurePsi,
       'speedKmh': speedKmh,
+      'completedTripsSinceMaintenance': completedTripsSinceMaintenance,
+      if (maintenanceUntil != null) 'maintenanceUntil': maintenanceUntil,
     };
   }
 }
@@ -166,5 +174,13 @@ class FleetService {
 
   Future<void> deleteTank(int id) async {
     await _api.delete('${ApiConfig.tanks}/$id');
+  }
+
+  Future<void> setDriverRest(int id, int minutes) async {
+    await _api.post('${ApiConfig.drivers}/$id/rest?minutes=$minutes');
+  }
+
+  Future<void> setTankMaintenance(int id, int minutes) async {
+    await _api.post('${ApiConfig.tanks}/$id/maintenance?minutes=$minutes');
   }
 }

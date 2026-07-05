@@ -134,9 +134,33 @@ class _DriverListScreenState extends State<DriverListScreen> {
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(color: statusBgColor, borderRadius: BorderRadius.circular(12)),
                                 child: Text(statusText, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: statusColor)),
-                              )
+                              ),
                             ],
                           ),
+                          if (driver.status == 'FATIGUE' || (driver.status == 'AVAILABLE' && driver.completedTripsSinceRest > 0)) ...[
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  int minutes = driver.status == 'FATIGUE' ? 5 : 1;
+                                  try {
+                                    await _fleetService.setDriverRest(driver.id!, minutes);
+                                    _loadDrivers();
+                                  } catch (e) {
+                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFFDE8E8),
+                                  foregroundColor: AppColors.error,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                ),
+                                child: const Text('Poner a descansar', style: TextStyle(fontWeight: FontWeight.bold)),
+                              ),
+                            ),
+                          ],
                         ),
                       );
                     },

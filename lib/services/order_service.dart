@@ -42,6 +42,14 @@ class OrderService {
     await _api.delete('${ApiConfig.orders}/$id');
   }
 
+  Future<void> dispatchOrder(int id, int driverId, int tankId) async {
+    final body = {
+      'driverId': driverId,
+      'tankId': tankId,
+    };
+    await _api.patch('${ApiConfig.orders}/$id/dispatch', body: body);
+  }
+
   Future<void> markAsDelivered(int id) async {
     await _api.patch('${ApiConfig.orders}/$id/deliver');
   }

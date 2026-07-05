@@ -19,7 +19,6 @@ class _TankFormScreenState extends State<TankFormScreen> {
   late TextEditingController _modelController;
   late TextEditingController _capacityController;
   late TextEditingController _fuelController;
-  String _status = 'AVAILABLE';
   bool _isLoading = false;
 
   @override
@@ -29,7 +28,6 @@ class _TankFormScreenState extends State<TankFormScreen> {
     _modelController = TextEditingController(text: widget.tank?.model ?? '');
     _capacityController = TextEditingController(text: widget.tank?.capacityGallons.toString() ?? '');
     _fuelController = TextEditingController(text: widget.tank?.currentFuelGallons.toString() ?? '');
-    _status = widget.tank?.status ?? 'AVAILABLE';
   }
 
   @override
@@ -54,7 +52,7 @@ class _TankFormScreenState extends State<TankFormScreen> {
         model: _modelController.text.trim(),
         capacityGallons: double.tryParse(_capacityController.text.trim()) ?? 0,
         currentFuelGallons: double.tryParse(_fuelController.text.trim()) ?? 0,
-        status: _status,
+        status: widget.tank?.status ?? 'AVAILABLE',
         smartLockStatus: widget.tank?.smartLockStatus ?? 'LOCKED',
         valveStatus: widget.tank?.valveStatus ?? 'CLOSED',
         tirePressurePsi: widget.tank?.tirePressurePsi ?? 32.0,
@@ -187,24 +185,6 @@ class _TankFormScreenState extends State<TankFormScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    const Text('Estado', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                    const SizedBox(height: 8),
-                    DropdownButtonFormField<String>(
-                      value: _status,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                      ),
-                      items: const [
-                        DropdownMenuItem(value: 'AVAILABLE', child: Text('Disponible')),
-                        DropdownMenuItem(value: 'ON_ROUTE', child: Text('En Ruta')),
-                        DropdownMenuItem(value: 'MAINTENANCE', child: Text('Mantenimiento')),
-                      ],
-                      onChanged: (v) {
-                        if (v != null) setState(() => _status = v);
-                      },
                     ),
                     const SizedBox(height: 32),
                     SizedBox(

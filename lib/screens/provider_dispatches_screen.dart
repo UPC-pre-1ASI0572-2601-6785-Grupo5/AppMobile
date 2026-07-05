@@ -173,7 +173,7 @@ class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> {
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: () async {
-                await Navigator.push(context, MaterialPageRoute(builder: (context) => const ResourceAssignmentScreen()));
+                await Navigator.push(context, MaterialPageRoute(builder: (context) => ResourceAssignmentScreen(order: order)));
                 _fetchOrders();
               },
               icon: const Icon(Icons.person_add_alt_1_outlined, size: 16, color: Color(0xFF006D3E)),

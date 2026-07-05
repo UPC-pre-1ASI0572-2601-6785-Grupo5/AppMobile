@@ -77,6 +77,10 @@ class _TankListScreenState extends State<TankListScreen> {
                         statusColor = AppColors.error;
                         statusBgColor = const Color(0xFFFFEBEE);
                         statusText = 'MANTENIMIENTO';
+                      } else if (tank.status == 'UNSTABLE_VALVES') {
+                        statusColor = AppColors.error;
+                        statusBgColor = const Color(0xFFFFEBEE);
+                        statusText = 'VÁLVULAS INESTABLES';
                       } else if (tank.status == 'ON_ROUTE') {
                         statusColor = const Color(0xFF006D3E);
                         statusBgColor = const Color(0xFFE8F8F5);
@@ -119,9 +123,33 @@ class _TankListScreenState extends State<TankListScreen> {
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(color: statusBgColor, borderRadius: BorderRadius.circular(12)),
                                 child: Text(statusText, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: statusColor)),
-                              )
+                              ),
                             ],
                           ),
+                          if (tank.status == 'UNSTABLE_VALVES' || (tank.status == 'AVAILABLE' && tank.completedTripsSinceMaintenance > 0)) ...[
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  int minutes = tank.status == 'UNSTABLE_VALVES' ? 5 : 1;
+                                  try {
+                                    await _fleetService.setTankMaintenance(tank.id!, minutes);
+                                    _loadTanks();
+                                  } catch (e) {
+                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFFDE8E8),
+                                  foregroundColor: AppColors.error,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                ),
+                                child: const Text('Entrar en mantenimiento', style: TextStyle(fontWeight: FontWeight.bold)),
+                              ),
+                            ),
+                          ],
                         ),
                       );
                     },

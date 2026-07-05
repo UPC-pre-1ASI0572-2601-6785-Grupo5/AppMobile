@@ -1,17 +1,58 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 
+import '../services/fleet_service.dart';
+import '../services/order_service.dart';
+import '../models/order_model.dart';
+import 'package:intl/intl.dart';
+
 class ResourceAssignmentScreen extends StatefulWidget {
-  const ResourceAssignmentScreen({Key? key}) : super(key: key);
+  final OrderModel order;
+  const ResourceAssignmentScreen({Key? key, required this.order}) : super(key: key);
 
   @override
   State<ResourceAssignmentScreen> createState() => _ResourceAssignmentScreenState();
 }
 
-class _ResourceAssignmentScreenState extends State<ResourceAssignmentScreen> {
-  // Inicializamos con el primer conductor y la primera cisterna seleccionados (Igual al Figma)
-  int? _selectedDriverIndex = 0;
-  int? _selectedVehicleIndex = 0;
+  int? _selectedDriverIndex;
+  int? _selectedVehicleIndex;
+  bool _isLoading = true;
+  List<DriverModel> _drivers = [];
+  List<TankModel> _tanks = [];
+  final FleetService _fleetService = FleetService();
+  final OrderService _orderService = OrderService();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    try {
+      final drivers = await _fleetService.getDrivers();
+      final tanks = await _fleetService.getTanks();
+      if (mounted) {
+        setState(() {
+          _drivers = drivers.where((d) => d.status == 'AVAILABLE' && d.completedTripsSinceRest < 2).toList();
+          _tanks = tanks.where((t) => t.status == 'AVAILABLE' && t.completedTripsSinceMaintenance < 5).toList();
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  String _formatDate(String isoString) {
+    if (isoString.isEmpty) return 'Desconocida';
+    try {
+      final dt = DateTime.parse(isoString).toLocal();
+      return DateFormat('dd MMM, yyyy -\nhh:mm a').format(dt);
+    } catch (e) {
+      return isoString;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,9 +123,9 @@ class _ResourceAssignmentScreenState extends State<ResourceAssignmentScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Breadcrumb
-            const Text(
-              'Despachos > Orden #ORD-9421',
-              style: TextStyle(fontSize: 12, color: AppColors.textGrey, fontWeight: FontWeight.w600),
+            Text(
+              'Despachos > Orden #FT-${widget.order.createdAt.isNotEmpty ? widget.order.createdAt.substring(0, 4) : ''}-${widget.order.id}',
+              style: const TextStyle(fontSize: 12, color: AppColors.textGrey, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
 
@@ -138,38 +179,38 @@ class _ResourceAssignmentScreenState extends State<ResourceAssignmentScreen> {
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
-                        children: const [
-                          Text('Fecha Solicitada', style: TextStyle(fontSize: 11, color: AppColors.textGrey, fontWeight: FontWeight.w600)),
-                          SizedBox(height: 4),
-                          Text('24 Oct, 2023 -\n09:00 AM', textAlign: TextAlign.right, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textDark, height: 1.2)),
+                        children: [
+                          const Text('Fecha Solicitada', style: TextStyle(fontSize: 11, color: AppColors.textGrey, fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 4),
+                          Text(_formatDate(widget.order.createdAt), textAlign: TextAlign.right, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textDark, height: 1.2)),
                         ],
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
                   const Text('Cliente', style: TextStyle(fontSize: 11, color: AppColors.textGrey, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 4),
                   Row(
-                    children: const [
-                      Icon(Icons.business, size: 16, color: AppColors.textGrey),
-                      SizedBox(width: 8),
-                      Text('Logística Central S.A.', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                    children: [
+                      const Icon(Icons.business, size: 16, color: AppColors.textGrey),
+                      const SizedBox(width: 8),
+                      Text(widget.order.name.isNotEmpty ? widget.order.name : 'Cliente Anónimo', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                     ],
                   ),
                   const SizedBox(height: 16),
                   const Text('Combustible', style: TextStyle(fontSize: 11, color: AppColors.textGrey, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 4),
                   Row(
-                    children: const [
-                      Icon(Icons.local_gas_station_outlined, size: 16, color: AppColors.primary),
-                      SizedBox(width: 8),
-                      Text('Diesel Premium B5', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                    children: [
+                      const Icon(Icons.local_gas_station_outlined, size: 16, color: AppColors.primary),
+                      const SizedBox(width: 8),
+                      Text(widget.order.productName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                     ],
                   ),
                   const SizedBox(height: 16),
                   const Text('Volumen', style: TextStyle(fontSize: 11, color: AppColors.textGrey, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 4),
-                  const Text('5,000 GL', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                  Text('${widget.order.quantityGallons} GL', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary)),
                 ],
               ),
             ),
@@ -182,71 +223,53 @@ class _ResourceAssignmentScreenState extends State<ResourceAssignmentScreen> {
             const SizedBox(height: 12),
             _buildRiskCard('Stock Disponible', 'Planta Callao Terminal', '12k GL'),
             _buildRiskCard('Línea de Crédito', 'Estado: Activa', '\$45,000'),
-            const SizedBox(height: 32),
+            const SizedBox(height: 3            if (_isLoading)
+              const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator(color: AppColors.primary)))
+            else ...[
+              // ==========================================
+              // SECCIÓN: CONDUCTORES
+              // ==========================================
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Conductores Disponibles', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                ],
+              ),
+              const SizedBox(height: 12),
+              if (_drivers.isEmpty)
+                const Padding(padding: EdgeInsets.all(16), child: Text('No hay conductores disponibles.', style: TextStyle(color: AppColors.textGrey)))
+              else
+                ..._drivers.asMap().entries.map((e) => _buildDriverOption(
+                  index: e.key,
+                  name: e.value.name,
+                  details: 'Licencia ${e.value.licenseNumber}',
+                  isAvailable: true,
+                  imgUrl: e.value.profilePicture ?? 'assets/images/logo.png',
+                )).toList(),
+              const SizedBox(height: 24),
 
-            // ==========================================
-            // SECCIÓN: CONDUCTORES
-            // ==========================================
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Conductores Disponibles', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                TextButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.filter_list, size: 16, color: AppColors.primary),
-                  label: const Text('Filtrar', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                  style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(50, 30), alignment: Alignment.centerRight),
-                )
-              ],
-            ),
-            const SizedBox(height: 12),
-            _buildDriverOption(
-              index: 0,
-              name: 'Roberto Mendoza',
-              details: 'Licencia A3C - Exp: 12 años',
-              isAvailable: true,
-              imgUrl: 'assets/images/logo.png',
-            ),
-            _buildDriverOption(
-              index: 1,
-              name: 'Carlos Espinoza',
-              details: 'Licencia A3B - Exp: 8 años',
-              isAvailable: false,
-              imgUrl: 'assets/images/logo.png',
-            ),
-            const SizedBox(height: 24),
-
-            // ==========================================
-            // SECCIÓN: CISTERNAS
-            // ==========================================
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Cisternas Disponibles', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                TextButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.tune, size: 16, color: AppColors.primary),
-                  label: const Text('Capacidad', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                  style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(50, 30), alignment: Alignment.centerRight),
-                )
-              ],
-            ),
-            const SizedBox(height: 12),
-            _buildVehicleOption(
-              index: 0,
-              name: 'Cisterna T-450',
-              capacity: '8,000 GL',
-              plate: 'AKM-892',
-              statusTag: 'PLACA VÃLIDA',
-            ),
-            _buildVehicleOption(
-              index: 1,
-              name: 'Cisterna T-210',
-              capacity: '5,500 GL',
-              plate: 'BXC-104',
-              statusTag: 'MANT. AL DÃA',
-            ),
-            const SizedBox(height: 40),
+              // ==========================================
+              // SECCIÓN: CISTERNAS
+              // ==========================================
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Cisternas Disponibles', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                ],
+              ),
+              const SizedBox(height: 12),
+              if (_tanks.isEmpty)
+                const Padding(padding: EdgeInsets.all(16), child: Text('No hay cisternas disponibles con capacidad suficiente.', style: TextStyle(color: AppColors.textGrey)))
+              else
+                ..._tanks.where((t) => t.capacityGallons >= widget.order.quantityGallons).toList().asMap().entries.map((e) => _buildVehicleOption(
+                  index: e.key,
+                  name: e.value.model,
+                  capacity: '${e.value.capacityGallons} GL',
+                  plate: e.value.plate,
+                  statusTag: 'DISPONIBLE',
+                )).toList(),
+              const SizedBox(height: 40),
+            ],ox(height: 40),
           ],
         ),
       ),
@@ -274,13 +297,30 @@ class _ResourceAssignmentScreenState extends State<ResourceAssignmentScreen> {
               Expanded(
                 flex: 2,
                 child: ElevatedButton(
-                  onPressed: (_selectedVehicleIndex != null && _selectedDriverIndex != null)
-                      ? () {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Recursos asignados correctamente'), backgroundColor: AppColors.primary),
-                    );
-                  }
+                  onPressed: (_selectedVehicleIndex != null && _selectedDriverIndex != null && !_isLoading)
+                      ? () async {
+                          setState(() => _isLoading = true);
+                          try {
+                            final driver = _drivers[_selectedDriverIndex!];
+                            final validTanks = _tanks.where((t) => t.capacityGallons >= widget.order.quantityGallons).toList();
+                            final tank = validTanks[_selectedVehicleIndex!];
+                            
+                            await _orderService.dispatchOrder(widget.order.id!, driver.id!, tank.id!);
+                            if (mounted) {
+                              Navigator.pop(context, true);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Recursos asignados correctamente'), backgroundColor: AppColors.primary),
+                              );
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              setState(() => _isLoading = false);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
+                              );
+                            }
+                          }
+                        }
                       : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
