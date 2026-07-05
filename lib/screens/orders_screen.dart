@@ -361,9 +361,11 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     if (!matchesFilter) return false;
                     
                     if (_searchQuery.isNotEmpty) {
-                      final nameMatch = o.productName.toLowerCase().contains(_searchQuery);
+                      final nameMatch = o.name.toLowerCase().contains(_searchQuery);
+                      final productMatch = o.productName.toLowerCase().contains(_searchQuery);
                       final idMatch = o.id.toString().contains(_searchQuery);
-                      return nameMatch || idMatch;
+                      final codeMatch = '#ft-2026-${o.id}'.contains(_searchQuery) || 'ft-2026-${o.id}'.contains(_searchQuery);
+                      return nameMatch || productMatch || idMatch || codeMatch;
                     }
                     return true;
                   }).toList();
@@ -540,7 +542,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
           ),
           const SizedBox(height: 8),
           Text(order.name.isNotEmpty ? order.name : 'Pedido', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-          Text(order.productName, style: const TextStyle(fontSize: 14, color: AppColors.textGrey)),
           const SizedBox(height: 16),
           Row(
             children: [
@@ -570,16 +571,14 @@ class _OrdersScreenState extends State<OrdersScreen> {
           const SizedBox(height: 12),
           Row(
             children: [
-              const Icon(Icons.access_time, size: 16, color: AppColors.textGrey),
+              const Icon(Icons.local_gas_station_outlined, size: 16, color: AppColors.textGrey),
               const SizedBox(width: 8),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Actualizado', style: TextStyle(fontSize: 10, color: AppColors.textGrey)),
+                  const Text('Combustible', style: TextStyle(fontSize: 10, color: AppColors.textGrey)),
                   Text(
-                    order.updatedAt.isNotEmpty
-                        ? '${_formatDate(order.updatedAt)} ${_formatTime(order.updatedAt)}'
-                        : '${_formatDate(order.createdAt)} ${_formatTime(order.createdAt)}',
+                    order.productName,
                     style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textDark),
                   ),
                 ],
