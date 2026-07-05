@@ -32,6 +32,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
   LatLng _originLocation = const LatLng(-12.085, -76.96);
   LatLng _currentTruckLocation = const LatLng(-12.085, -76.96);
   Timer? _positionTimer;
+  Timer? _pollingTimer;
   final OrderService _orderService = OrderService();
   List<LatLng> _routePoints = [];
   int _currentSegmentIndex = 0;
@@ -54,28 +55,44 @@ class _TrackingScreenState extends State<TrackingScreen> {
         });
       }
     });
+
+    _pollingTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (_currentOrder != null && _currentOrder!.status != 'COMPLETED') {
+        _fetchActiveOrders(silent: true);
+      }
+    });
   }
 
   @override
   void dispose() {
     _positionTimer?.cancel();
+    _pollingTimer?.cancel();
     super.dispose();
   }
 
-  Future<void> _fetchActiveOrders() async {
+  Future<void> _fetchActiveOrders({bool silent = false}) async {
     try {
       final orders = await _orderService.getOrders();
-      _activeOrders = orders.where((o) => o.status != 'COMPLETED').toList();
-      _activeOrders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      
-      if (_activeOrders.length == 1) {
-        _currentOrder = _activeOrders.first;
-        _resolveLocation(_currentOrder!.documentRef);
-      }
+      if (!mounted) return;
+      setState(() {
+        _activeOrders = orders.where((o) => o.status != 'COMPLETED').toList();
+        _activeOrders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        
+        if (_currentOrder != null) {
+           final updated = _activeOrders.where((o) => o.id == _currentOrder!.id).toList();
+           if (updated.isNotEmpty) {
+             _currentOrder = updated.first;
+             _updateTruckLocation();
+           }
+        } else if (_activeOrders.length == 1 && !silent) {
+          _currentOrder = _activeOrders.first;
+          _resolveLocation(_currentOrder!.documentRef);
+        }
+      });
     } catch (e) {
       debugPrint('Error fetching active orders: $e');
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted && !silent) setState(() => _isLoading = false);
     }
   }
 
@@ -112,11 +129,14 @@ class _TrackingScreenState extends State<TrackingScreen> {
     } else if (order.status == 'DELIVERED' || order.status == 'COMPLETED') {
       _currentTruckLocation = _targetLocation;
     } else if (order.status == 'IN_TRANSIT' || order.status == 'DISPATCHED') {
-      if (order.dispatchedAt != null && order.etaMinutes != null && order.etaMinutes! > 0) {
-        final dispatchedTime = DateTime.parse(order.dispatchedAt!).toLocal();
-        final now = DateTime.now();
-        final elapsedMinutes = now.difference(dispatchedTime).inSeconds / 60.0;
-        double progress = elapsedMinutes / order.etaMinutes!;
+      if (order.dispatchedAt != null && order.etaMinutes != null) {
+        double progress = 1.0;
+        if (order.etaMinutes! > 0) {
+          final dispatchedTime = DateTime.parse(order.dispatchedAt!).toLocal();
+          final now = DateTime.now();
+          final elapsedMinutes = now.difference(dispatchedTime).inSeconds / 60.0;
+          progress = elapsedMinutes / order.etaMinutes!;
+        }
         
         if (progress < 0) progress = 0;
         if (progress > 1) progress = 1;

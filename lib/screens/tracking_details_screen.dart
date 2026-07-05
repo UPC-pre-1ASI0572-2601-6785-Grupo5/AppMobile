@@ -33,25 +33,43 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
   bool _isLoadingMap = true;
   double _currentZoom = 15.0;
   Timer? _positionTimer;
+  Timer? _pollingTimer;
   List<LatLng> _routePoints = [];
   int _currentSegmentIndex = 0;
+  late OrderModel _currentOrder;
+  final OrderService _orderService = OrderService();
 
   @override
   void initState() {
     super.initState();
+    _currentOrder = widget.order;
     _resolveDestination();
     
     _positionTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (widget.order.status == 'IN_TRANSIT' || widget.order.status == 'DISPATCHED') {
+      if (_currentOrder.status == 'IN_TRANSIT' || _currentOrder.status == 'DISPATCHED') {
         setState(() {
           _updateTruckLocation();
         });
       }
     });
+
+    _pollingTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
+      if (_currentOrder.status != 'COMPLETED') {
+        try {
+          final updated = await _orderService.getOrder(_currentOrder.id!);
+          if (mounted) {
+            setState(() {
+              _currentOrder = updated;
+              _updateTruckLocation();
+            });
+          }
+        } catch (_) {}
+      }
+    });
   }
 
   Future<void> _resolveDestination() async {
-    String rawRef = widget.order.documentRef;
+    String rawRef = _currentOrder.documentRef;
     String addr = 'Planta Refinería Sur';
     if (rawRef.contains(' | ')) {
       addr = rawRef.split(' | ')[0];
@@ -69,7 +87,7 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
         _destinationName = addr;
         _routePoints = route.isEmpty ? [originLoc, _targetLocation] : route;
         
-        if (widget.order.status == 'DELIVERED' || widget.order.status == 'COMPLETED') {
+        if (_currentOrder.status == 'DELIVERED' || _currentOrder.status == 'COMPLETED') {
           _truckPosition = _targetLocation;
         } else {
           _updateTruckLocation();
@@ -83,18 +101,21 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
   }
 
   void _updateTruckLocation() {
-    final order = widget.order;
+    final order = _currentOrder;
+    final originLocation = const LatLng(-12.085, -76.96);
     if (order.status == 'PENDING_APPROVAL' || order.status == 'APPROVED') {
-      _truckPosition = const LatLng(-12.085, -76.96);
+      _truckPosition = originLocation;
     } else if (order.status == 'DELIVERED' || order.status == 'COMPLETED') {
       _truckPosition = _targetLocation;
     } else if (order.status == 'IN_TRANSIT' || order.status == 'DISPATCHED') {
-      if (order.dispatchedAt != null && order.etaMinutes != null && order.etaMinutes! > 0) {
-        final originLocation = const LatLng(-12.085, -76.96);
-        final dispatchedTime = DateTime.parse(order.dispatchedAt!).toLocal();
-        final now = DateTime.now();
-        final elapsedMinutes = now.difference(dispatchedTime).inSeconds / 60.0;
-        double progress = elapsedMinutes / order.etaMinutes!;
+      if (_currentOrder.dispatchedAt != null && _currentOrder.etaMinutes != null) {
+        double progress = 1.0;
+        if (_currentOrder.etaMinutes! > 0) {
+          final dispatchedTime = DateTime.parse(_currentOrder.dispatchedAt!).toLocal();
+          final now = DateTime.now();
+          final elapsedMinutes = now.difference(dispatchedTime).inSeconds / 60.0;
+          progress = elapsedMinutes / _currentOrder.etaMinutes!;
+        }
         
         if (progress < 0) progress = 0;
         if (progress > 1) progress = 1;
