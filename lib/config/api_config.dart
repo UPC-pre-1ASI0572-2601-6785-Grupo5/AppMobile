@@ -30,6 +30,10 @@ class ApiConfig {
   // ── Fulfillment endpoints ─────────────────────────────────────────────
   static const String fulfillment = '/api/v1/fulfillment';
 
+  // ── Fleet endpoints ─────────────────────────────────────────────
+  static const String drivers = '/api/v1/drivers';
+  static const String tanks = '/api/v1/tanks';
+
   // ── Reporting endpoints ───────────────────────────────────────────────
   static const String reports = '/api/v1/reports';
 }
