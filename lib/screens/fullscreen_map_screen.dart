@@ -6,11 +6,13 @@ import '../constants/colors.dart';
 class FullscreenMapScreen extends StatefulWidget {
   final LatLng targetLocation;
   final LatLng truckPosition;
+  final List<LatLng>? routePoints;
 
   const FullscreenMapScreen({
     Key? key,
     required this.targetLocation,
     required this.truckPosition,
+    this.routePoints,
   }) : super(key: key);
 
   @override
@@ -69,17 +71,15 @@ class _FullscreenMapScreenState extends State<FullscreenMapScreen> {
               ),
             ],
           ),
-          // Ruta trazada (Línea directa entre origen y destino para visualización rápida)
+          // Ruta trazada
           PolylineLayer(
             polylines: <Polyline<Object>>[
               Polyline<Object>(
-                points: [
-                  widget.truckPosition, // Posición actual del camión
-                  widget.targetLocation, // Destino
-                ],
-                color: AppColors.primary.withAlpha(128),
+                points: (widget.routePoints != null && widget.routePoints!.isNotEmpty) 
+                    ? widget.routePoints! 
+                    : [widget.truckPosition, widget.targetLocation],
+                color: AppColors.primary,
                 strokeWidth: 4,
-                pattern: StrokePattern.dashed(segments: const [10.0, 10.0]),
               ),
             ],
           ),

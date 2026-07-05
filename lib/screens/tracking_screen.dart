@@ -8,6 +8,7 @@ import 'alerts_screen.dart';
 import '../models/order_model.dart';
 import '../services/order_service.dart';
 import '../services/geocoding_service.dart';
+import '../services/routing_service.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
 
@@ -32,6 +33,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
   LatLng _currentTruckLocation = const LatLng(-12.085, -76.96);
   Timer? _positionTimer;
   final OrderService _orderService = OrderService();
+  List<LatLng> _routePoints = [];
 
   @override
   void initState() {
@@ -44,7 +46,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
       _fetchActiveOrders();
     }
     
-    _positionTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+    _positionTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (_currentOrder != null && (_currentOrder!.status == 'IN_TRANSIT' || _currentOrder!.status == 'DISPATCHED')) {
         setState(() {
           _updateTruckLocation();
@@ -85,9 +87,12 @@ class _TrackingScreenState extends State<TrackingScreen> {
       addr = rawAddress;
     }
     final location = await GeocodingService.instance.getCoordinatesFromAddress(addr);
+    final route = await RoutingService.instance.getRouteCoordinates(_originLocation, location);
+    
     if (mounted) {
       setState(() {
         _targetLocation = location;
+        _routePoints = route.isEmpty ? [_originLocation, _targetLocation] : route;
         _isLoadingMapLocation = false;
         _updateTruckLocation();
       });
@@ -115,10 +120,37 @@ class _TrackingScreenState extends State<TrackingScreen> {
         if (progress < 0) progress = 0;
         if (progress > 1) progress = 1;
         
-        final lat = _originLocation.latitude + (_targetLocation.latitude - _originLocation.latitude) * progress;
-        final lng = _originLocation.longitude + (_targetLocation.longitude - _originLocation.longitude) * progress;
-        
-        _currentTruckLocation = LatLng(lat, lng);
+        if (_routePoints.length > 1) {
+          // Calculate total distance of the polyline
+          final distance = const Distance();
+          double totalDistance = 0.0;
+          List<double> cumulativeDistances = [0.0];
+          
+          for (int i = 0; i < _routePoints.length - 1; i++) {
+            double segDist = distance.as(LengthUnit.Meter, _routePoints[i], _routePoints[i+1]);
+            totalDistance += segDist;
+            cumulativeDistances.add(totalDistance);
+          }
+          
+          double targetDistance = totalDistance * progress;
+          
+          // Find the segment containing the target distance
+          for (int i = 0; i < _routePoints.length - 1; i++) {
+            if (targetDistance <= cumulativeDistances[i+1]) {
+              double segmentLength = cumulativeDistances[i+1] - cumulativeDistances[i];
+              double segmentProgress = segmentLength > 0 ? (targetDistance - cumulativeDistances[i]) / segmentLength : 0.0;
+              
+              final lat = _routePoints[i].latitude + (_routePoints[i+1].latitude - _routePoints[i].latitude) * segmentProgress;
+              final lng = _routePoints[i].longitude + (_routePoints[i+1].longitude - _routePoints[i].longitude) * segmentProgress;
+              _currentTruckLocation = LatLng(lat, lng);
+              break;
+            }
+          }
+        } else {
+          final lat = _originLocation.latitude + (_targetLocation.latitude - _originLocation.latitude) * progress;
+          final lng = _originLocation.longitude + (_targetLocation.longitude - _originLocation.longitude) * progress;
+          _currentTruckLocation = LatLng(lat, lng);
+        }
       } else {
         _currentTruckLocation = _originLocation;
       }
@@ -285,10 +317,11 @@ class _TrackingScreenState extends State<TrackingScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        automaticallyImplyLeading: false,
         leading: (widget.order != null && canPop) ? IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textDark),
           onPressed: () => Navigator.pop(context),
-        ) : const SizedBox.shrink(),
+        ) : null,
         title: Row(
           children: [
             ClipRRect(
@@ -414,10 +447,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
                       PolylineLayer(
                         polylines: [
                           Polyline(
-                            points: [_currentTruckLocation, _targetLocation],
+                            points: _routePoints.isNotEmpty ? _routePoints : [_originLocation, _targetLocation],
                             color: AppColors.primary,
                             strokeWidth: 4.0,
-                            pattern: StrokePattern.dashed(segments: [10.0, 10.0]),
                           ),
                         ],
                       ),

@@ -21,7 +21,6 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
   final OrderService _orderService = OrderService();
   final ProfileService _profileService = ProfileService();
   final TextEditingController _qtyController = TextEditingController();
-  final TextEditingController _dateController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   
   String _selectedFuel = 'Diésel';
@@ -111,33 +110,6 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
     });
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2030),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: AppColors.primary,
-              onPrimary: Colors.white,
-              onSurface: AppColors.textDark,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked != null) {
-      setState(() {
-        _dateController.text = "${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}";
-      });
-    }
-  }
-
   Future<void> _submitOrder() async {
     if (_qtyController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -161,7 +133,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
         productName: _selectedFuel,
         name: _nameController.text.trim(),
         quantityGallons: qty,
-        documentRef: '${_selectedAddress ?? "Sin Sede"} | ${_dateController.text}',
+        documentRef: '${_selectedAddress ?? "Sin Sede"}',
         etaMinutes: _etaMinutes,
       );
       
@@ -184,7 +156,6 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
   @override
   void dispose() {
     _qtyController.dispose();
-    _dateController.dispose();
     _nameController.dispose();
     super.dispose();
   }
@@ -335,24 +306,6 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
               ),
             ),
             const SizedBox(height: 24),
-
-            const Text('Fecha Programada', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textDark)),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _dateController,
-              readOnly: true,
-              onTap: () => _selectDate(context),
-              decoration: InputDecoration(
-                hintText: 'dd/mm/yyyy',
-                prefixIcon: const Icon(Icons.calendar_today_outlined, color: AppColors.primary),
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.borderLight)),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.borderLight)),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary)),
-              ),
-            ),
-            const SizedBox(height: 16),
 
             Container(
               height: 150,

@@ -8,6 +8,7 @@ import '../models/order_model.dart';
 
 import 'dart:math';
 import '../services/geocoding_service.dart';
+import '../services/routing_service.dart';
 import '../services/order_service.dart';
 import 'delivery_success_screen.dart';
 import 'dart:async';
@@ -32,13 +33,14 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
   bool _isLoadingMap = true;
   double _currentZoom = 15.0;
   Timer? _positionTimer;
+  List<LatLng> _routePoints = [];
 
   @override
   void initState() {
     super.initState();
     _resolveDestination();
     
-    _positionTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+    _positionTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (widget.order.status == 'IN_TRANSIT' || widget.order.status == 'DISPATCHED') {
         setState(() {
           _updateTruckLocation();
@@ -57,10 +59,15 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
     }
     
     final loc = await GeocodingService.instance.getCoordinatesFromAddress(addr);
+    final originLoc = const LatLng(-12.085, -76.96);
+    final route = await RoutingService.instance.getRouteCoordinates(originLoc, loc);
+
     if (mounted) {
       setState(() {
         _targetLocation = loc;
         _destinationName = addr;
+        _routePoints = route.isEmpty ? [originLoc, _targetLocation] : route;
+        
         if (widget.order.status == 'DELIVERED' || widget.order.status == 'COMPLETED') {
           _truckPosition = _targetLocation;
         } else {
@@ -91,10 +98,35 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
         if (progress < 0) progress = 0;
         if (progress > 1) progress = 1;
         
-        final lat = originLocation.latitude + (_targetLocation.latitude - originLocation.latitude) * progress;
-        final lng = originLocation.longitude + (_targetLocation.longitude - originLocation.longitude) * progress;
-        
-        _truckPosition = LatLng(lat, lng);
+        if (_routePoints.length > 1) {
+          final distance = const Distance();
+          double totalDistance = 0.0;
+          List<double> cumulativeDistances = [0.0];
+          
+          for (int i = 0; i < _routePoints.length - 1; i++) {
+            double segDist = distance.as(LengthUnit.Meter, _routePoints[i], _routePoints[i+1]);
+            totalDistance += segDist;
+            cumulativeDistances.add(totalDistance);
+          }
+          
+          double targetDistance = totalDistance * progress;
+          
+          for (int i = 0; i < _routePoints.length - 1; i++) {
+            if (targetDistance <= cumulativeDistances[i+1]) {
+              double segmentLength = cumulativeDistances[i+1] - cumulativeDistances[i];
+              double segmentProgress = segmentLength > 0 ? (targetDistance - cumulativeDistances[i]) / segmentLength : 0.0;
+              
+              final lat = _routePoints[i].latitude + (_routePoints[i+1].latitude - _routePoints[i].latitude) * segmentProgress;
+              final lng = _routePoints[i].longitude + (_routePoints[i+1].longitude - _routePoints[i].longitude) * segmentProgress;
+              _truckPosition = LatLng(lat, lng);
+              break;
+            }
+          }
+        } else {
+          final lat = originLocation.latitude + (_targetLocation.latitude - originLocation.latitude) * progress;
+          final lng = originLocation.longitude + (_targetLocation.longitude - originLocation.longitude) * progress;
+          _truckPosition = LatLng(lat, lng);
+        }
       } else {
         _truckPosition = const LatLng(-12.085, -76.96);
       }
@@ -382,10 +414,9 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
                                 PolylineLayer(
                                   polylines: [
                                     Polyline(
-                                      points: [_truckPosition, _targetLocation],
+                                      points: _routePoints.isNotEmpty ? _routePoints : [_truckPosition, _targetLocation],
                                       color: AppColors.primary,
                                       strokeWidth: 4.0,
-                                      pattern: StrokePattern.dashed(segments: [10.0, 10.0]),
                                     ),
                                   ],
                                 ),
@@ -488,7 +519,11 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => FullscreenMapScreen(targetLocation: _targetLocation, truckPosition: _truckPosition)),
+                          MaterialPageRoute(builder: (context) => FullscreenMapScreen(
+                            targetLocation: _targetLocation, 
+                            truckPosition: _truckPosition,
+                            routePoints: _routePoints,
+                          )),
                         );
                       },
                       icon: const Icon(Icons.fullscreen, size: 18),
