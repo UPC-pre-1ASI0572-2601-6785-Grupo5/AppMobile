@@ -20,6 +20,7 @@ class ProviderDispatchesScreen extends StatefulWidget {
 class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String _selectedFilter = 'Todos';
+  String _searchQuery = '';
   bool _isLoading = true;
   List<OrderModel> _orders = [];
   final OrderService _orderService = OrderService();
@@ -75,8 +76,12 @@ class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> wit
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: AppColors.borderLight),
             ),
-            child: const TextField(
-              decoration: InputDecoration(
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value.toLowerCase();
+                });
+              },
+              decoration: const InputDecoration(
                 hintText: 'Buscar por ID, Cliente o Destino...',
                 hintStyle: TextStyle(color: AppColors.textGrey, fontSize: 13),
                 prefixIcon: Icon(Icons.search, color: AppColors.textGrey, size: 20),
@@ -95,8 +100,8 @@ class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> wit
           indicatorColor: const Color(0xFF006D3E),
           indicatorWeight: 3,
           tabs: const [
-            Tab(text: 'Disponibles'),
             Tab(text: 'Mis Pedidos'),
+            Tab(text: 'Disponibles'),
           ],
         ),
         
@@ -107,8 +112,8 @@ class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> wit
             : TabBarView(
                 controller: _tabController,
                 children: [
-                  _buildAvailableOrdersView(),
                   _buildMyOrdersView(),
+                  _buildAvailableOrdersView(),
                 ],
               ),
         ),
@@ -117,8 +122,13 @@ class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> wit
   }
 
   Widget _buildAvailableOrdersView() {
-    // Pedidos sin proveedor (providerId == null) y en estado PENDING_APPROVAL
     List<OrderModel> availableOrders = _orders.where((o) => o.providerId == null && (o.status == 'PENDING_APPROVAL' || o.status == 'PENDING')).toList();
+    if (_searchQuery.isNotEmpty) {
+      availableOrders = availableOrders.where((o) =>
+          o.id.toString().contains(_searchQuery) ||
+          o.documentRef.toLowerCase().contains(_searchQuery) ||
+          (o.productName.toLowerCase()).contains(_searchQuery)).toList();
+    }
     availableOrders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     if (availableOrders.isEmpty) {
@@ -141,10 +151,19 @@ class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> wit
     // Filtros de Mis Pedidos
     List<OrderModel> filtered = myOrders.where((o) {
       if (_selectedFilter == 'Todos') return true;
+      if (_selectedFilter == 'Confirmado' && o.status == 'APPROVED') return true;
       if (_selectedFilter == 'En Ruta' && (o.status == 'DISPATCHED' || o.status == 'IN_TRANSIT')) return true;
-      if (_selectedFilter == 'Completados' && (o.status == 'COMPLETED' || o.status == 'DELIVERED')) return true;
+      if (_selectedFilter == 'Entregado' && o.status == 'DELIVERED') return true;
+      if (_selectedFilter == 'Completados' && o.status == 'COMPLETED') return true;
       return false;
     }).toList();
+
+    if (_searchQuery.isNotEmpty) {
+      filtered = filtered.where((o) =>
+          o.id.toString().contains(_searchQuery) ||
+          o.documentRef.toLowerCase().contains(_searchQuery) ||
+          (o.productName.toLowerCase()).contains(_searchQuery)).toList();
+    }
 
     filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
@@ -159,7 +178,9 @@ class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> wit
             child: Row(
               children: [
                 _buildFilterChip('Todos'),
+                _buildFilterChip('Confirmado'),
                 _buildFilterChip('En Ruta'),
+                _buildFilterChip('Entregado'),
                 _buildFilterChip('Completados'),
               ],
             ),
@@ -271,20 +292,37 @@ class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> wit
           statusBgColor = const Color(0xFF2ECC71);
           statusTextColor = Colors.white;
           statusText = 'En Ruta';
+          bool isArrived = (order.etaMinutes == 0);
           actions = Row(
             children: [
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => ProviderTrackingScreen(order: order)));
+                  onPressed: () async {
+                    if (!isArrived) {
+                      try {
+                        await _orderService.accelerateOrder(order.id!);
+                        _fetchOrders();
+                        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pedido acelerado'), backgroundColor: AppColors.primary));
+                      } catch (e) {
+                        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error));
+                      }
+                    } else {
+                      try {
+                        await _orderService.markAsDelivered(order.id!);
+                        _fetchOrders();
+                        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pedido entregado'), backgroundColor: AppColors.primary));
+                      } catch (e) {
+                        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error));
+                      }
+                    }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFD4EFDF),
+                    backgroundColor: isArrived ? const Color(0xFF006D3E) : const Color(0xFF2ECC71),
                     elevation: 0,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: const Text('Rastreo', style: TextStyle(color: Color(0xFF006D3E), fontWeight: FontWeight.bold, fontSize: 12)),
+                  child: Text(isArrived ? 'Pedido entregado' : 'Acelerar', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
                 ),
               ),
               const SizedBox(width: 12),
@@ -296,8 +334,23 @@ class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> wit
             ],
           );
           break;
-        case 'COMPLETED':
         case 'DELIVERED':
+          statusBgColor = const Color(0xFFFFF3E0);
+          statusTextColor = const Color(0xFFE67E22);
+          statusText = 'Esperando Cliente';
+          actions = Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(color: const Color(0xFFFFF3E0), borderRadius: BorderRadius.circular(8)),
+                  child: const Center(child: Text('Esperando confirmación del cliente', style: TextStyle(color: Color(0xFFE67E22), fontWeight: FontWeight.bold, fontSize: 12), textAlign: TextAlign.center)),
+                ),
+              ),
+            ],
+          );
+          break;
+        case 'COMPLETED':
           statusBgColor = const Color(0xFFEAECEE);
           statusTextColor = AppColors.textGrey;
           statusText = 'Completado';

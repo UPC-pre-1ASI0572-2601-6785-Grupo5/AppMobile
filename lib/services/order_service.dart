@@ -63,4 +63,17 @@ class OrderService {
     final response = await _api.patch('${ApiConfig.orders}/$id/approve');
     return OrderModel.fromJson(response);
   }
+
+  Future<OrderModel> accelerateOrder(int id) async {
+    final response = await _api.patch('${ApiConfig.orders}/$id/accelerate');
+    return OrderModel.fromJson(response);
+  }
+
+  Future<OrderModel> saveSignature(int id, String signature) async {
+    final body = {
+      'signature': signature,
+    };
+    final response = await _api.patch('${ApiConfig.orders}/$id/signature', body: body);
+    return OrderModel.fromJson(response);
+  }
 }

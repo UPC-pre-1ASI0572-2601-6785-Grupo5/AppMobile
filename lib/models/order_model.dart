@@ -21,6 +21,7 @@ class OrderModel {
   final String? driverName;
   final String? driverProfilePicture;
   final int? driverTrips;
+  final String? clientSignature;
 
   OrderModel({
     required this.id,
@@ -45,6 +46,7 @@ class OrderModel {
     this.driverName,
     this.driverProfilePicture,
     this.driverTrips,
+    this.clientSignature,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -80,6 +82,7 @@ class OrderModel {
       driverName: json['driverName'] as String?,
       driverProfilePicture: json['driverProfilePicture'] as String?,
       driverTrips: json['driverTrips'] as int?,
+      clientSignature: json['clientSignature'] as String?,
     );
   }
 
@@ -105,6 +108,7 @@ class OrderModel {
       'driverName': driverName,
       'driverProfilePicture': driverProfilePicture,
       'driverTrips': driverTrips,
+      'clientSignature': clientSignature,
     };
   }
 

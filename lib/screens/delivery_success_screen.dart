@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import 'digital_receipt_screen.dart'; // Importación vital para navegar
 import 'dashboard_screen.dart';
-
+import 'dart:convert';
 import '../models/order_model.dart';
+import '../services/order_service.dart';
 
 class DeliverySuccessScreen extends StatefulWidget {
   final OrderModel order;
@@ -18,6 +19,21 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
 
   // Lista para guardar los puntos de la firma dibujada
   List<Offset?> _signaturePoints = [];
+  final OrderService _orderService = OrderService();
+
+  Future<void> _handleSaveSignature() async {
+    if (_signaturePoints.isNotEmpty) {
+      try {
+        final List<dynamic> serialized = _signaturePoints.map((p) {
+          if (p == null) return null;
+          return {'dx': p.dx, 'dy': p.dy};
+        }).toList();
+        await _orderService.saveSignature(widget.order.id!, jsonEncode(serialized));
+      } catch (e) {
+        debugPrint('Error saving signature: $e');
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -271,15 +287,17 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        // NAVEGACIÓN A LA PANTALLA DEL VOUCHER
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => DigitalReceiptScreen(
-                            signaturePoints: _signaturePoints,
-                            order: widget.order,
-                          )),
-                        );
+                      onPressed: () async {
+                        await _handleSaveSignature();
+                        if (mounted) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => DigitalReceiptScreen(
+                              signaturePoints: _signaturePoints,
+                              order: widget.order,
+                            )),
+                          );
+                        }
                       },
                       icon: const Icon(Icons.description_outlined, size: 18),
                       label: const Text('Ver comprobante digital'),
@@ -294,13 +312,15 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        // Vuelve al Dashboard inicial
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (context) => const DashboardScreen(initialIndex: 0)),
-                          (route) => false,
-                        );
+                      onPressed: () async {
+                        await _handleSaveSignature();
+                        if (mounted) {
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (context) => const DashboardScreen(initialIndex: 0)),
+                            (route) => false,
+                          );
+                        }
                       },
                       icon: const Icon(Icons.home_outlined, size: 18, color: AppColors.textDark),
                       label: const Text('Volver al Dashboard', style: TextStyle(color: AppColors.textDark)),

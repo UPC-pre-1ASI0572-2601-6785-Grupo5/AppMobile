@@ -10,6 +10,7 @@ import '../constants/colors.dart';
 import 'dashboard_screen.dart';
 import 'provider_dashboard_screen.dart';
 import '../models/order_model.dart';
+import 'dart:convert';
 import '../services/session_manager.dart';
 
 class DigitalReceiptScreen extends StatefulWidget {
@@ -29,6 +30,26 @@ class DigitalReceiptScreen extends StatefulWidget {
 
 class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
   final int _selectedIndex = 2;
+  List<Offset?> _parsedSignature = [];
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.signaturePoints.isNotEmpty) {
+      _parsedSignature = widget.signaturePoints;
+    } else if (widget.order?.clientSignature != null && widget.order!.clientSignature!.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(widget.order!.clientSignature!) as List;
+        _parsedSignature = decoded.map((p) {
+          if (p == null) return null;
+          final map = p as Map<String, dynamic>;
+          return Offset((map['dx'] as num).toDouble(), (map['dy'] as num).toDouble());
+        }).toList();
+      } catch (e) {
+        debugPrint('Error parsing signature: $e');
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +58,10 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textDark),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Row(
           children: [
             ClipRRect(
@@ -193,7 +217,7 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
                         const Divider(color: AppColors.borderLight),
                         const SizedBox(height: 16),
 
-                        _buildDataRow('Producto', widget.order != null ? widget.order!.name : 'Desconocido'),
+                        _buildDataRow('Producto', widget.order != null ? widget.order!.productName : 'Desconocido'),
                         _buildDataRow('Unidad', widget.order != null && widget.order!.assignedTruckId != null ? 'Camión ${widget.order!.assignedTruckId}' : 'No asignada'),
                         _buildDataRow('Operador', 'Chofer Asignado'),
                         _buildDataRow('Ubicación', widget.order != null ? (widget.order!.documentRef.contains(' | ') ? widget.order!.documentRef.split(' | ')[0] : widget.order!.documentRef) : 'Destino'),
@@ -255,7 +279,7 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
                               height: double.infinity,
                               padding: const EdgeInsets.all(8),
                               child: CustomPaint(
-                                painter: VoucherSignatureViewerPainter(widget.signaturePoints),
+                                painter: VoucherSignatureViewerPainter(_parsedSignature),
                               ),
                             ),
                           ),
@@ -307,31 +331,6 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
                 label: const Text('Descargar PDF', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF006D3E),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  final isProvider = SessionManager.instance.user?.isProvider ?? false;
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => isProvider ? const ProviderDashboardScreen(initialIndex: 0) : const DashboardScreen(initialIndex: 0)
-                    ),
-                    (route) => false,
-                  );
-                },
-                icon: const Icon(Icons.home_outlined, size: 18, color: AppColors.textDark),
-                label: const Text('Volver al Dashboard', style: TextStyle(color: AppColors.textDark)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE8F8F5),
-                  elevation: 0,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
@@ -415,7 +414,7 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
               pw.SizedBox(height: 20),
               pw.Text('Detalles del Pedido', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
               pw.Divider(),
-              _buildPdfDataRow('Producto', widget.order?.name ?? ''),
+              _buildPdfDataRow('Producto', widget.order?.productName ?? ''),
               _buildPdfDataRow('Volumen Total', '${widget.order?.quantityGallons.toStringAsFixed(0) ?? '0'} Galones'),
               _buildPdfDataRow('Ubicación de Destino', widget.order?.documentRef ?? ''),
               if (widget.order?.completedAt != null)
@@ -463,7 +462,7 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
   }
 
   Future<Uint8List?> _captureSignatureAsImage() async {
-    if (widget.signaturePoints.isEmpty) return null;
+    if (_parsedSignature.isEmpty) return null;
     
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
@@ -473,7 +472,7 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
     final bgPaint = Paint()..color = Colors.white;
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bgPaint);
 
-    final painter = VoucherSignatureViewerPainter(widget.signaturePoints);
+    final painter = VoucherSignatureViewerPainter(_parsedSignature);
     painter.paint(canvas, size);
 
     final picture = recorder.endRecording();
