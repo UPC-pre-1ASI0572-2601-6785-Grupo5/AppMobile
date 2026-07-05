@@ -101,33 +101,36 @@ class _TankListScreenState extends State<TankListScreen> {
                             border: Border.all(color: tank.status == 'MAINTENANCE' ? const Color(0xFFFFCDD2) : AppColors.borderLight),
                             boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 2, offset: Offset(0, 1))],
                           ),
-                          child: Row(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(color: const Color(0xFFE0F2F1), borderRadius: BorderRadius.circular(12)),
-                                child: const Icon(Icons.local_shipping, color: AppColors.primary, size: 28),
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(color: const Color(0xFFE0F2F1), borderRadius: BorderRadius.circular(12)),
+                                    child: const Icon(Icons.local_shipping, color: AppColors.primary, size: 28),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text('${tank.plate} - ${tank.model}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                        const SizedBox(height: 4),
+                                        Text('Combustible: ${tank.currentFuelGallons} / ${tank.capacityGallons} Gal', style: const TextStyle(fontSize: 12, color: AppColors.textGrey)),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(color: statusBgColor, borderRadius: BorderRadius.circular(12)),
+                                    child: Text(statusText, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: statusColor)),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('${tank.plate} - ${tank.model}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                                    const SizedBox(height: 4),
-                                    Text('Combustible: ${tank.currentFuelGallons} / ${tank.capacityGallons} Gal', style: const TextStyle(fontSize: 12, color: AppColors.textGrey)),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(color: statusBgColor, borderRadius: BorderRadius.circular(12)),
-                                child: Text(statusText, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: statusColor)),
-                              ),
-                            ],
-                          ),
-                          if (tank.status == 'UNSTABLE_VALVES' || (tank.status == 'AVAILABLE' && tank.completedTripsSinceMaintenance > 0)) ...[
-                            const SizedBox(height: 12),
+                              if (tank.status == 'UNSTABLE_VALVES' || (tank.status == 'AVAILABLE' && tank.completedTripsSinceMaintenance > 0)) ...[
+                                const SizedBox(height: 12),
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(

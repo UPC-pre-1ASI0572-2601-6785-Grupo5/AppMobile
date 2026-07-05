@@ -189,7 +189,7 @@ class _ProviderFleetScreenState extends State<ProviderFleetScreen> {
                     children: [
                       const Icon(Icons.timer_outlined, size: 14, color: AppColors.textGrey),
                       const SizedBox(width: 6),
-                      Text('${d.drivingMinutes ~/ 60}h ${d.drivingMinutes % 60}m de conducción continua', style: const TextStyle(fontSize: 11, color: AppColors.textGrey)),
+                      Text('Fatiga: ${d.completedTripsSinceRest} viajes continuos', style: const TextStyle(fontSize: 11, color: AppColors.textGrey)),
                     ],
                   );
                 } else if (d.status == 'ON_ROUTE') {
@@ -200,7 +200,7 @@ class _ProviderFleetScreenState extends State<ProviderFleetScreen> {
                     children: [
                       const Icon(Icons.local_shipping_outlined, size: 14, color: AppColors.textGrey),
                       const SizedBox(width: 6),
-                      Text('${d.drivingMinutes ~/ 60}h ${d.drivingMinutes % 60}m conduciendo', style: const TextStyle(fontSize: 11, color: AppColors.textGrey)),
+                      Text('Viaje #${d.completedTripsSinceRest + 1}', style: const TextStyle(fontSize: 11, color: AppColors.textGrey)),
                     ],
                   );
                 } else if (d.status == 'RESTING') {
@@ -210,7 +210,7 @@ class _ProviderFleetScreenState extends State<ProviderFleetScreen> {
                     children: [
                       const Icon(Icons.bed_outlined, size: 14, color: AppColors.textGrey),
                       const SizedBox(width: 6),
-                      Text('Reanudación en: ${d.restingMinutesLeft ~/ 60}h ${d.restingMinutesLeft % 60}m', style: const TextStyle(fontSize: 11, color: AppColors.textGrey)),
+                      const Text('Tomando un descanso', style: TextStyle(fontSize: 11, color: AppColors.textGrey)),
                     ],
                   );
                 }

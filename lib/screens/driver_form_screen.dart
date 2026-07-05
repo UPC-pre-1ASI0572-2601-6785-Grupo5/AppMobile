@@ -47,8 +47,8 @@ class _DriverFormScreenState extends State<DriverFormScreen> {
         licenseNumber: _licenseController.text.trim(),
         status: widget.driver?.status ?? 'AVAILABLE',
         profilePicture: widget.driver?.profilePicture,
-        drivingMinutes: widget.driver?.drivingMinutes ?? 0,
-        restingMinutesLeft: widget.driver?.restingMinutesLeft ?? 0,
+        completedTripsSinceRest: widget.driver?.completedTripsSinceRest ?? 0,
+        restingUntil: widget.driver?.restingUntil,
       );
 
       if (widget.driver == null) {

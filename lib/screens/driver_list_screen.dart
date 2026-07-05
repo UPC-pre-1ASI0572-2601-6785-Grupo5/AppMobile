@@ -116,29 +116,32 @@ class _DriverListScreenState extends State<DriverListScreen> {
                             border: Border.all(color: driver.status == 'FATIGUE' ? const Color(0xFFFFCDD2) : AppColors.borderLight),
                             boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 2, offset: Offset(0, 1))],
                           ),
-                          child: Row(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              CircleAvatar(radius: 24, backgroundImage: _getDriverImage(driver)),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(driver.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                                    const SizedBox(height: 4),
-                                    Text('Licencia: ${driver.licenseNumber}', style: const TextStyle(fontSize: 12, color: AppColors.textGrey)),
-                                  ],
-                                ),
+                              Row(
+                                children: [
+                                  CircleAvatar(radius: 24, backgroundImage: _getDriverImage(driver)),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(driver.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                        const SizedBox(height: 4),
+                                        Text('Licencia: ${driver.licenseNumber}', style: const TextStyle(fontSize: 12, color: AppColors.textGrey)),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(color: statusBgColor, borderRadius: BorderRadius.circular(12)),
+                                    child: Text(statusText, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: statusColor)),
+                                  ),
+                                ],
                               ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(color: statusBgColor, borderRadius: BorderRadius.circular(12)),
-                                child: Text(statusText, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: statusColor)),
-                              ),
-                            ],
-                          ),
-                          if (driver.status == 'FATIGUE' || (driver.status == 'AVAILABLE' && driver.completedTripsSinceRest > 0)) ...[
-                            const SizedBox(height: 12),
+                              if (driver.status == 'FATIGUE' || (driver.status == 'AVAILABLE' && driver.completedTripsSinceRest > 0)) ...[
+                                const SizedBox(height: 12),
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(

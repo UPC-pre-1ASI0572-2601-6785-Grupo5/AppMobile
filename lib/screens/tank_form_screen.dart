@@ -185,7 +185,6 @@ class _TankFormScreenState extends State<TankFormScreen> {
                         ),
                       ],
                     ),
-                    ),
                     const SizedBox(height: 32),
                     SizedBox(
                       width: double.infinity,

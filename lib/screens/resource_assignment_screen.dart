@@ -14,6 +14,7 @@ class ResourceAssignmentScreen extends StatefulWidget {
   State<ResourceAssignmentScreen> createState() => _ResourceAssignmentScreenState();
 }
 
+class _ResourceAssignmentScreenState extends State<ResourceAssignmentScreen> {
   int? _selectedDriverIndex;
   int? _selectedVehicleIndex;
   bool _isLoading = true;
@@ -223,7 +224,8 @@ class ResourceAssignmentScreen extends StatefulWidget {
             const SizedBox(height: 12),
             _buildRiskCard('Stock Disponible', 'Planta Callao Terminal', '12k GL'),
             _buildRiskCard('Línea de Crédito', 'Estado: Activa', '\$45,000'),
-            const SizedBox(height: 3            if (_isLoading)
+            const SizedBox(height: 32),
+            if (_isLoading)
               const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator(color: AppColors.primary)))
             else ...[
               // ==========================================
@@ -269,7 +271,7 @@ class ResourceAssignmentScreen extends StatefulWidget {
                   statusTag: 'DISPONIBLE',
                 )).toList(),
               const SizedBox(height: 40),
-            ],ox(height: 40),
+            ],
           ],
         ),
       ),
