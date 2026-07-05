@@ -9,6 +9,7 @@ import '../models/order_model.dart';
 import '../services/order_service.dart';
 import '../services/geocoding_service.dart';
 import 'package:intl/intl.dart';
+import 'dart:async';
 
 class TrackingScreen extends StatefulWidget {
   final OrderModel? order;
@@ -27,6 +28,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
   bool _isLoading = true;
   bool _isLoadingMapLocation = false;
   LatLng _targetLocation = const LatLng(-12.0464, -77.0428);
+  LatLng _originLocation = const LatLng(-12.085, -76.96);
+  LatLng _currentTruckLocation = const LatLng(-12.085, -76.96);
+  Timer? _positionTimer;
   final OrderService _orderService = OrderService();
 
   @override
@@ -39,6 +43,20 @@ class _TrackingScreenState extends State<TrackingScreen> {
     } else {
       _fetchActiveOrders();
     }
+    
+    _positionTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (_currentOrder != null && (_currentOrder!.status == 'IN_TRANSIT' || _currentOrder!.status == 'DISPATCHED')) {
+        setState(() {
+          _updateTruckLocation();
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _positionTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _fetchActiveOrders() async {
@@ -65,10 +83,39 @@ class _TrackingScreenState extends State<TrackingScreen> {
       setState(() {
         _targetLocation = location;
         _isLoadingMapLocation = false;
+        _updateTruckLocation();
       });
       try {
-        _mapController.move(_targetLocation, 14.0);
+        _mapController.move(_currentTruckLocation, 14.0);
       } catch (_) {}
+    }
+  }
+
+  void _updateTruckLocation() {
+    final order = _currentOrder;
+    if (order == null) return;
+    
+    if (order.status == 'PENDING_APPROVAL' || order.status == 'APPROVED') {
+      _currentTruckLocation = _originLocation;
+    } else if (order.status == 'DELIVERED' || order.status == 'COMPLETED') {
+      _currentTruckLocation = _targetLocation;
+    } else if (order.status == 'IN_TRANSIT' || order.status == 'DISPATCHED') {
+      if (order.dispatchedAt != null && order.etaMinutes != null && order.etaMinutes! > 0) {
+        final dispatchedTime = DateTime.parse(order.dispatchedAt!).toLocal();
+        final now = DateTime.now();
+        final elapsedMinutes = now.difference(dispatchedTime).inSeconds / 60.0;
+        double progress = elapsedMinutes / order.etaMinutes!;
+        
+        if (progress < 0) progress = 0;
+        if (progress > 1) progress = 1;
+        
+        final lat = _originLocation.latitude + (_targetLocation.latitude - _originLocation.latitude) * progress;
+        final lng = _originLocation.longitude + (_targetLocation.longitude - _originLocation.longitude) * progress;
+        
+        _currentTruckLocation = LatLng(lat, lng);
+      } else {
+        _currentTruckLocation = _originLocation;
+      }
     }
   }
 
@@ -333,9 +380,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
-                  children: const [
-                    Text('ETA', style: TextStyle(fontSize: 10, color: AppColors.textGrey, fontWeight: FontWeight.bold)),
-                    Text('15 min', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                  children: [
+                    const Text('ETA', style: TextStyle(fontSize: 10, color: AppColors.textGrey, fontWeight: FontWeight.bold)),
+                    Text(order.etaMinutes != null ? '${order.etaMinutes} min' : 'Calculando...', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary)),
                   ],
                 ),
               ],
@@ -361,7 +408,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                       MarkerLayer(
                         markers: [
                           Marker(
-                            point: _targetLocation,
+                            point: _currentTruckLocation,
                             width: 60,
                             height: 60,
                             child: Column(
@@ -401,7 +448,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                   child: Column(
                     children: [
                       _buildMapFloatingButton(Icons.my_location, onTap: () {
-                        _mapController.move(_targetLocation, 14.0);
+                        _mapController.move(_currentTruckLocation, 14.0);
                       }),
                       const SizedBox(height: 8),
                       _buildMapFloatingButton(Icons.layers_outlined, onTap: () {

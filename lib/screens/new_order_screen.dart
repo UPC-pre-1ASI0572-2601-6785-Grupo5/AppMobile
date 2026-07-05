@@ -32,6 +32,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
   bool _isLoadingMap = false;
   LatLng _targetLocation = const LatLng(-12.0464, -77.0428);
   String _calculatedEta = "24 - 48 Horas";
+  int _etaMinutes = 1440; // Valor por defecto
   final MapController _mapController = MapController();
 
   @override
@@ -99,6 +100,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
     int totalMinutes = (hours * 60).round();
     
     setState(() {
+      _etaMinutes = totalMinutes;
       if (totalMinutes < 60) {
         _calculatedEta = "$totalMinutes min";
       } else {
@@ -160,6 +162,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
         name: _nameController.text.trim(),
         quantityGallons: qty,
         documentRef: '${_selectedAddress ?? "Sin Sede"} | ${_dateController.text}',
+        etaMinutes: _etaMinutes,
       );
       
       if (!mounted) return;

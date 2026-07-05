@@ -10,6 +10,7 @@ import 'dart:math';
 import '../services/geocoding_service.dart';
 import '../services/order_service.dart';
 import 'delivery_success_screen.dart';
+import 'dart:async';
 
 class TrackingDetailsScreen extends StatefulWidget {
   final OrderModel order;
@@ -30,22 +31,20 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
   String _destinationName = 'Planta Refinería Sur';
   bool _isLoadingMap = true;
   double _currentZoom = 15.0;
+  Timer? _positionTimer;
 
   @override
   void initState() {
     super.initState();
-    _animController = AnimationController(vsync: this, duration: const Duration(seconds: 10));
-    _anim = Tween<double>(begin: 0, end: 1).animate(_animController)
-      ..addListener(() {
-        if (mounted) {
-          setState(() {
-            double lat = (-12.085) + (_targetLocation.latitude - (-12.085)) * _anim.value;
-            double lng = (-76.96) + (_targetLocation.longitude - (-76.96)) * _anim.value;
-            _truckPosition = LatLng(lat, lng);
-          });
-        }
-      });
     _resolveDestination();
+    
+    _positionTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (widget.order.status == 'IN_TRANSIT' || widget.order.status == 'DISPATCHED') {
+        setState(() {
+          _updateTruckLocation();
+        });
+      }
+    });
   }
 
   Future<void> _resolveDestination() async {
@@ -65,17 +64,57 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
         if (widget.order.status == 'DELIVERED' || widget.order.status == 'COMPLETED') {
           _truckPosition = _targetLocation;
         } else {
-          _truckPosition = const LatLng(-12.085, -76.96); // Origen
+          _updateTruckLocation();
         }
         _isLoadingMap = false;
       });
-      if (widget.order.status != 'DELIVERED' && widget.order.status != 'COMPLETED') {
-        _animController.forward(from: 0);
-      }
       try {
         _mapController.move(_targetLocation, 13.0);
       } catch (_) {}
     }
+  }
+
+  void _updateTruckLocation() {
+    final order = widget.order;
+    if (order.status == 'PENDING_APPROVAL' || order.status == 'APPROVED') {
+      _truckPosition = const LatLng(-12.085, -76.96);
+    } else if (order.status == 'DELIVERED' || order.status == 'COMPLETED') {
+      _truckPosition = _targetLocation;
+    } else if (order.status == 'IN_TRANSIT' || order.status == 'DISPATCHED') {
+      if (order.dispatchedAt != null && order.etaMinutes != null && order.etaMinutes! > 0) {
+        final originLocation = const LatLng(-12.085, -76.96);
+        final dispatchedTime = DateTime.parse(order.dispatchedAt!).toLocal();
+        final now = DateTime.now();
+        final elapsedMinutes = now.difference(dispatchedTime).inSeconds / 60.0;
+        double progress = elapsedMinutes / order.etaMinutes!;
+        
+        if (progress < 0) progress = 0;
+        if (progress > 1) progress = 1;
+        
+        final lat = originLocation.latitude + (_targetLocation.latitude - originLocation.latitude) * progress;
+        final lng = originLocation.longitude + (_targetLocation.longitude - originLocation.longitude) * progress;
+        
+        _truckPosition = LatLng(lat, lng);
+      } else {
+        _truckPosition = const LatLng(-12.085, -76.96);
+      }
+    }
+  }
+
+  String _getRemainingTime() {
+    final order = widget.order;
+    if (order.status == 'DELIVERED' || order.status == 'COMPLETED') return '0 min';
+    if (order.status != 'IN_TRANSIT' && order.status != 'DISPATCHED') {
+      return order.etaMinutes != null ? '${order.etaMinutes} min' : 'Calculando...';
+    }
+    if (order.dispatchedAt != null && order.etaMinutes != null) {
+      final dispatchedTime = DateTime.parse(order.dispatchedAt!).toLocal();
+      final elapsedMinutes = DateTime.now().difference(dispatchedTime).inSeconds / 60.0;
+      double remaining = order.etaMinutes! - elapsedMinutes;
+      if (remaining < 0) remaining = 0;
+      return '${remaining.ceil()} min';
+    }
+    return 'Calculando...';
   }
 
   double _calculateDistance(LatLng p1, LatLng p2) {
@@ -90,7 +129,7 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
 
   @override
   void dispose() {
-    _animController.dispose();
+    _positionTimer?.cancel();
     super.dispose();
   }
 
@@ -406,6 +445,14 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
                     children: [
                       const Text('Distancia restante:', style: TextStyle(fontSize: 12, color: AppColors.textGrey)),
                       Text('${_calculateDistance(_truckPosition, _targetLocation).toStringAsFixed(1)} km', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Tiempo restante:', style: TextStyle(fontSize: 12, color: AppColors.textGrey)),
+                      Text(_getRemainingTime(), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary)),
                     ],
                   ),
                   const SizedBox(height: 8),

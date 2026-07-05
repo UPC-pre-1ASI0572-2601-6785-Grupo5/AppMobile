@@ -11,6 +11,8 @@ class OrderModel {
   final String updatedAt;
   final bool isCapped;
   final double originalGallons;
+  final int? etaMinutes;
+  final String? dispatchedAt;
 
   OrderModel({
     required this.id,
@@ -25,6 +27,8 @@ class OrderModel {
     required this.updatedAt,
     this.isCapped = false,
     this.originalGallons = 0.0,
+    this.etaMinutes,
+    this.dispatchedAt,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -50,6 +54,8 @@ class OrderModel {
       updatedAt: json['updatedAt']?.toString() ?? '',
       isCapped: capped,
       originalGallons: rawGallons,
+      etaMinutes: json['etaMinutes'] as int?,
+      dispatchedAt: json['dispatchedAt']?.toString(),
     );
   }
 
@@ -65,6 +71,8 @@ class OrderModel {
       'assignedTruckId': assignedTruckId,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
+      'etaMinutes': etaMinutes,
+      'dispatchedAt': dispatchedAt,
     };
   }
 

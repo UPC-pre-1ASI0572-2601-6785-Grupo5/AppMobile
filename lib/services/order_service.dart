@@ -19,12 +19,14 @@ class OrderService {
     required String name,
     required double quantityGallons,
     required String documentRef,
+    required int etaMinutes,
   }) async {
     final body = {
       'fuelType': productName,
       'name': name,
       'gallons': quantityGallons,
       'documentRef': documentRef,
+      'etaMinutes': etaMinutes,
     };
 
     final response = await _api.post(ApiConfig.orders, body: body);
