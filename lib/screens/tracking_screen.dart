@@ -618,25 +618,28 @@ class _TrackingScreenState extends State<TrackingScreen> {
                             ],
                           ),
                           const SizedBox(height: 12),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const DeliverySuccessScreen()),
-                                );
-                              },
-                              icon: const Icon(Icons.inventory_outlined, size: 18, color: AppColors.primary),
-                              label: const Text('Pedido entregado', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFE8F8F5),
-                                elevation: 0,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          if (order.status == 'DELIVERED')
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const DeliverySuccessScreen()),
+                                  ).then((_) {
+                                    // Refresh logic if needed
+                                  });
+                                },
+                                icon: const Icon(Icons.inventory_outlined, size: 18, color: AppColors.primary),
+                                label: const Text('Confirmar Entrega', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFE8F8F5),
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                ),
                               ),
                             ),
-                          ),
                           if (!isConfirmed) ...[
                             const SizedBox(height: 12),
                             SizedBox(

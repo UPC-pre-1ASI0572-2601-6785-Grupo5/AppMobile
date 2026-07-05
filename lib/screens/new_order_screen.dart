@@ -95,7 +95,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
     double distanceKm = 6371 * c;
     
     double hours = distanceKm / 40.0;
-    if (hours < 0.5) hours = 0.5; // Mínimo 30 min
+    if (hours < 0.08) hours = 0.08; // Mínimo 5 min
     
     int totalMinutes = (hours * 60).round();
     

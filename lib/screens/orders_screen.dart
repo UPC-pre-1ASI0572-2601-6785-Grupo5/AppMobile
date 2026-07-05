@@ -273,6 +273,24 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 ),
               ),
               const SizedBox(height: 16),
+              TextField(
+                onChanged: (value) {
+                  setState(() {
+                    _searchQuery = value.toLowerCase();
+                  });
+                },
+                decoration: InputDecoration(
+                  hintText: 'Buscar por nombre o código...',
+                  prefixIcon: const Icon(Icons.search, color: AppColors.primary),
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.borderLight)),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.borderLight)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary)),
+                ),
+              ),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   GestureDetector(
@@ -320,12 +338,21 @@ class _OrdersScreenState extends State<OrdersScreen> {
               else Builder(
                 builder: (context) {
                   final filteredOrders = _orders.where((o) {
-                    if (_selectedFilter == 'Todos') return true;
-                    if (_selectedFilter == 'Pendientes' && o.status == 'PENDING_APPROVAL') return true;
-                    if (_selectedFilter == 'Aprobados' && o.status == 'APPROVED') return true;
-                    if (_selectedFilter == 'En ruta' && (o.status == 'DISPATCHED' || o.status == 'IN_TRANSIT')) return true;
-                    if (_selectedFilter == 'Completados' && (o.status == 'COMPLETED' || o.status == 'DELIVERED')) return true;
-                    return false;
+                    bool matchesFilter = false;
+                    if (_selectedFilter == 'Todos') matchesFilter = true;
+                    else if (_selectedFilter == 'Pendientes' && o.status == 'PENDING_APPROVAL') matchesFilter = true;
+                    else if (_selectedFilter == 'Aprobados' && o.status == 'APPROVED') matchesFilter = true;
+                    else if (_selectedFilter == 'En ruta' && (o.status == 'DISPATCHED' || o.status == 'IN_TRANSIT')) matchesFilter = true;
+                    else if (_selectedFilter == 'Completados' && (o.status == 'COMPLETED' || o.status == 'DELIVERED')) matchesFilter = true;
+                    
+                    if (!matchesFilter) return false;
+                    
+                    if (_searchQuery.isNotEmpty) {
+                      final nameMatch = o.productName.toLowerCase().contains(_searchQuery);
+                      final idMatch = o.id.toString().contains(_searchQuery);
+                      return nameMatch || idMatch;
+                    }
+                    return true;
                   }).toList();
 
                   if (filteredOrders.isEmpty) {
@@ -549,17 +576,21 @@ class _OrdersScreenState extends State<OrdersScreen> {
               Text(_formatDate(order.createdAt), style: const TextStyle(fontSize: 12, color: AppColors.textGrey)),
               if (isDispatched)
                 GestureDetector(
-                  onTap: () {
-                    Navigator.push(
+                  onTap: () async {
+                    await Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => TrackingScreen(order: order)),
                     );
+                    _fetchOrders();
                   },
                   child: const Text('Rastrear >', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary)),
                 )
               else
                 GestureDetector(
-                  onTap: () => _showOrderDetails(order),
+                  onTap: () {
+                    _showOrderDetails(order);
+                    // No need to await fetch here unless details can change order state
+                  },
                   child: const Text('Ver más', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textGrey)),
                 ),
             ],
