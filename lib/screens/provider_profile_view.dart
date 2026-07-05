@@ -4,6 +4,9 @@ import 'login_screen.dart';
 import '../services/session_manager.dart';
 import '../services/profile_service.dart';
 import '../models/user_model.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:shared_preferences/shared_preferences.dart';
 class ProviderProfileView extends StatefulWidget {
   const ProviderProfileView({Key? key}) : super(key: key);
 
@@ -25,6 +28,7 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
 
   final ProfileService _profileService = ProfileService();
   bool _isLoading = true;
+  String? _profileImagePath;
 
   @override
   void initState() {
@@ -36,9 +40,12 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
     final user = SessionManager.instance.user;
     if (user != null) {
       try {
+        final prefs = await SharedPreferences.getInstance();
+        final path = prefs.getString('profile_image_${user.id}');
         final updatedUser = await _profileService.fetchUserProfile(user.id);
         setState(() {
           _mfaEnabled = updatedUser.mfaEnabled;
+          _profileImagePath = path;
           _isLoading = false;
         });
       } catch (e) {
@@ -46,6 +53,21 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
       }
     } else {
       setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      final user = SessionManager.instance.user;
+      if (user != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('profile_image_${user.id}', pickedFile.path);
+        setState(() {
+          _profileImagePath = pickedFile.path;
+        });
+      }
     }
   }
 
@@ -74,19 +96,27 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
                 Stack(
                   alignment: Alignment.bottomRight,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(color: Color(0xFF006D3E), shape: BoxShape.circle),
-                      child: const CircleAvatar(
-                        radius: 44,
-                        backgroundColor: Colors.white,
-                        backgroundImage: AssetImage('assets/images/trailer.png'),
+                    GestureDetector(
+                      onTap: _pickImage,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(color: Color(0xFF006D3E), shape: BoxShape.circle),
+                        child: CircleAvatar(
+                          radius: 44,
+                          backgroundColor: Colors.white,
+                          backgroundImage: _profileImagePath != null 
+                              ? NetworkImage(_profileImagePath!) as ImageProvider
+                              : const AssetImage('assets/images/trailer.png'),
+                        ),
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(color: const Color(0xFF006D3E), shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 2)),
-                      child: const Icon(Icons.edit, color: Colors.white, size: 14),
+                    GestureDetector(
+                      onTap: _pickImage,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(color: const Color(0xFF006D3E), shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 2)),
+                        child: const Icon(Icons.edit, color: Colors.white, size: 14),
+                      ),
                     ),
                   ],
                 ),

@@ -14,6 +14,11 @@ class OrderService {
     return [];
   }
 
+  Future<OrderModel> getOrder(int id) async {
+    final response = await _api.get('${ApiConfig.orders}/$id');
+    return OrderModel.fromJson(response);
+  }
+
   Future<OrderModel> createOrder({
     required String productName,
     required String name,

@@ -273,16 +273,17 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               )
             ),
             pw.SizedBox(height: 20),
-            pw.Text('Desglose de Pedidos', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+            pw.Text('Desglose de Pedidos', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold, color: PdfColors.teal800)),
             pw.SizedBox(height: 10),
             pw.TableHelper.fromTextArray(
-              headers: ['ID', 'Fecha', 'Producto', 'Volumen', 'Estado'],
+              headers: ['ID', 'Fecha', 'Producto', 'Volumen', 'Estado', 'ETA/Entrega'],
               data: _orders.map((o) => [
                 'FT-${o.id}',
-                DateFormat('dd/MM/yyyy').format(DateTime.parse(o.createdAt).toLocal()),
+                DateFormat('dd/MM/yyyy HH:mm').format(DateTime.parse(o.createdAt).toLocal()),
                 o.productName,
                 '${o.quantityGallons} Gal',
-                o.status
+                o.status,
+                o.etaMinutes != null ? '${o.etaMinutes} min' : '-',
               ]).toList(),
               cellStyle: const pw.TextStyle(fontSize: 10),
               headerStyle: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: PdfColors.white),
@@ -290,11 +291,30 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               rowDecoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColors.grey300, width: 0.5))),
             ),
             pw.SizedBox(height: 20),
-            pw.Text('Optimización de Operaciones', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+            pw.Text('Optimización de Operaciones', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold, color: PdfColors.teal800)),
             pw.SizedBox(height: 10),
-            pw.Text('- Ruta de Mayor Rendimiento: Corredor Norte (L2)'),
-            pw.Text('- Ventana Óptima de Suministro: 22:00 - 04:00 AM'),
-            pw.Text('- Eficiencia de Combustible (Flota): 24.5 L / 100 km'),
+            pw.Container(
+              padding: const pw.EdgeInsets.all(12),
+              decoration: pw.BoxDecoration(
+                color: PdfColors.grey100,
+                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+                border: pw.Border.all(color: PdfColors.grey300)
+              ),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text('• Ruta de Mayor Rendimiento: Corredor Norte (L2)', style: pw.TextStyle(fontSize: 12)),
+                  pw.SizedBox(height: 4),
+                  pw.Text('• Ventana Óptima de Suministro: 22:00 - 04:00 AM', style: pw.TextStyle(fontSize: 12)),
+                  pw.SizedBox(height: 4),
+                  pw.Text('• Eficiencia de Combustible (Flota): 24.5 L / 100 km', style: pw.TextStyle(fontSize: 12)),
+                  pw.SizedBox(height: 4),
+                  pw.Text('• Alertas Críticas Recientes: 0', style: pw.TextStyle(fontSize: 12)),
+                  pw.SizedBox(height: 4),
+                  pw.Text('• Índice de Burn Rate Actual: ${(totalLitros / 15000.0 * 100).clamp(0, 100).toStringAsFixed(1)}%', style: pw.TextStyle(fontSize: 12)),
+                ]
+              )
+            ),
             pw.SizedBox(height: 30),
             pw.Center(
               child: pw.Text('Reporte generado el ${DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now())}', style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey600)),
@@ -304,9 +324,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       ),
     );
 
-    await Printing.layoutPdf(
-      onLayout: (PdfPageFormat format) async => pdf.save(),
-      name: 'Reporte_Analitico_FuelTrack.pdf',
+    await Printing.sharePdf(
+      bytes: await pdf.save(),
+      filename: 'Reporte_Analitico_FuelTrack.pdf',
     );
   }
 }

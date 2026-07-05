@@ -548,7 +548,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                   ),
                 ),
                 DraggableScrollableSheet(
-                  initialChildSize: 0.25,
+                  initialChildSize: 0.65,
                   minChildSize: 0.05,
                   maxChildSize: 1.0,
                   builder: (context, scrollController) {

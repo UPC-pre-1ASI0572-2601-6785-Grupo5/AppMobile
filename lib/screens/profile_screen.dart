@@ -4,6 +4,9 @@ import 'login_screen.dart';
 import '../services/session_manager.dart';
 import '../services/profile_service.dart';
 import '../models/user_model.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:shared_preferences/shared_preferences.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
 
@@ -22,6 +25,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   final ProfileService _profileService = ProfileService();
   bool _isLoading = true;
+  String? _profileImagePath;
 
   @override
   void initState() {
@@ -33,12 +37,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final user = SessionManager.instance.user;
     if (user != null) {
       try {
+        final prefs = await SharedPreferences.getInstance();
+        final path = prefs.getString('profile_image_${user.id}');
         final updatedUser = await _profileService.fetchUserProfile(user.id);
         final sites = await _profileService.getSites(user.id);
         setState(() {
           _mfaEnabled = updatedUser.mfaEnabled;
           _currentPlan = updatedUser.subscriptionPlan ?? 'Starter';
           _sedes = sites;
+          _profileImagePath = path;
           _isLoading = false;
         });
       } catch (e) {
@@ -46,6 +53,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     } else {
       setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      final user = SessionManager.instance.user;
+      if (user != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('profile_image_${user.id}', pickedFile.path);
+        setState(() {
+          _profileImagePath = pickedFile.path;
+        });
+      }
     }
   }
 
@@ -80,25 +102,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     Stack(
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.asset(
-                            'assets/images/logo.png',
-                            width: 56,
-                            height: 56,
-                            fit: BoxFit.cover,
+                        GestureDetector(
+                          onTap: _pickImage,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: _profileImagePath != null
+                                ? Image.network(
+                                    _profileImagePath!,
+                                    width: 56,
+                                    height: 56,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Image.asset(
+                                    'assets/images/logo.png',
+                                    width: 56,
+                                    height: 56,
+                                    fit: BoxFit.cover,
+                                  ),
                           ),
                         ),
                         Positioned(
                           bottom: -4,
                           right: -4,
-                          child: Container(
-                            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                            padding: const EdgeInsets.all(2),
+                          child: GestureDetector(
+                            onTap: _pickImage,
                             child: Container(
+                              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
                               padding: const EdgeInsets.all(2),
-                              decoration: const BoxDecoration(color: Color(0xFF006D3E), shape: BoxShape.circle),
-                              child: const Icon(Icons.shield, color: Colors.white, size: 10),
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(color: Color(0xFF006D3E), shape: BoxShape.circle),
+                                child: const Icon(Icons.camera_alt, color: Colors.white, size: 12),
+                              ),
                             ),
                           ),
                         ),
