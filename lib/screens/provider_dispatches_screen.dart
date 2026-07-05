@@ -76,6 +76,7 @@ class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> wit
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: AppColors.borderLight),
             ),
+            child: TextField(
               onChanged: (value) {
                 setState(() {
                   _searchQuery = value.toLowerCase();
