@@ -74,7 +74,7 @@ class _FullscreenMapScreenState extends State<FullscreenMapScreen> {
 
   void _updateTruckLocation() {
     final order = _currentOrder;
-    final originLocation = const LatLng(-12.085, -76.96);
+    final originLocation = _routePoints.isNotEmpty ? _routePoints.first : const LatLng(-12.085, -76.96);
     if (order.status == 'PENDING_APPROVAL' || order.status == 'APPROVED') {
       _truckPosition = originLocation;
       _currentSegmentIndex = 0;

@@ -4,6 +4,7 @@ import '../constants/colors.dart';
 
 import '../models/order_model.dart';
 import '../services/order_service.dart';
+import 'package:intl/intl.dart';
 
 class ProviderTrackingScreen extends StatefulWidget {
   final OrderModel order;
@@ -16,6 +17,28 @@ class ProviderTrackingScreen extends StatefulWidget {
 class _ProviderTrackingScreenState extends State<ProviderTrackingScreen> {
   bool _isLoading = false;
   final OrderService _orderService = OrderService();
+
+  String _formatDate(String? isoString) {
+    if (isoString == null || isoString.isEmpty) return 'Pendiente';
+    try {
+      final dt = DateTime.parse(isoString).toLocal();
+      return DateFormat('hh:mm a • dd MMM').format(dt);
+    } catch (e) {
+      return isoString;
+    }
+  }
+
+  String _calculateETA() {
+    if (widget.order.dispatchedAt == null && widget.order.createdAt.isEmpty) return '--:--';
+    try {
+      final baseDate = widget.order.dispatchedAt != null ? widget.order.dispatchedAt! : widget.order.createdAt;
+      final dt = DateTime.parse(baseDate).toLocal();
+      final etaDt = dt.add(Duration(minutes: widget.order.etaMinutes ?? 0));
+      return DateFormat('HH:mm').format(etaDt);
+    } catch (e) {
+      return '--:--';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -151,45 +174,45 @@ class _ProviderTrackingScreenState extends State<ProviderTrackingScreen> {
               isCompleted: true,
               isLast: false,
               title: 'Orden Aprobada',
-              subtitle: '08:30 AM • 12 Oct\nVerificado por Control Central',
+              subtitle: '${_formatDate(widget.order.createdAt)}\nVerificado por ${widget.order.providerName ?? "Proveedor"}',
             ),
 
             // Paso 2: Recurso Asignado
             _buildTimelineStep(
-              isCompleted: true,
+              isCompleted: widget.order.dispatchedAt != null,
               isLast: false,
               title: 'Recurso Asignado',
-              subtitle: '09:15 AM • 12 Oct',
-              extraContent: Container(
+              subtitle: _formatDate(widget.order.dispatchedAt ?? widget.order.createdAt),
+              extraContent: widget.order.dispatchedAt != null ? Container(
                 margin: const EdgeInsets.only(top: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(color: const Color(0xFFF4F7F7), borderRadius: BorderRadius.circular(8)),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.person, size: 14, color: AppColors.textGrey),
-                    SizedBox(width: 6),
-                    Text('Operador: Roberto Méndez', style: TextStyle(fontSize: 11, color: AppColors.textDark, fontWeight: FontWeight.w500)),
+                  children: [
+                    const Icon(Icons.person, size: 14, color: AppColors.textGrey),
+                    const SizedBox(width: 6),
+                    Text('Operador: ${widget.order.driverName ?? "Conductor Asignado"}', style: const TextStyle(fontSize: 11, color: AppColors.textDark, fontWeight: FontWeight.w500)),
                   ],
                 ),
-              ),
+              ) : null,
             ),
 
             // Paso 3: Carga Finalizada
             _buildTimelineStep(
-              isCompleted: true,
+              isCompleted: widget.order.dispatchedAt != null,
               isLast: false,
               title: 'Carga Finalizada',
-              subtitle: '10:45 AM • 12 Oct\nTerminal Norte - Bahía 4',
+              subtitle: '${_formatDate(widget.order.dispatchedAt ?? widget.order.createdAt)}\n${widget.order.providerAddress ?? "Sede Central"}',
             ),
 
             // Paso 4: En Ruta (ACTUAL - Con Mapa)
             _buildTimelineStep(
-              isActive: true,
+              isActive: widget.order.status == 'DISPATCHED' || widget.order.status == 'IN_TRANSIT',
               isLast: false,
               title: 'En Ruta',
-              subtitle: 'Salida: 11:00 AM • Carretera 57',
-              extraContent: Container(
+              subtitle: 'Salida: ${_formatDate(widget.order.dispatchedAt ?? widget.order.createdAt)}',
+              extraContent: (widget.order.status == 'DISPATCHED' || widget.order.status == 'IN_TRANSIT') ? Container(
                 margin: const EdgeInsets.only(top: 12),
                 height: 120,
                 decoration: BoxDecoration(
@@ -216,7 +239,7 @@ class _ProviderTrackingScreenState extends State<ProviderTrackingScreen> {
                         decoration: BoxDecoration(color: Colors.white.withOpacity(0.9), borderRadius: BorderRadius.circular(8)),
                         child: Row(
                           children: [
-                            const Text('Lat: 20.6736, Lon: -103.344', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                            const Text('Rastreo Activo', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                             const SizedBox(width: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
@@ -229,94 +252,18 @@ class _ProviderTrackingScreenState extends State<ProviderTrackingScreen> {
                     ),
                   ],
                 ),
-              ),
+              ) : null,
             ),
 
             // Paso 5: Entregado
             _buildTimelineStep(
-              isCompleted: false,
-              isActive: false,
+              isCompleted: widget.order.status == 'DELIVERED' || widget.order.status == 'COMPLETED',
+              isActive: widget.order.status == 'DELIVERED' || widget.order.status == 'COMPLETED',
               isLast: true,
               title: 'Entregado',
-              subtitle: 'Pendiente • Est. 02:30 PM',
+              subtitle: (widget.order.status == 'DELIVERED' || widget.order.status == 'COMPLETED') ? _formatDate(widget.order.completedAt) : 'Pendiente • Est. ${_calculateETA()}',
             ),
 
-            const SizedBox(height: 24),
-
-            // ==========================================
-            // TELEMETRÃA: VELOCIDAD Y COMBUSTIBLE
-            // ==========================================
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.borderLight)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Velocidad
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Icon(Icons.speed, color: AppColors.textGrey, size: 20),
-                      const Text('OPTIMAL', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF2ECC71), letterSpacing: 1)),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  const Text('VELOCIDAD ACTUAL', style: TextStyle(fontSize: 10, color: AppColors.textGrey, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 4),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: const [
-                      Text('82', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                      Padding(
-                        padding: EdgeInsets.only(bottom: 6, left: 4),
-                        child: Text('km/h', style: TextStyle(fontSize: 14, color: AppColors.textGrey, fontWeight: FontWeight.w500)),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  LinearProgressIndicator(value: 0.65, backgroundColor: AppColors.borderLight, color: const Color(0xFF006D3E), minHeight: 4),
-
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 20),
-                    child: Divider(color: AppColors.borderLight),
-                  ),
-
-                  // Nivel de Combustible
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      Icon(Icons.ev_station, color: AppColors.textGrey, size: 20),
-                      Text('UNIDAD', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textGrey, letterSpacing: 1)),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  const Text('NIVEL DE COMBUSTIBLE', style: TextStyle(fontSize: 10, color: AppColors.textGrey, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 4),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: const [
-                      Text('64', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                      Padding(
-                        padding: EdgeInsets.only(bottom: 6, left: 4),
-                        child: Text('%', style: TextStyle(fontSize: 14, color: AppColors.textGrey, fontWeight: FontWeight.w500)),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(child: Container(height: 4, decoration: BoxDecoration(color: const Color(0xFF006D3E), borderRadius: BorderRadius.circular(2)))),
-                      const SizedBox(width: 4),
-                      Expanded(child: Container(height: 4, decoration: BoxDecoration(color: const Color(0xFF006D3E), borderRadius: BorderRadius.circular(2)))),
-                      const SizedBox(width: 4),
-                      Expanded(child: Container(height: 4, decoration: BoxDecoration(color: const Color(0xFF006D3E), borderRadius: BorderRadius.circular(2)))),
-                      const SizedBox(width: 4),
-                      Expanded(child: Container(height: 4, decoration: BoxDecoration(color: AppColors.borderLight, borderRadius: BorderRadius.circular(2)))),
-                    ],
-                  ),
-                ],
-              ),
-            ),
             const SizedBox(height: 16),
 
             // ==========================================
@@ -343,9 +290,9 @@ class _ProviderTrackingScreenState extends State<ProviderTrackingScreen> {
                           const Text('LLEGADA ESTIMADA (ETA)', style: TextStyle(fontSize: 10, color: AppColors.textGrey, fontWeight: FontWeight.w600)),
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.end,
-                            children: const [
-                              Text('14:32', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                              Padding(
+                            children: [
+                              Text(_calculateETA(), style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                              const Padding(
                                 padding: EdgeInsets.only(bottom: 6, left: 4),
                                 child: Text('hrs', style: TextStyle(fontSize: 14, color: AppColors.textDark, fontWeight: FontWeight.w500)),
                               ),
@@ -407,17 +354,17 @@ class _ProviderTrackingScreenState extends State<ProviderTrackingScreen> {
                               const SizedBox(height: 24),
                               const Text('ORIGEN', style: TextStyle(fontSize: 10, color: AppColors.textGrey, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
                               const SizedBox(height: 4),
-                              const Text('Terminal Marítima Tuxpan', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                              Text(widget.order.providerName ?? 'Sede Central', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                               const SizedBox(height: 2),
-                              const Text('Carretera Barra Norte Km 6.5, Ver.', style: TextStyle(fontSize: 11, color: AppColors.textGrey)),
+                              Text(widget.order.providerAddress ?? 'Dirección del Proveedor', style: const TextStyle(fontSize: 11, color: AppColors.textGrey)),
 
                               const SizedBox(height: 24),
 
                               const Text('DESTINO FINAL', style: TextStyle(fontSize: 10, color: AppColors.textGrey, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
                               const SizedBox(height: 4),
-                              const Text('Estación Central de Logística Bajío', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                              Text(widget.order.documentRef.isNotEmpty ? widget.order.documentRef : 'Sede del Cliente', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                               const SizedBox(height: 2),
-                              const Text('Parque Industrial Querétaro, Qro.', style: TextStyle(fontSize: 11, color: AppColors.textGrey)),
+                              const Text('Destino Seleccionado', style: TextStyle(fontSize: 11, color: AppColors.textGrey)),
                             ],
                           ),
                         ),

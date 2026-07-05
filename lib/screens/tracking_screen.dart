@@ -104,11 +104,19 @@ class _TrackingScreenState extends State<TrackingScreen> {
     } else if (rawAddress.isNotEmpty) {
       addr = rawAddress;
     }
+    
+    String originAddr = (_currentOrder?.providerAddress != null && _currentOrder!.providerAddress!.isNotEmpty) 
+        ? _currentOrder!.providerAddress! 
+        : 'Terminal Central';
+
     final location = await GeocodingService.instance.getCoordinatesFromAddress(addr);
-    final route = await RoutingService.instance.getRouteCoordinates(_originLocation, location);
+    final originLocation = await GeocodingService.instance.getCoordinatesFromAddress(originAddr);
+
+    final route = await RoutingService.instance.getRouteCoordinates(originLocation, location);
     
     if (mounted) {
       setState(() {
+        _originLocation = originLocation;
         _targetLocation = location;
         _routePoints = route.isEmpty ? [_originLocation, _targetLocation] : route;
         _isLoadingMapLocation = false;

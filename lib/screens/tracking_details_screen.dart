@@ -27,8 +27,9 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
   late AnimationController _animController;
   late Animation<double> _anim;
   
-  LatLng _truckPosition = const LatLng(-12.085, -76.96); // Refinería
+  LatLng _truckPosition = const LatLng(-12.085, -76.96); 
   LatLng _targetLocation = const LatLng(-12.085, -76.96);
+  LatLng _originLocation = const LatLng(-12.085, -76.96);
   String _destinationName = 'Planta Refinería Sur';
   bool _isLoadingMap = true;
   double _currentZoom = 15.0;
@@ -77,15 +78,20 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
       addr = rawRef;
     }
     
+    String originAddr = (_currentOrder.providerAddress != null && _currentOrder.providerAddress!.isNotEmpty) 
+        ? _currentOrder.providerAddress! 
+        : 'Terminal Central';
+    
     final loc = await GeocodingService.instance.getCoordinatesFromAddress(addr);
-    final originLoc = const LatLng(-12.085, -76.96);
+    final originLoc = await GeocodingService.instance.getCoordinatesFromAddress(originAddr);
     final route = await RoutingService.instance.getRouteCoordinates(originLoc, loc);
 
     if (mounted) {
       setState(() {
+        _originLocation = originLoc;
         _targetLocation = loc;
         _destinationName = addr;
-        _routePoints = route.isEmpty ? [originLoc, _targetLocation] : route;
+        _routePoints = route.isEmpty ? [_originLocation, _targetLocation] : route;
         
         if (_currentOrder.status == 'DELIVERED' || _currentOrder.status == 'COMPLETED') {
           _truckPosition = _targetLocation;
@@ -102,9 +108,8 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
 
   void _updateTruckLocation() {
     final order = _currentOrder;
-    final originLocation = const LatLng(-12.085, -76.96);
     if (order.status == 'PENDING_APPROVAL' || order.status == 'APPROVED') {
-      _truckPosition = originLocation;
+      _truckPosition = _originLocation;
       _currentSegmentIndex = 0;
     } else if (order.status == 'DELIVERED' || order.status == 'COMPLETED') {
       _truckPosition = _targetLocation;
@@ -374,7 +379,7 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
                     iconColor: AppColors.primary,
                     title: 'Cisterna salió de planta',
                     time: 'Hace 45 min',
-                    desc: 'Despacho verificado en Terminal Norte. Rumbo a destino principal.',
+                    desc: 'Despacho verificado en ${_currentOrder.providerAddress != null && _currentOrder.providerAddress!.isNotEmpty ? _currentOrder.providerAddress : "Sede Central"}. Rumbo a destino principal.',
                   ),
                   _buildNotificationItem(
                     icon: Icons.traffic_outlined,
