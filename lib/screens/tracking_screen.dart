@@ -635,7 +635,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                             ),
                             const SizedBox(height: 16),
                           ],
-                          if (order.truckId != null) ...[
+                          if (order.assignedTruckId != null) ...[
                             Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(color: const Color(0xFFEFEFEF), borderRadius: BorderRadius.circular(12)),
@@ -650,7 +650,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                     ],
                                   ),
                                   const SizedBox(height: 4),
-                                  Text(order.truckId!, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                                  Text(order.assignedTruckId!, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                                   const SizedBox(height: 12),
                                   Stack(
                                   children: [
