@@ -3,8 +3,11 @@ import '../constants/colors.dart';
 import 'digital_receipt_screen.dart'; // Importación vital para navegar
 import 'dashboard_screen.dart';
 
+import '../models/order_model.dart';
+
 class DeliverySuccessScreen extends StatefulWidget {
-  const DeliverySuccessScreen({Key? key}) : super(key: key);
+  final OrderModel order;
+  const DeliverySuccessScreen({Key? key, required this.order}) : super(key: key);
 
   @override
   State<DeliverySuccessScreen> createState() => _DeliverySuccessScreenState();
@@ -89,7 +92,7 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
                 children: [
                   const Icon(Icons.receipt_long_outlined, color: AppColors.primary, size: 24),
                   const SizedBox(width: 12),
-                  const Text('#FT-2023-05', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                  Text('#FT-${widget.order.id}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
                 ],
               ),
             ),
@@ -134,7 +137,7 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
                         child: _buildSummaryCard(
                           icon: Icons.local_gas_station_outlined,
                           label: 'VOLUMEN TOTAL',
-                          value: '12,000L',
+                          value: '${widget.order.quantityGallons.toStringAsFixed(0)}L',
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -142,7 +145,7 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
                         child: _buildSummaryCard(
                           icon: Icons.access_time,
                           label: 'FINALIZACIÓN',
-                          value: '14:45',
+                          value: widget.order.completedAt != null ? _formatTime(widget.order.completedAt!) : '--:--',
                         ),
                       ),
                     ],
@@ -252,9 +255,9 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: const [
-                              Text('Código Hash de Seguridad', style: TextStyle(fontSize: 11, color: AppColors.textGrey)),
-                              SizedBox(height: 4),
-                              Text('#FT-HASH-992-B821-X9', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primary, letterSpacing: 1)),
+                              const Text('Código Hash de Seguridad', style: TextStyle(fontSize: 11, color: AppColors.textGrey)),
+                              const SizedBox(height: 4),
+                              Text(widget.order.securityHash ?? '#FT-HASH-PENDING', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primary, letterSpacing: 1)),
                             ],
                           ),
                         ),
@@ -272,7 +275,10 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
                         // NAVEGACIÓN A LA PANTALLA DEL VOUCHER
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => DigitalReceiptScreen(signaturePoints: _signaturePoints)),
+                          MaterialPageRoute(builder: (context) => DigitalReceiptScreen(
+                            signaturePoints: _signaturePoints,
+                            order: widget.order,
+                          )),
                         );
                       },
                       icon: const Icon(Icons.description_outlined, size: 18),
@@ -372,6 +378,15 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
         const BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Perfil'),
       ],
     );
+  }
+
+  String _formatTime(String isoString) {
+    try {
+      final date = DateTime.parse(isoString).toLocal();
+      return '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    } catch (e) {
+      return '--:--';
+    }
   }
 }
 

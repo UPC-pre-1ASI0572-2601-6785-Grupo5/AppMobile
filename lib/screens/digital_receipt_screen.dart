@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import 'dashboard_screen.dart';
+import '../models/order_model.dart';
+import 'package:intl/intl.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'dart:ui' as ui;
 
 class DigitalReceiptScreen extends StatefulWidget {
   // RECIBE LOS PUNTOS REALES DE LA FIRMA DIBUJADA
   final List<Offset?> signaturePoints;
+  final OrderModel? order;
 
   const DigitalReceiptScreen({
     Key? key,
     required this.signaturePoints,
+    this.order,
   }) : super(key: key);
 
   @override
@@ -88,10 +96,15 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text('Entrega Confirmada', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                      SizedBox(height: 2),
-                      Text('24 May 2024 • 14:32 PM', style: TextStyle(fontSize: 12, color: AppColors.textGrey)),
+                    children: [
+                      const Text('Entrega Confirmada', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                      const SizedBox(height: 2),
+                      Text(
+                        widget.order != null && widget.order!.completedAt != null
+                            ? DateFormat('dd MMM yyyy • HH:mm a').format(DateTime.parse(widget.order!.completedAt!).toLocal())
+                            : 'Fecha desconocida',
+                        style: const TextStyle(fontSize: 12, color: AppColors.textGrey),
+                      ),
                     ],
                   ),
                 ),
@@ -117,9 +130,9 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
                     const SizedBox(width: 8),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text('Voucher Digital', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                        Text('#FT-2023-05', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: AppColors.textDark)),
+                      children: [
+                        const Text('Voucher Digital', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                        Text(widget.order != null ? '#FT-${widget.order!.id}' : '#FT-UNKNOWN', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: AppColors.textDark)),
                       ],
                     ),
                   ],
@@ -164,9 +177,9 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.baseline,
                               textBaseline: TextBaseline.alphabetic,
-                              children: const [
-                                Text('12,000', style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                                Text(' L', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                              children: [
+                                Text(widget.order != null ? widget.order!.quantityGallons.toStringAsFixed(0) : '0', style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                                const Text(' L', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary)),
                               ],
                             ),
                             const Icon(Icons.ev_station_outlined, size: 40, color: AppColors.borderLight),
@@ -176,10 +189,10 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
                         const Divider(color: AppColors.borderLight),
                         const SizedBox(height: 16),
 
-                        _buildDataRow('Producto', 'Diesel Ultra-B10'),
-                        _buildDataRow('Unidad', 'Tractor FH-500'),
-                        _buildDataRow('Operador', 'Carlos Mendoza'),
-                        _buildDataRow('Ubicación', 'Planta Norte, GDL'),
+                        _buildDataRow('Producto', widget.order != null ? widget.order!.name : 'Desconocido'),
+                        _buildDataRow('Unidad', widget.order != null && widget.order!.assignedTruckId != null ? 'Camión ${widget.order!.assignedTruckId}' : 'No asignada'),
+                        _buildDataRow('Operador', 'Chofer Asignado'),
+                        _buildDataRow('Ubicación', widget.order != null ? (widget.order!.documentRef.contains(' | ') ? widget.order!.documentRef.split(' | ')[0] : widget.order!.documentRef) : 'Destino'),
 
                         const SizedBox(height: 24),
                         Center(
@@ -270,10 +283,10 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text('Código Hash de Seguridad', style: TextStyle(fontSize: 10, color: AppColors.textGrey)),
-                        SizedBox(height: 2),
-                        Text('#FT-HASH-992-B821-X9', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary, letterSpacing: 1)),
+                      children: [
+                        const Text('Código Hash de Seguridad', style: TextStyle(fontSize: 10, color: AppColors.textGrey)),
+                        const SizedBox(height: 2),
+                        Text(widget.order?.securityHash ?? '#FT-HASH-PENDING', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary, letterSpacing: 1)),
                       ],
                     ),
                   ),
@@ -285,7 +298,7 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () {},
+                onPressed: _generateAndDownloadPdf,
                 icon: const Icon(Icons.download_outlined, size: 18, color: Colors.white),
                 label: const Text('Descargar PDF', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 style: ElevatedButton.styleFrom(
@@ -400,9 +413,99 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
       ],
     );
   }
-}
 
-class black1Alpha {
+  Future<void> _generateAndDownloadPdf() async {
+    final pdf = pw.Document();
+
+    // Renderizar firma a imagen para el PDF
+    final signatureImage = await _captureSignatureAsImage();
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Header(
+                level: 0,
+                child: pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text('FuelTrack Comprobante de Entrega', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+                    pw.Text(widget.order != null ? '#FT-${widget.order!.id}' : '', style: pw.TextStyle(fontSize: 16)),
+                  ]
+                ),
+              ),
+              pw.SizedBox(height: 20),
+              pw.Text('Detalles del Pedido', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+              pw.Divider(),
+              _buildPdfDataRow('Producto', widget.order?.name ?? ''),
+              _buildPdfDataRow('Volumen Total', '${widget.order?.quantityGallons.toStringAsFixed(0) ?? '0'} Galones'),
+              _buildPdfDataRow('Ubicación de Destino', widget.order?.documentRef ?? ''),
+              if (widget.order?.completedAt != null)
+                _buildPdfDataRow('Finalización', DateFormat('dd MMM yyyy • HH:mm a').format(DateTime.parse(widget.order!.completedAt!).toLocal())),
+              
+              pw.SizedBox(height: 30),
+              pw.Text('Firma del Cliente', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+              pw.Divider(),
+              pw.SizedBox(height: 10),
+              if (signatureImage != null)
+                pw.Container(
+                  height: 100,
+                  child: pw.Image(pw.MemoryImage(signatureImage)),
+                )
+              else
+                pw.Container(
+                  height: 100,
+                  alignment: pw.Alignment.center,
+                  child: pw.Text('Firma no disponible'),
+                ),
+              pw.SizedBox(height: 30),
+              pw.Text('Hash de Seguridad:', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+              pw.Text(widget.order?.securityHash ?? 'No hash available', style: pw.TextStyle(fontSize: 12)),
+            ],
+          );
+        },
+      ),
+    );
+
+    // Muestra diálogo o guarda archivo
+    await Printing.sharePdf(bytes: await pdf.save(), filename: 'comprobante_FT-${widget.order?.id ?? '0'}.pdf');
+  }
+
+  pw.Widget _buildPdfDataRow(String label, String value) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.symmetric(vertical: 4),
+      child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text(label, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+          pw.Text(value),
+        ]
+      )
+    );
+  }
+
+  Future<ui.Uint8List?> _captureSignatureAsImage() async {
+    if (widget.signaturePoints.isEmpty) return null;
+    
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    final size = const Size(400, 200); // Aproximado para pdf
+
+    // Fill background
+    final bgPaint = Paint()..color = Colors.white;
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bgPaint);
+
+    final painter = VoucherSignatureViewerPainter(widget.signaturePoints);
+    painter.paint(canvas, size);
+
+    final picture = recorder.endRecording();
+    final img = await picture.toImage(size.width.toInt(), size.height.toInt());
+    final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
+    return byteData?.buffer.asUint8List();
+  }
 }
 
 // Pintor gráfico que dibuja los trazos reales de la firma transferida

@@ -717,11 +717,11 @@ class _TrackingScreenState extends State<TrackingScreen> {
                               child: ElevatedButton.icon(
                                 onPressed: () async {
                                   try {
-                                    await _orderService.markAsCompleted(order.id!);
+                                    final updatedOrder = await _orderService.markAsCompleted(order.id!);
                                     if (mounted) {
                                       Navigator.push(
                                         context,
-                                        MaterialPageRoute(builder: (context) => const DeliverySuccessScreen()),
+                                        MaterialPageRoute(builder: (context) => DeliverySuccessScreen(order: updatedOrder)),
                                       ).then((_) {
                                         _fetchActiveOrders();
                                       });

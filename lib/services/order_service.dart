@@ -46,7 +46,8 @@ class OrderService {
     await _api.patch('${ApiConfig.orders}/$id/deliver');
   }
 
-  Future<void> markAsCompleted(int id) async {
-    await _api.patch('${ApiConfig.orders}/$id/complete');
+  Future<OrderModel> markAsCompleted(int id) async {
+    final response = await _api.patch('${ApiConfig.orders}/$id/complete');
+    return OrderModel.fromJson(response);
   }
 }

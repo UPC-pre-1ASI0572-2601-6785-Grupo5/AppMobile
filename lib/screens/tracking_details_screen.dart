@@ -583,11 +583,11 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
                       child: ElevatedButton.icon(
                         onPressed: () async {
                           try {
-                            await OrderService().markAsCompleted(widget.order.id!);
+                            final updatedOrder = await OrderService().markAsCompleted(widget.order.id!);
                             if (mounted) {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => const DeliverySuccessScreen()),
+                                MaterialPageRoute(builder: (context) => DeliverySuccessScreen(order: updatedOrder)),
                               );
                             }
                           } catch (e) {

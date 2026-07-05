@@ -13,6 +13,8 @@ class OrderModel {
   final double originalGallons;
   final int? etaMinutes;
   final String? dispatchedAt;
+  final String? completedAt;
+  final String? securityHash;
 
   OrderModel({
     required this.id,
@@ -29,6 +31,8 @@ class OrderModel {
     this.originalGallons = 0.0,
     this.etaMinutes,
     this.dispatchedAt,
+    this.completedAt,
+    this.securityHash,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -56,6 +60,8 @@ class OrderModel {
       originalGallons: rawGallons,
       etaMinutes: json['etaMinutes'] as int?,
       dispatchedAt: json['dispatchedAt']?.toString(),
+      completedAt: json['completedAt']?.toString(),
+      securityHash: json['securityHash']?.toString(),
     );
   }
 
@@ -73,6 +79,8 @@ class OrderModel {
       'updatedAt': updatedAt,
       'etaMinutes': etaMinutes,
       'dispatchedAt': dispatchedAt,
+      'completedAt': completedAt,
+      'securityHash': securityHash,
     };
   }
 
