@@ -153,8 +153,10 @@ class _TankListScreenState extends State<TankListScreen> {
                               ),
                             ),
                           ],
-                        ),
-                      );
+                        ],
+                      ),
+                    ),
+                  );
                     },
                   ),
                 ),

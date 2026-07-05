@@ -164,8 +164,10 @@ class _DriverListScreenState extends State<DriverListScreen> {
                               ),
                             ),
                           ],
-                        ),
-                      );
+                        ],
+                      ),
+                    ),
+                  );
                     },
                   ),
                 ),
