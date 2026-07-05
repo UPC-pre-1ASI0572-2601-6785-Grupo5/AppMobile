@@ -105,9 +105,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
       addr = rawAddress;
     }
     
-    String originAddr = (_currentOrder?.providerAddress != null && _currentOrder!.providerAddress!.isNotEmpty) 
-        ? _currentOrder!.providerAddress! 
-        : 'Terminal Central';
+    String originAddr = 'Terminal Central';
 
     final location = await GeocodingService.instance.getCoordinatesFromAddress(addr);
     final originLocation = await GeocodingService.instance.getCoordinatesFromAddress(originAddr);

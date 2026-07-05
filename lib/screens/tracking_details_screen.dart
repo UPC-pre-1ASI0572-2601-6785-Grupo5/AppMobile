@@ -78,9 +78,7 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
       addr = rawRef;
     }
     
-    String originAddr = (_currentOrder.providerAddress != null && _currentOrder.providerAddress!.isNotEmpty) 
-        ? _currentOrder.providerAddress! 
-        : 'Terminal Central';
+    String originAddr = 'Terminal Central';
     
     final loc = await GeocodingService.instance.getCoordinatesFromAddress(addr);
     final originLoc = await GeocodingService.instance.getCoordinatesFromAddress(originAddr);
@@ -156,8 +154,8 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
             }
           }
         } else {
-          final lat = originLocation.latitude + (_targetLocation.latitude - originLocation.latitude) * progress;
-          final lng = originLocation.longitude + (_targetLocation.longitude - originLocation.longitude) * progress;
+          final lat = _originLocation.latitude + (_targetLocation.latitude - _originLocation.latitude) * progress;
+          final lng = _originLocation.longitude + (_targetLocation.longitude - _originLocation.longitude) * progress;
           _truckPosition = LatLng(lat, lng);
           _currentSegmentIndex = 0;
         }
@@ -379,7 +377,7 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
                     iconColor: AppColors.primary,
                     title: 'Cisterna salió de planta',
                     time: 'Hace 45 min',
-                    desc: 'Despacho verificado en ${_currentOrder.providerAddress != null && _currentOrder.providerAddress!.isNotEmpty ? _currentOrder.providerAddress : "Sede Central"}. Rumbo a destino principal.',
+                    desc: 'Despacho verificado en Sede Central. Rumbo a destino principal.',
                   ),
                   _buildNotificationItem(
                     icon: Icons.traffic_outlined,

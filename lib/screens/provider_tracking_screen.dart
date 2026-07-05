@@ -174,7 +174,7 @@ class _ProviderTrackingScreenState extends State<ProviderTrackingScreen> {
               isCompleted: true,
               isLast: false,
               title: 'Orden Aprobada',
-              subtitle: '${_formatDate(widget.order.createdAt)}\nVerificado por ${widget.order.providerName ?? "Proveedor"}',
+              subtitle: '${_formatDate(widget.order.createdAt)}\nVerificado por Proveedor',
             ),
 
             // Paso 2: Recurso Asignado
@@ -192,7 +192,7 @@ class _ProviderTrackingScreenState extends State<ProviderTrackingScreen> {
                   children: [
                     const Icon(Icons.person, size: 14, color: AppColors.textGrey),
                     const SizedBox(width: 6),
-                    Text('Operador: ${widget.order.driverName ?? "Conductor Asignado"}', style: const TextStyle(fontSize: 11, color: AppColors.textDark, fontWeight: FontWeight.w500)),
+                    const Text('Operador: Conductor Asignado', style: TextStyle(fontSize: 11, color: AppColors.textDark, fontWeight: FontWeight.w500)),
                   ],
                 ),
               ) : null,
@@ -203,7 +203,7 @@ class _ProviderTrackingScreenState extends State<ProviderTrackingScreen> {
               isCompleted: widget.order.dispatchedAt != null,
               isLast: false,
               title: 'Carga Finalizada',
-              subtitle: '${_formatDate(widget.order.dispatchedAt ?? widget.order.createdAt)}\n${widget.order.providerAddress ?? "Sede Central"}',
+              subtitle: '${_formatDate(widget.order.dispatchedAt ?? widget.order.createdAt)}\nSede Central',
             ),
 
             // Paso 4: En Ruta (ACTUAL - Con Mapa)
@@ -354,9 +354,9 @@ class _ProviderTrackingScreenState extends State<ProviderTrackingScreen> {
                               const SizedBox(height: 24),
                               const Text('ORIGEN', style: TextStyle(fontSize: 10, color: AppColors.textGrey, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
                               const SizedBox(height: 4),
-                              Text(widget.order.providerName ?? 'Sede Central', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                              const Text('Sede Central', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                               const SizedBox(height: 2),
-                              Text(widget.order.providerAddress ?? 'Dirección del Proveedor', style: const TextStyle(fontSize: 11, color: AppColors.textGrey)),
+                              const Text('Dirección del Proveedor', style: TextStyle(fontSize: 11, color: AppColors.textGrey)),
 
                               const SizedBox(height: 24),
 
