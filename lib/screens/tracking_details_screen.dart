@@ -135,15 +135,17 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
 
   void _zoomIn() {
     setState(() {
-      _currentZoom = (_currentZoom + 1).clamp(1.0, 18.0);
-      _mapController.move(_mapController.camera.center, _currentZoom);
+      double current = _mapController.camera.zoom;
+      current = (current + 1).clamp(1.0, 18.0);
+      _mapController.move(_mapController.camera.center, current);
     });
   }
 
   void _zoomOut() {
     setState(() {
-      _currentZoom = (_currentZoom - 1).clamp(1.0, 18.0);
-      _mapController.move(_mapController.camera.center, _currentZoom);
+      double current = _mapController.camera.zoom;
+      current = (current - 1).clamp(1.0, 18.0);
+      _mapController.move(_mapController.camera.center, current);
     });
   }
 

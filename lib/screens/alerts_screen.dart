@@ -100,11 +100,6 @@ class _AlertsScreenState extends State<AlertsScreen> {
           ],
         ),
       ),
-      floatingActionButton: _hasAlerts ? FloatingActionButton(
-        backgroundColor: AppColors.primary,
-        onPressed: () {},
-        child: const Icon(Icons.notifications_active, color: Colors.white),
-      ) : null,
     );
   }
 
@@ -121,6 +116,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
           child: Row(
             children: [
               GestureDetector(
+                onTap: () => setState(() => _selectedFilter = 'Todas'),
                 child: _buildFilterChip('Todas', _selectedFilter == 'Todas', null),
               ),
               const SizedBox(width: 8),

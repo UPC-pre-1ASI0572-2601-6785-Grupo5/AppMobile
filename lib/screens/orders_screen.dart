@@ -273,19 +273,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _buildStateFilterChip('Todos'),
-                    _buildStateFilterChip('Pendientes', apiStatus: 'PENDING_APPROVAL'),
-                    _buildStateFilterChip('Aprobados', apiStatus: 'APPROVED'),
-                    _buildStateFilterChip('En ruta', apiStatus: 'DISPATCHED'),
-                    _buildStateFilterChip('Completados', apiStatus: 'COMPLETED'),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
               TextField(
                 onChanged: (value) {
                   setState(() {
@@ -303,6 +290,20 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary)),
                 ),
               ),
+              const SizedBox(height: 16),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildStateFilterChip('Todos'),
+                    _buildStateFilterChip('Pendientes', apiStatus: 'PENDING_APPROVAL'),
+                    _buildStateFilterChip('Aprobados', apiStatus: 'APPROVED'),
+                    _buildStateFilterChip('En ruta', apiStatus: 'DISPATCHED'),
+                    _buildStateFilterChip('Completados', apiStatus: 'COMPLETED'),
+                  ],
+                ),
+              ),
+
               const SizedBox(height: 16),
               Row(
                 children: [
