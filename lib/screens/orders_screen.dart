@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/colors.dart';
 import '../models/order_model.dart';
 import '../services/order_service.dart';
@@ -27,10 +28,20 @@ class _OrdersScreenState extends State<OrdersScreen> {
   String _searchQuery = '';
   String _selectedFilter = 'Todos';
 
+  bool _hasNewAlerts = true;
+
   @override
   void initState() {
     super.initState();
     _fetchOrders();
+    _checkAlerts();
+  }
+
+  Future<void> _checkAlerts() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _hasNewAlerts = prefs.getBool('alerts_new') ?? true;
+    });
   }
 
   Future<void> _fetchOrders() async {
@@ -226,22 +237,24 @@ class _OrdersScreenState extends State<OrdersScreen> {
             children: [
               IconButton(
                 icon: const Icon(Icons.notifications_none, color: AppColors.textDark),
-                onPressed: () {
-                  Navigator.push(
+                onPressed: () async {
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const AlertsScreen()),
                   );
+                  _checkAlerts();
                 },
               ),
-              Positioned(
-                top: 12,
-                right: 12,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(color: AppColors.error, shape: BoxShape.circle),
+              if (_hasNewAlerts)
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(color: AppColors.error, shape: BoxShape.circle),
+                  ),
                 ),
-              ),
             ],
           ),
           const SizedBox(width: 8),
@@ -526,7 +539,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          Text(order.productName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+          Text(order.name.isNotEmpty ? order.name : 'Pedido', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+          Text(order.productName, style: const TextStyle(fontSize: 14, color: AppColors.textGrey)),
           const SizedBox(height: 16),
           Row(
             children: [
@@ -562,7 +576,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('Actualizado', style: TextStyle(fontSize: 10, color: AppColors.textGrey)),
-                  Text('${_formatDate(order.updatedAt)} ${_formatTime(order.updatedAt)}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                  Text(
+                    order.updatedAt.isNotEmpty
+                        ? '${_formatDate(order.updatedAt)} ${_formatTime(order.updatedAt)}'
+                        : '${_formatDate(order.createdAt)} ${_formatTime(order.createdAt)}',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                  ),
                 ],
               ),
             ],
