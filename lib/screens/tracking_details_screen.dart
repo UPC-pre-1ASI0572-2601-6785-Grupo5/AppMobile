@@ -355,8 +355,7 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
                             mapController: _mapController,
                             options: MapOptions(
                                 initialCenter: _targetLocation,
-                                initialZoom: 13.0,
-                                interactionOptions: const InteractionOptions(flags: InteractiveFlag.none),
+                                initialZoom: 14.0,
                               ),
                               children: [
                                 TileLayer(
