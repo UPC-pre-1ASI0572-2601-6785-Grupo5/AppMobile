@@ -199,24 +199,22 @@ class _OrdersScreenState extends State<OrdersScreen> {
               const SizedBox(height: 24),
               Row(
                 children: [
-                  if (order.status != 'COMPLETED')
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          _cancelOrder(order.id!);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFDE8E8),
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: const Text('Eliminar', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold)),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _cancelOrder(order.id!);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFDE8E8),
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
+                      child: const Text('Eliminar', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold)),
                     ),
-                  if (order.status != 'COMPLETED')
-                    const SizedBox(width: 12),
+                  ),
+                  const SizedBox(width: 12),
                   if (order.status == 'COMPLETED')
                     Expanded(
                       child: ElevatedButton.icon(

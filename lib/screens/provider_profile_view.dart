@@ -55,6 +55,53 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
     }
   }
 
+  Future<void> _showProfilePhotoOptions() async {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Cambiar Foto'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete, color: AppColors.error),
+                title: const Text('Eliminar Foto', style: TextStyle(color: AppColors.error)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _removeImage();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _removeImage() async {
+    final user = SessionManager.instance.user;
+    if (user != null) {
+      setState(() {
+        _profileImagePath = null;
+      });
+      try {
+        await _profileService.updateProfile(user.id, {'profilePicture': null});
+        final updatedUser = user.copyWith(profilePicture: null);
+        await SessionManager.instance.saveSession(updatedUser, SessionManager.instance.token!);
+      } catch (e) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
+  }
+
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -62,12 +109,16 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
       final user = SessionManager.instance.user;
       if (user != null) {
         final bytes = await pickedFile.readAsBytes();
-        final base64Img = 'data:image/png;base64,' + base64Encode(bytes);
+        final base64Img = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+        
+        setState(() {
+          _profileImagePath = base64Img;
+        });
+
         try {
           await _profileService.updateProfile(user.id, {'profilePicture': base64Img});
-          setState(() {
-            _profileImagePath = base64Img;
-          });
+          final updatedUser = user.copyWith(profilePicture: base64Img);
+          await SessionManager.instance.saveSession(updatedUser, SessionManager.instance.token!);
           if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Foto actualizada')));
         } catch (e) {
           if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
@@ -102,7 +153,7 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
                   alignment: Alignment.bottomRight,
                   children: [
                     GestureDetector(
-                      onTap: _pickImage,
+                      onTap: _showProfilePhotoOptions,
                       child: Container(
                         padding: const EdgeInsets.all(4),
                         decoration: const BoxDecoration(color: Color(0xFF006D3E), shape: BoxShape.circle),
@@ -118,7 +169,7 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
                       ),
                     ),
                     GestureDetector(
-                      onTap: _pickImage,
+                      onTap: _showProfilePhotoOptions,
                       child: Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(color: const Color(0xFF006D3E), shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 2)),

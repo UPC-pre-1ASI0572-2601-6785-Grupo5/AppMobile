@@ -289,7 +289,7 @@ class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> wit
             child: _buildSolidButton('Ver Comprobante', const Color(0xFFEAECEE), AppColors.textGrey, onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => DigitalReceiptScreen(order: order)),
+                MaterialPageRoute(builder: (context) => DigitalReceiptScreen(order: order, signaturePoints: const [])),
               );
             }),
           );
