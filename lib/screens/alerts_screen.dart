@@ -12,6 +12,9 @@ class _AlertsScreenState extends State<AlertsScreen> {
   // Variable que controla si hay notificaciones o no
   bool _hasAlerts = true;
 
+  // Filtro seleccionado actual
+  String _selectedFilter = 'Todas';
+
   // Función que se ejecuta al presionar "Marcar todo como leído"
   void _markAllAsRead() {
     setState(() {
