@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
-import '../constants/colors.dart';
-import 'dashboard_screen.dart';
-import '../models/order_model.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
+import '../constants/colors.dart';
+import 'dashboard_screen.dart';
+import 'provider_dashboard_screen.dart';
+import '../models/order_model.dart';
+import '../services/session_manager.dart';
 
 class DigitalReceiptScreen extends StatefulWidget {
   // RECIBE LOS PUNTOS REALES DE LA FIRMA DIBUJADA
@@ -315,9 +318,12 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
+                  final isProvider = SessionManager.instance.user?.isProvider ?? false;
                   Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(builder: (context) => const DashboardScreen(initialIndex: 0)),
+                    MaterialPageRoute(
+                      builder: (context) => isProvider ? const ProviderDashboardScreen(initialIndex: 0) : const DashboardScreen(initialIndex: 0)
+                    ),
                     (route) => false,
                   );
                 },
@@ -365,7 +371,6 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
@@ -382,38 +387,7 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
     );
   }
 
-  Widget _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      currentIndex: _selectedIndex,
-      onTap: (index) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => DashboardScreen(initialIndex: index)),
-          (route) => false,
-        );
-      },
-      type: BottomNavigationBarType.fixed,
-      selectedItemColor: AppColors.primary,
-      unselectedItemColor: AppColors.textGrey,
-      showUnselectedLabels: true,
-      selectedLabelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-      unselectedLabelStyle: const TextStyle(fontSize: 10),
-      items: [
-        const BottomNavigationBarItem(icon: Icon(Icons.dashboard_customize_outlined), label: 'Inicio'),
-        const BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_outlined), label: 'Pedidos'),
-        BottomNavigationBarItem(
-          icon: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(20)),
-            child: const Icon(Icons.local_shipping_outlined, color: Colors.white),
-          ),
-          label: 'Seguimiento',
-        ),
-        const BottomNavigationBarItem(icon: Icon(Icons.bar_chart_outlined), label: 'Analítica'),
-        const BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Perfil'),
-      ],
-    );
-  }
+
 
   Future<void> _generateAndDownloadPdf() async {
     final pdf = pw.Document();

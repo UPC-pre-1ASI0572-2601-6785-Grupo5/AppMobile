@@ -81,32 +81,9 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
   }
 
   void _calculateEta(LatLng target) {
-    const double originLat = -12.085;
-    const double originLng = -76.96;
-    
-    double dLat = (target.latitude - originLat) * pi / 180.0;
-    double dLng = (target.longitude - originLng) * pi / 180.0;
-    
-    double a = sin(dLat/2) * sin(dLat/2) +
-               cos(originLat * pi / 180.0) * cos(target.latitude * pi / 180.0) *
-               sin(dLng/2) * sin(dLng/2);
-    double c = 2 * atan2(sqrt(a), sqrt(1-a));
-    double distanceKm = 6371 * c;
-    
-    double hours = distanceKm / 40.0;
-    if (hours < 0.08) hours = 0.08; // Mínimo 5 min
-    
-    int totalMinutes = (hours * 60).round();
-    
     setState(() {
-      _etaMinutes = totalMinutes;
-      if (totalMinutes < 60) {
-        _calculatedEta = "$totalMinutes min";
-      } else {
-        int h = totalMinutes ~/ 60;
-        int m = totalMinutes % 60;
-        _calculatedEta = m > 0 ? "${h}h ${m}m" : "${h}h";
-      }
+      _etaMinutes = 120; // 2 horas por defecto en base de datos
+      _calculatedEta = "Entre 45 min y 2 horas";
     });
   }
 

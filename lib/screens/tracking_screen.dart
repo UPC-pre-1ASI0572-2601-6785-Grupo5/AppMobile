@@ -491,11 +491,12 @@ class _TrackingScreenState extends State<TrackingScreen> {
                       ),
                       PolylineLayer(
                         polylines: [
-                          Polyline(
-                            points: getRemainingRoute(),
-                            color: AppColors.primary,
-                            strokeWidth: 4.0,
-                          ),
+                          if (order.providerId != null)
+                            Polyline(
+                              points: getRemainingRoute(),
+                              color: AppColors.primary,
+                              strokeWidth: 4.0,
+                            ),
                         ],
                       ),
                       MarkerLayer(
@@ -506,27 +507,28 @@ class _TrackingScreenState extends State<TrackingScreen> {
                             height: 40,
                             child: const Icon(Icons.location_on, color: AppColors.error, size: 40),
                           ),
-                          Marker(
-                            point: _currentTruckLocation,
-                            width: 60,
-                            height: 60,
-                            child: Column(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                      color: AppColors.primary,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(color: Colors.white, width: 2),
-                                      boxShadow: [
-                                        BoxShadow(color: AppColors.primary.withAlpha(128), blurRadius: 10, spreadRadius: 5),
-                                      ]
+                          if (order.providerId != null)
+                            Marker(
+                              point: _currentTruckLocation,
+                              width: 60,
+                              height: 60,
+                              child: Column(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                        color: AppColors.primary,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: Colors.white, width: 2),
+                                        boxShadow: [
+                                          BoxShadow(color: AppColors.primary.withAlpha(128), blurRadius: 10, spreadRadius: 5),
+                                        ]
+                                    ),
+                                    child: const Icon(Icons.local_shipping, color: Colors.white, size: 20),
                                   ),
-                                  child: const Icon(Icons.local_shipping, color: Colors.white, size: 20),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     ],
@@ -599,51 +601,56 @@ class _TrackingScreenState extends State<TrackingScreen> {
                           _buildTimelineStep(isCompleted: isInRoute || isDelivered, isActive: isInRoute && !isDelivered, icon: Icons.location_on_outlined, title: 'En Ruta', subtitle: isInRoute ? 'Cerca de tu ubicación' : 'Aún no sale', isLast: false),
                           _buildTimelineStep(isCompleted: isDelivered, isActive: false, icon: Icons.inventory_2_outlined, title: 'Entregado', subtitle: 'Destino final', isLast: true),
                           const SizedBox(height: 24),
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(color: const Color(0xFFF4F7F7), borderRadius: BorderRadius.circular(12)),
-                            child: Row(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.asset('assets/images/logo.png', width: 48, height: 48, fit: BoxFit.cover),
-                                ),
-                                const SizedBox(width: 16),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('Roberto G.', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                                    const SizedBox(height: 4),
-                                    Row(
-                                      children: const [
-                                        Icon(Icons.star, color: AppColors.primary, size: 14),
-                                        SizedBox(width: 4),
-                                        Text('4.9', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                                        SizedBox(width: 4),
-                                        Text('(1,240 entregas)', style: TextStyle(fontSize: 12, color: AppColors.textGrey)),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ],
+                          if (order.driverName != null) ...[
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(color: const Color(0xFFF4F7F7), borderRadius: BorderRadius.circular(12)),
+                              child: Row(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: (order.driverProfilePicture != null && order.driverProfilePicture!.isNotEmpty)
+                                        ? Image.network(order.driverProfilePicture!, width: 48, height: 48, fit: BoxFit.cover, errorBuilder: (c, e, s) => Image.asset('assets/images/logo.png', width: 48, height: 48, fit: BoxFit.cover))
+                                        : Image.asset('assets/images/logo.png', width: 48, height: 48, fit: BoxFit.cover),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(order.driverName!, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.star, color: AppColors.primary, size: 14),
+                                          const SizedBox(width: 4),
+                                          const Text('5.0', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                                          const SizedBox(width: 4),
+                                          Text('(${order.driverTrips ?? 0} entregas)', style: const TextStyle(fontSize: 12, color: AppColors.textGrey)),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 16),
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(color: const Color(0xFFEFEFEF), borderRadius: BorderRadius.circular(12)),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: const [
-                                    Text('UNIDAD', style: TextStyle(fontSize: 10, color: AppColors.textGrey, fontWeight: FontWeight.bold, letterSpacing: 1)),
-                                    Icon(Icons.local_shipping_outlined, color: AppColors.primary),
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                const Text('VXB-402', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                            const SizedBox(height: 16),
+                          ],
+                          if (order.assignedTruckId != null) ...[
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(color: const Color(0xFFEFEFEF), borderRadius: BorderRadius.circular(12)),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: const [
+                                      Text('UNIDAD', style: TextStyle(fontSize: 10, color: AppColors.textGrey, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                                      Icon(Icons.local_shipping_outlined, color: AppColors.primary),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(order.assignedTruckId!, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                                 const SizedBox(height: 12),
                                 Stack(
                                   children: [
@@ -661,7 +668,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                 ),
                               ],
                             ),
-                          ),
+                          ],
                           const SizedBox(height: 24),
                           Row(
                             children: [

@@ -16,6 +16,11 @@ class OrderModel {
   final String? completedAt;
   final String? securityHash;
   final int? providerId;
+  final String? providerName;
+  final String? providerAddress;
+  final String? driverName;
+  final String? driverProfilePicture;
+  final int? driverTrips;
 
   OrderModel({
     required this.id,
@@ -35,6 +40,11 @@ class OrderModel {
     this.completedAt,
     this.securityHash,
     this.providerId,
+    this.providerName,
+    this.providerAddress,
+    this.driverName,
+    this.driverProfilePicture,
+    this.driverTrips,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -65,6 +75,11 @@ class OrderModel {
       completedAt: json['completedAt']?.toString(),
       securityHash: json['securityHash']?.toString(),
       providerId: json['providerId'] as int?,
+      providerName: json['providerName'] as String?,
+      providerAddress: json['providerAddress'] as String?,
+      driverName: json['driverName'] as String?,
+      driverProfilePicture: json['driverProfilePicture'] as String?,
+      driverTrips: json['driverTrips'] as int?,
     );
   }
 
@@ -85,6 +100,11 @@ class OrderModel {
       'completedAt': completedAt,
       'securityHash': securityHash,
       'providerId': providerId,
+      'providerName': providerName,
+      'providerAddress': providerAddress,
+      'driverName': driverName,
+      'driverProfilePicture': driverProfilePicture,
+      'driverTrips': driverTrips,
     };
   }
 
