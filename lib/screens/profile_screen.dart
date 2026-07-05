@@ -95,8 +95,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       });
       try {
         await _profileService.updateProfile(user.id, {'profilePicture': null});
-        final updatedUser = user.copyWith(profilePicture: null);
-        await SessionManager.instance.saveSession(updatedUser, SessionManager.instance.token!);
+        user.profilePicture = null;
+        await SessionManager.instance.saveSession(user: user, token: SessionManager.instance.token!);
       } catch (e) {
         if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
@@ -119,8 +119,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
         try {
           await _profileService.updateProfile(user.id, {'profilePicture': base64Image});
-          final updatedUser = user.copyWith(profilePicture: base64Image);
-          await SessionManager.instance.saveSession(updatedUser, SessionManager.instance.token!);
+          user.profilePicture = base64Image;
+          await SessionManager.instance.saveSession(user: user, token: SessionManager.instance.token!);
         } catch (e) {
           if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
         }

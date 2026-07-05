@@ -94,8 +94,8 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
       });
       try {
         await _profileService.updateProfile(user.id, {'profilePicture': null});
-        final updatedUser = user.copyWith(profilePicture: null);
-        await SessionManager.instance.saveSession(updatedUser, SessionManager.instance.token!);
+        user.profilePicture = null;
+        await SessionManager.instance.saveSession(user: user, token: SessionManager.instance.token!);
       } catch (e) {
         if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
@@ -117,8 +117,8 @@ class _ProviderProfileViewState extends State<ProviderProfileView> {
 
         try {
           await _profileService.updateProfile(user.id, {'profilePicture': base64Img});
-          final updatedUser = user.copyWith(profilePicture: base64Img);
-          await SessionManager.instance.saveSession(updatedUser, SessionManager.instance.token!);
+          user.profilePicture = base64Img;
+          await SessionManager.instance.saveSession(user: user, token: SessionManager.instance.token!);
           if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Foto actualizada')));
         } catch (e) {
           if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
