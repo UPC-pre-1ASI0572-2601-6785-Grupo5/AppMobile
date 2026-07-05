@@ -76,9 +76,15 @@ class _TrackingScreenState extends State<TrackingScreen> {
     }
   }
 
-  Future<void> _resolveLocation(String address) async {
+  Future<void> _resolveLocation(String rawAddress) async {
     setState(() => _isLoadingMapLocation = true);
-    final location = await GeocodingService.instance.getCoordinatesFromAddress(address);
+    String addr = 'Planta Refinería Sur';
+    if (rawAddress.contains(' | ')) {
+      addr = rawAddress.split(' | ')[0];
+    } else if (rawAddress.isNotEmpty) {
+      addr = rawAddress;
+    }
+    final location = await GeocodingService.instance.getCoordinatesFromAddress(addr);
     if (mounted) {
       setState(() {
         _targetLocation = location;
