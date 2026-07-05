@@ -62,7 +62,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
   Future<void> _fetchActiveOrders() async {
     try {
       final orders = await _orderService.getOrders();
-      _activeOrders = orders.where((o) => o.status != 'COMPLETED' && o.status != 'DELIVERED').toList();
+      _activeOrders = orders.where((o) => o.status != 'COMPLETED').toList();
       _activeOrders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       
       if (_activeOrders.length == 1) {
@@ -622,13 +622,22 @@ class _TrackingScreenState extends State<TrackingScreen> {
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton.icon(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) => const DeliverySuccessScreen()),
-                                  ).then((_) {
-                                    // Refresh logic if needed
-                                  });
+                                onPressed: () async {
+                                  try {
+                                    await _orderService.markAsCompleted(order.id!);
+                                    if (mounted) {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => const DeliverySuccessScreen()),
+                                      ).then((_) {
+                                        _fetchActiveOrders();
+                                      });
+                                    }
+                                  } catch (e) {
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                                    }
+                                  }
                                 },
                                 icon: const Icon(Icons.inventory_outlined, size: 18, color: AppColors.primary),
                                 label: const Text('Confirmar Entrega', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),

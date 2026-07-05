@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import 'alerts_screen.dart'; // <-- Importación agregada para que funcionen las alertas
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:intl/intl.dart';
 import '../services/order_service.dart';
 import '../models/order_model.dart';
 
@@ -142,9 +146,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   }
 
   Widget _buildPopulatedState() {
-    double totalLitros = _orders.fold(0.0, (sum, o) => sum + o.quantityGallons);
-    int activeOrders = _orders.where((o) => o.status != 'COMPLETED' && o.status != 'CANCELLED').length;
-    int completedOrders = _orders.where((o) => o.status == 'COMPLETED').length;
+    double totalLitros = _orders.where((o) => o.status == 'COMPLETED' || o.status == 'DELIVERED').fold(0.0, (sum, o) => sum + o.quantityGallons);
+    int activeOrders = _orders.where((o) => o.status != 'COMPLETED' && o.status != 'DELIVERED' && o.status != 'CANCELLED').length;
+    int completedOrders = _orders.where((o) => o.status == 'COMPLETED' || o.status == 'DELIVERED').length;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
@@ -155,7 +159,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               ElevatedButton.icon(
-                onPressed: () {},
+                onPressed: _generateAndPrintPDF,
                 icon: const Icon(Icons.download_outlined, size: 16, color: Colors.white),
                 label: const Text('Exportar Reporte', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                 style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF006D3E), padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)), elevation: 0),
@@ -227,6 +231,82 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           if (isActive) Container(width: 8, height: 8, decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle)),
         ],
       ),
+    );
+  }
+
+  Future<void> _generateAndPrintPDF() async {
+    final pdf = pw.Document();
+    
+    double totalLitros = _orders.where((o) => o.status == 'COMPLETED' || o.status == 'DELIVERED').fold(0.0, (sum, o) => sum + o.quantityGallons);
+    int activeOrders = _orders.where((o) => o.status != 'COMPLETED' && o.status != 'DELIVERED' && o.status != 'CANCELLED').length;
+    int completedOrders = _orders.where((o) => o.status == 'COMPLETED' || o.status == 'DELIVERED').length;
+    
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(32),
+        build: (pw.Context context) {
+          return [
+            pw.Header(
+              level: 0,
+              child: pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('FuelTrack', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold, color: PdfColors.teal800)),
+                  pw.Text('Reporte Analítico', style: pw.TextStyle(fontSize: 18, color: PdfColors.grey700)),
+                ],
+              )
+            ),
+            pw.SizedBox(height: 20),
+            pw.Text('Resumen Operativo', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 10),
+            pw.Container(
+              padding: const pw.EdgeInsets.all(10),
+              decoration: pw.BoxDecoration(border: pw.Border.all(color: PdfColors.grey300)),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text('Consumo Total: ${totalLitros.toStringAsFixed(1)} Galones'),
+                  pw.Text('Pedidos Activos: $activeOrders'),
+                  pw.Text('Pedidos Completados (Entregados): $completedOrders'),
+                ]
+              )
+            ),
+            pw.SizedBox(height: 20),
+            pw.Text('Desglose de Pedidos', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 10),
+            pw.TableHelper.fromTextArray(
+              headers: ['ID', 'Fecha', 'Producto', 'Volumen', 'Estado'],
+              data: _orders.map((o) => [
+                'FT-${o.id}',
+                DateFormat('dd/MM/yyyy').format(DateTime.parse(o.createdAt).toLocal()),
+                o.productName,
+                '${o.quantityGallons} Gal',
+                o.status
+              ]).toList(),
+              cellStyle: const pw.TextStyle(fontSize: 10),
+              headerStyle: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+              headerDecoration: const pw.BoxDecoration(color: PdfColors.teal700),
+              rowDecoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColors.grey300, width: 0.5))),
+            ),
+            pw.SizedBox(height: 20),
+            pw.Text('Optimización de Operaciones', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 10),
+            pw.Text('- Ruta de Mayor Rendimiento: Corredor Norte (L2)'),
+            pw.Text('- Ventana Óptima de Suministro: 22:00 - 04:00 AM'),
+            pw.Text('- Eficiencia de Combustible (Flota): 24.5 L / 100 km'),
+            pw.SizedBox(height: 30),
+            pw.Center(
+              child: pw.Text('Reporte generado el ${DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now())}', style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey600)),
+            ),
+          ];
+        },
+      ),
+    );
+
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdf.save(),
+      name: 'Reporte_Analitico_FuelTrack.pdf',
     );
   }
 }
