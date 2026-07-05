@@ -7,6 +7,7 @@ import '../services/order_service.dart';
 import 'tracking_screen.dart';
 import 'new_order_screen.dart';
 import 'alerts_screen.dart';
+import 'digital_receipt_screen.dart';
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({Key? key}) : super(key: key);
@@ -198,22 +199,50 @@ class _OrdersScreenState extends State<OrdersScreen> {
               const SizedBox(height: 24),
               Row(
                 children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        _cancelOrder(order.id!);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFDE8E8),
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  if (order.status != 'COMPLETED')
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _cancelOrder(order.id!);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFDE8E8),
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Text('Eliminar', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold)),
                       ),
-                      child: const Text('Eliminar', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold)),
                     ),
-                  ),
-                  const SizedBox(width: 12),
+                  if (order.status != 'COMPLETED')
+                    const SizedBox(width: 12),
+                  if (order.status == 'COMPLETED')
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DigitalReceiptScreen(
+                                signaturePoints: [],
+                                order: order,
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.receipt_long, color: Colors.white, size: 18),
+                        label: const Text('Comprobante', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF006D3E),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                    ),
+                  if (order.status == 'COMPLETED')
+                    const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () => Navigator.pop(context),
