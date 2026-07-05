@@ -7,6 +7,7 @@ import 'new_order_screen.dart';
 import '../models/order_model.dart';
 import '../services/order_service.dart';
 import 'package:intl/intl.dart';
+import 'provider_order_details_screen.dart';
 
 class ProviderDispatchesScreen extends StatefulWidget {
   const ProviderDispatchesScreen({Key? key}) : super(key: key);
@@ -196,10 +197,21 @@ class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> wit
           Expanded(
             child: ElevatedButton(
               onPressed: () async {
-                // LLAMAR A LA API PARA ACEPTAR PEDIDO
-                // Aceptarlo debería cambiar el estado a APPROVED y asignarme el providerId
-                // Actualmente no hay método de aprobar en orderService, pero podemos simularlo o si está, usarlo.
-                // Reemplazaremos esto una vez se implemente en OrderService, pero el UI necesita funcionar
+                try {
+                  await _orderService.approveOrder(order.id);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Pedido aceptado correctamente'), backgroundColor: Color(0xFF2ECC71)),
+                    );
+                    _fetchOrders();
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error al aceptar pedido: $e'), backgroundColor: AppColors.error),
+                    );
+                  }
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF006D3E),
@@ -211,7 +223,14 @@ class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> wit
             ),
           ),
           const SizedBox(width: 12),
-          Expanded(child: _buildOutlinedButton('Ver Detalles')),
+          Expanded(
+            child: _buildOutlinedButton('Ver Detalles', onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProviderOrderDetailsScreen(order: order)),
+              );
+            }),
+          ),
         ],
       );
     } else {

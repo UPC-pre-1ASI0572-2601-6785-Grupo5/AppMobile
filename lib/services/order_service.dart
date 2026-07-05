@@ -58,4 +58,9 @@ class OrderService {
     final response = await _api.patch('${ApiConfig.orders}/$id/complete');
     return OrderModel.fromJson(response);
   }
+
+  Future<OrderModel> approveOrder(int id) async {
+    final response = await _api.patch('${ApiConfig.orders}/$id/approve');
+    return OrderModel.fromJson(response);
+  }
 }
