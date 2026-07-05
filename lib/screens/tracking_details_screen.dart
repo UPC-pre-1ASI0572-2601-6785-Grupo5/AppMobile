@@ -105,8 +105,10 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
     final originLocation = const LatLng(-12.085, -76.96);
     if (order.status == 'PENDING_APPROVAL' || order.status == 'APPROVED') {
       _truckPosition = originLocation;
+      _currentSegmentIndex = 0;
     } else if (order.status == 'DELIVERED' || order.status == 'COMPLETED') {
       _truckPosition = _targetLocation;
+      _currentSegmentIndex = _routePoints.isNotEmpty ? _routePoints.length - 1 : 0;
     } else if (order.status == 'IN_TRANSIT' || order.status == 'DISPATCHED') {
       if (_currentOrder.dispatchedAt != null && _currentOrder.etaMinutes != null) {
         double progress = 1.0;
@@ -120,7 +122,10 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
         if (progress < 0) progress = 0;
         if (progress > 1) progress = 1;
         
-        if (_routePoints.length > 1) {
+        if (progress >= 1.0) {
+          _truckPosition = _targetLocation;
+          _currentSegmentIndex = _routePoints.isNotEmpty ? _routePoints.length - 1 : 0;
+        } else if (_routePoints.length > 1) {
           final distance = const Distance();
           double totalDistance = 0.0;
           List<double> cumulativeDistances = [0.0];
@@ -134,7 +139,7 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
           double targetDistance = totalDistance * progress;
           
           for (int i = 0; i < _routePoints.length - 1; i++) {
-            if (targetDistance <= cumulativeDistances[i+1]) {
+            if (targetDistance <= cumulativeDistances[i+1] + 0.1) {
               double segmentLength = cumulativeDistances[i+1] - cumulativeDistances[i];
               double segmentProgress = segmentLength > 0 ? (targetDistance - cumulativeDistances[i]) / segmentLength : 0.0;
               
