@@ -555,9 +555,10 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => FullscreenMapScreen(
+                            order: _currentOrder,
                             targetLocation: _targetLocation, 
-                            truckPosition: _truckPosition,
-                            routePoints: getRemainingRoute(),
+                            initialTruckPosition: _truckPosition,
+                            initialRoutePoints: getRemainingRoute(),
                           )),
                         );
                       },

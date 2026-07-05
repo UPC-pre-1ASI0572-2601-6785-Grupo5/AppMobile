@@ -3,16 +3,22 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../constants/colors.dart';
 
+import 'dart:async';
+import '../models/order_model.dart';
+import '../services/order_service.dart';
+
 class FullscreenMapScreen extends StatefulWidget {
+  final OrderModel order;
   final LatLng targetLocation;
-  final LatLng truckPosition;
-  final List<LatLng>? routePoints;
+  final LatLng initialTruckPosition;
+  final List<LatLng>? initialRoutePoints;
 
   const FullscreenMapScreen({
     Key? key,
+    required this.order,
     required this.targetLocation,
-    required this.truckPosition,
-    this.routePoints,
+    required this.initialTruckPosition,
+    this.initialRoutePoints,
   }) : super(key: key);
 
   @override
@@ -21,10 +27,122 @@ class FullscreenMapScreen extends StatefulWidget {
 
 class _FullscreenMapScreenState extends State<FullscreenMapScreen> {
   final MapController _mapController = MapController();
+  late OrderModel _currentOrder;
+  late LatLng _truckPosition;
+  late List<LatLng> _routePoints;
+  int _currentSegmentIndex = 0;
+  Timer? _positionTimer;
+  Timer? _pollingTimer;
+  final OrderService _orderService = OrderService();
+
+  @override
+  void initState() {
+    super.initState();
+    _currentOrder = widget.order;
+    _truckPosition = widget.initialTruckPosition;
+    _routePoints = widget.initialRoutePoints ?? [];
+    
+    _positionTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (_currentOrder.status == 'IN_TRANSIT' || _currentOrder.status == 'DISPATCHED') {
+        setState(() {
+          _updateTruckLocation();
+        });
+      }
+    });
+
+    _pollingTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
+      if (_currentOrder.status != 'COMPLETED') {
+        try {
+          final updated = await _orderService.getOrder(_currentOrder.id!);
+          if (mounted) {
+            setState(() {
+              _currentOrder = updated;
+              _updateTruckLocation();
+            });
+          }
+        } catch (_) {}
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _positionTimer?.cancel();
+    _pollingTimer?.cancel();
+    super.dispose();
+  }
+
+  void _updateTruckLocation() {
+    final order = _currentOrder;
+    final originLocation = const LatLng(-12.085, -76.96);
+    if (order.status == 'PENDING_APPROVAL' || order.status == 'APPROVED') {
+      _truckPosition = originLocation;
+    } else if (order.status == 'DELIVERED' || order.status == 'COMPLETED') {
+      _truckPosition = widget.targetLocation;
+    } else if (order.status == 'IN_TRANSIT' || order.status == 'DISPATCHED') {
+      if (_currentOrder.dispatchedAt != null && _currentOrder.etaMinutes != null) {
+        double progress = 1.0;
+        if (_currentOrder.etaMinutes! > 0) {
+          final dispatchedTime = DateTime.parse(_currentOrder.dispatchedAt!).toLocal();
+          final now = DateTime.now();
+          final elapsedMinutes = now.difference(dispatchedTime).inSeconds / 60.0;
+          progress = elapsedMinutes / _currentOrder.etaMinutes!;
+        }
+        
+        if (progress < 0) progress = 0;
+        if (progress > 1) progress = 1;
+        
+        if (_routePoints.length > 1) {
+          final distance = const Distance();
+          double totalDistance = 0.0;
+          List<double> cumulativeDistances = [0.0];
+          
+          for (int i = 0; i < _routePoints.length - 1; i++) {
+            double segDist = distance.as(LengthUnit.Meter, _routePoints[i], _routePoints[i+1]);
+            totalDistance += segDist;
+            cumulativeDistances.add(totalDistance);
+          }
+          
+          double targetDistance = totalDistance * progress;
+          
+          for (int i = 0; i < _routePoints.length - 1; i++) {
+            if (targetDistance <= cumulativeDistances[i+1]) {
+              double segmentLength = cumulativeDistances[i+1] - cumulativeDistances[i];
+              double segmentProgress = segmentLength > 0 ? (targetDistance - cumulativeDistances[i]) / segmentLength : 0.0;
+              
+              final lat = _routePoints[i].latitude + (_routePoints[i+1].latitude - _routePoints[i].latitude) * segmentProgress;
+              final lng = _routePoints[i].longitude + (_routePoints[i+1].longitude - _routePoints[i].longitude) * segmentProgress;
+              _truckPosition = LatLng(lat, lng);
+              _currentSegmentIndex = i;
+              break;
+            }
+          }
+        } else {
+          final lat = originLocation.latitude + (widget.targetLocation.latitude - originLocation.latitude) * progress;
+          final lng = originLocation.longitude + (widget.targetLocation.longitude - originLocation.longitude) * progress;
+          _truckPosition = LatLng(lat, lng);
+          _currentSegmentIndex = 0;
+        }
+      } else {
+        _truckPosition = originLocation;
+        _currentSegmentIndex = 0;
+      }
+    }
+  }
+
+  List<LatLng> getRemainingRoute() {
+    if (_routePoints.isEmpty) return [_truckPosition, widget.targetLocation];
+    if (_currentSegmentIndex >= _routePoints.length - 1) return [_truckPosition, widget.targetLocation];
+    
+    return [
+      _truckPosition,
+      ..._routePoints.sublist(_currentSegmentIndex + 1),
+    ];
+  }
 
   void _centerMap() {
     try {
-      _mapController.move(widget.truckPosition, 14.0);
+      _mapController.move(_truckPosition, 14.0);
     } catch (_) {}
   }
 
@@ -75,9 +193,7 @@ class _FullscreenMapScreenState extends State<FullscreenMapScreen> {
           PolylineLayer(
             polylines: <Polyline<Object>>[
               Polyline<Object>(
-                points: (widget.routePoints != null && widget.routePoints!.isNotEmpty) 
-                    ? widget.routePoints! 
-                    : [widget.truckPosition, widget.targetLocation],
+                points: getRemainingRoute(),
                 color: AppColors.primary,
                 strokeWidth: 4,
               ),
@@ -104,7 +220,7 @@ class _FullscreenMapScreenState extends State<FullscreenMapScreen> {
               ),
               // Marcador del Camión
               Marker(
-                point: widget.truckPosition,
+                point: _truckPosition,
                 width: 60,
                 height: 60,
                 child: Column(
