@@ -146,9 +146,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   }
 
   Widget _buildPopulatedState() {
-    double totalLitros = _orders.where((o) => o.status == 'COMPLETED' || o.status == 'DELIVERED').fold(0.0, (sum, o) => sum + o.quantityGallons);
-    int activeOrders = _orders.where((o) => o.status != 'COMPLETED' && o.status != 'DELIVERED' && o.status != 'CANCELLED').length;
-    int completedOrders = _orders.where((o) => o.status == 'COMPLETED' || o.status == 'DELIVERED').length;
+    double totalLitros = _orders.where((o) => o.status == 'COMPLETED').fold(0.0, (sum, o) => sum + o.quantityGallons);
+    int activeOrders = _orders.where((o) => o.status != 'COMPLETED' && o.status != 'CANCELLED').length;
+    int completedOrders = _orders.where((o) => o.status == 'COMPLETED').length;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
@@ -237,9 +237,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   Future<void> _generateAndPrintPDF() async {
     final pdf = pw.Document();
     
-    double totalLitros = _orders.where((o) => o.status == 'COMPLETED' || o.status == 'DELIVERED').fold(0.0, (sum, o) => sum + o.quantityGallons);
-    int activeOrders = _orders.where((o) => o.status != 'COMPLETED' && o.status != 'DELIVERED' && o.status != 'CANCELLED').length;
-    int completedOrders = _orders.where((o) => o.status == 'COMPLETED' || o.status == 'DELIVERED').length;
+    double totalLitros = _orders.where((o) => o.status == 'COMPLETED').fold(0.0, (sum, o) => sum + o.quantityGallons);
+    int activeOrders = _orders.where((o) => o.status != 'COMPLETED' && o.status != 'CANCELLED').length;
+    int completedOrders = _orders.where((o) => o.status == 'COMPLETED').length;
     
     pdf.addPage(
       pw.MultiPage(
