@@ -34,6 +34,7 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
   double _currentZoom = 15.0;
   Timer? _positionTimer;
   List<LatLng> _routePoints = [];
+  int _currentSegmentIndex = 0;
 
   @override
   void initState() {
@@ -119,6 +120,7 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
               final lat = _routePoints[i].latitude + (_routePoints[i+1].latitude - _routePoints[i].latitude) * segmentProgress;
               final lng = _routePoints[i].longitude + (_routePoints[i+1].longitude - _routePoints[i].longitude) * segmentProgress;
               _truckPosition = LatLng(lat, lng);
+              _currentSegmentIndex = i;
               break;
             }
           }
@@ -126,11 +128,23 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
           final lat = originLocation.latitude + (_targetLocation.latitude - originLocation.latitude) * progress;
           final lng = originLocation.longitude + (_targetLocation.longitude - originLocation.longitude) * progress;
           _truckPosition = LatLng(lat, lng);
+          _currentSegmentIndex = 0;
         }
       } else {
         _truckPosition = const LatLng(-12.085, -76.96);
+        _currentSegmentIndex = 0;
       }
     }
+  }
+
+  List<LatLng> getRemainingRoute() {
+    if (_routePoints.isEmpty) return [_truckPosition, _targetLocation];
+    if (_currentSegmentIndex >= _routePoints.length - 1) return [_truckPosition, _targetLocation];
+    
+    return [
+      _truckPosition,
+      ..._routePoints.sublist(_currentSegmentIndex + 1),
+    ];
   }
 
   String _getRemainingTime() {
@@ -414,7 +428,7 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
                                 PolylineLayer(
                                   polylines: [
                                     Polyline(
-                                      points: _routePoints.isNotEmpty ? _routePoints : [_truckPosition, _targetLocation],
+                                      points: getRemainingRoute(),
                                       color: AppColors.primary,
                                       strokeWidth: 4.0,
                                     ),
@@ -522,7 +536,7 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
                           MaterialPageRoute(builder: (context) => FullscreenMapScreen(
                             targetLocation: _targetLocation, 
                             truckPosition: _truckPosition,
-                            routePoints: _routePoints,
+                            routePoints: getRemainingRoute(),
                           )),
                         );
                       },

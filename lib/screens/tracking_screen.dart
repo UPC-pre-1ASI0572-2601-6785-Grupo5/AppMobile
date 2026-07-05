@@ -34,6 +34,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
   Timer? _positionTimer;
   final OrderService _orderService = OrderService();
   List<LatLng> _routePoints = [];
+  int _currentSegmentIndex = 0;
 
   @override
   void initState() {
@@ -143,6 +144,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
               final lat = _routePoints[i].latitude + (_routePoints[i+1].latitude - _routePoints[i].latitude) * segmentProgress;
               final lng = _routePoints[i].longitude + (_routePoints[i+1].longitude - _routePoints[i].longitude) * segmentProgress;
               _currentTruckLocation = LatLng(lat, lng);
+              _currentSegmentIndex = i;
               break;
             }
           }
@@ -150,11 +152,23 @@ class _TrackingScreenState extends State<TrackingScreen> {
           final lat = _originLocation.latitude + (_targetLocation.latitude - _originLocation.latitude) * progress;
           final lng = _originLocation.longitude + (_targetLocation.longitude - _originLocation.longitude) * progress;
           _currentTruckLocation = LatLng(lat, lng);
+          _currentSegmentIndex = 0;
         }
       } else {
         _currentTruckLocation = _originLocation;
+        _currentSegmentIndex = 0;
       }
     }
+  }
+
+  List<LatLng> getRemainingRoute() {
+    if (_routePoints.isEmpty) return [_currentTruckLocation, _targetLocation];
+    if (_currentSegmentIndex >= _routePoints.length - 1) return [_currentTruckLocation, _targetLocation];
+    
+    return [
+      _currentTruckLocation,
+      ..._routePoints.sublist(_currentSegmentIndex + 1),
+    ];
   }
 
   Future<void> _cancelOrder(int id) async {
@@ -447,7 +461,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                       PolylineLayer(
                         polylines: [
                           Polyline(
-                            points: _routePoints.isNotEmpty ? _routePoints : [_originLocation, _targetLocation],
+                            points: getRemainingRoute(),
                             color: AppColors.primary,
                             strokeWidth: 4.0,
                           ),

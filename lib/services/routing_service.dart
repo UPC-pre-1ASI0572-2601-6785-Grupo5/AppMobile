@@ -12,7 +12,7 @@ class RoutingService {
   Future<List<LatLng>> getRouteCoordinates(LatLng origin, LatLng destination) async {
     try {
       final String url = 
-          'http://router.project-osrm.org/route/v1/driving/'
+          'https://router.project-osrm.org/route/v1/driving/'
           '${origin.longitude},${origin.latitude};'
           '${destination.longitude},${destination.latitude}'
           '?geometries=geojson&overview=full';
