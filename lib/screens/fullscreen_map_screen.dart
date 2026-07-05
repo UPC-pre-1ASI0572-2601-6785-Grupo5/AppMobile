@@ -74,7 +74,7 @@ class _FullscreenMapScreenState extends State<FullscreenMapScreen> {
             polylines: <Polyline<Object>>[
               Polyline<Object>(
                 points: [
-                  const LatLng(-12.085, -76.96), // Origen
+                  widget.truckPosition, // Posición actual del camión
                   widget.targetLocation, // Destino
                 ],
                 color: AppColors.primary.withAlpha(128),

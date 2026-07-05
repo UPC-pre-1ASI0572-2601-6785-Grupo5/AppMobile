@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 class AlertsScreen extends StatefulWidget {
   const AlertsScreen({Key? key}) : super(key: key);
 
@@ -9,26 +11,21 @@ class AlertsScreen extends StatefulWidget {
 }
 
 class _AlertsScreenState extends State<AlertsScreen> {
-  // Variable que controla si hay notificaciones o no
-  bool _hasAlerts = true;
-
-  // Filtro seleccionado actual
   String _selectedFilter = 'Todas';
 
-  // Función que se ejecuta al presionar "Marcar todo como leído"
-  void _markAllAsRead() {
-    setState(() {
-      _hasAlerts = false;
-    });
+  void _markAllAsRead() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('alerts_new', false);
 
-    // Muestra un pequeño mensaje de confirmación abajo
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Todas las alertas han sido marcadas como leídas'),
-        backgroundColor: AppColors.primary,
-        duration: Duration(seconds: 2),
-      ),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Notificaciones marcadas como leídas'),
+          backgroundColor: AppColors.primary,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   @override
@@ -67,10 +64,6 @@ class _AlertsScreenState extends State<AlertsScreen> {
           ],
         ),
         actions: [
-          const CircleAvatar(
-            radius: 16,
-            backgroundImage: AssetImage('assets/images/logo.png'),
-          ),
           const SizedBox(width: 16),
         ],
       ),
@@ -84,18 +77,16 @@ class _AlertsScreenState extends State<AlertsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Alertas', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                if (_hasAlerts)
-                  TextButton.icon(
-                    onPressed: _markAllAsRead,
-                    icon: const Icon(Icons.check, size: 16, color: AppColors.primary),
-                    label: const Text('Marcar todo como leído', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                  ),
+                TextButton.icon(
+                  onPressed: _markAllAsRead,
+                  icon: const Icon(Icons.check, size: 16, color: AppColors.primary),
+                  label: const Text('Marcar todo como leído', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                ),
               ],
             ),
             const SizedBox(height: 16),
 
-            // CONDICIONAL: Si hay alertas muestra la lista, sino muestra el estado vacío
-            _hasAlerts ? _buildAlertsList() : _buildEmptyState(),
+            _buildAlertsList(),
 
           ],
         ),
@@ -189,20 +180,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
             time: 'Hace 15 min',
             title: 'Nivel bajo en tanque ultra-diésel',
             description: 'El tanque T-104 en la central de despacho se encuentra al 12% de su capacidad. Reabastecimiento sugerido en las próximas 4 horas.',
-            actions: Align(
-              alignment: Alignment.centerLeft,
-              child: ElevatedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.local_shipping_outlined, size: 14, color: AppColors.primary),
-                label: const Text('Programar Pedido', style: TextStyle(color: AppColors.primary, fontSize: 11, fontWeight: FontWeight.bold)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFD4EFDF),
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-              ),
-            ),
+            actions: const SizedBox.shrink(),
           ),
           const SizedBox(height: 16),
         ],
@@ -276,40 +254,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
         ),
         const SizedBox(height: 16),
 
-        const SizedBox(height: 16),
       ],
-    );
-  }
-
-  // ==========================================
-  // VISTA VACÃA (Cuando marcas todo como leído)
-  // ==========================================
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        children: [
-          const SizedBox(height: 80),
-          Icon(Icons.check_circle_outline, size: 100, color: AppColors.primary.withOpacity(0.5)),
-          const SizedBox(height: 24),
-          const Text('¡Estás al día!', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-          const SizedBox(height: 8),
-          const Text(
-            'No tienes notificaciones pendientes\nen este momento.',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: AppColors.textGrey, height: 1.4),
-          ),
-          const SizedBox(height: 40),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
-            ),
-            child: const Text('Volver al Dashboard', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          )
-        ],
-      ),
     );
   }
 

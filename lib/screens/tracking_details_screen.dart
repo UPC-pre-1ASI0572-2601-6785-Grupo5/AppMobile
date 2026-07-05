@@ -379,6 +379,16 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
                                     ),
                                   ],
                                 ),
+                                PolylineLayer(
+                                  polylines: [
+                                    Polyline(
+                                      points: [_truckPosition, _targetLocation],
+                                      color: AppColors.primary,
+                                      strokeWidth: 4.0,
+                                      pattern: const StrokePattern.dashed(segments: [10, 10]),
+                                    ),
+                                  ],
+                                ),
                                 MarkerLayer(
                                   markers: [
                                     Marker(

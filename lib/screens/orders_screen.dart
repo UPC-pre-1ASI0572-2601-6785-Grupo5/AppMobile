@@ -128,6 +128,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
       case 'PENDING': return const Color(0xFFE67E22);
       case 'APPROVED': return const Color(0xFF1976D2);
       case 'DISPATCHED': return const Color(0xFF006D3E);
+      case 'DELIVERED': return const Color(0xFF006D3E);
       case 'COMPLETED': return AppColors.primary;
       default: return AppColors.textGrey;
     }
@@ -143,6 +144,34 @@ class _OrdersScreenState extends State<OrdersScreen> {
       case 'COMPLETED': return 'Completado';
       case 'DELIVERED': return 'Entregado';
       default: return status;
+    }
+  }
+
+  Future<void> _cancelOrder(int id) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Eliminar Pedido'),
+        content: const Text('¿Estás seguro de que deseas eliminar este pedido?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Sí, eliminar', style: TextStyle(color: AppColors.error))),
+        ],
+      ),
+    );
+    
+    if (confirm == true) {
+      setState(() => _isLoading = true);
+      try {
+        await _orderService.cancelOrder(id);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pedido eliminado correctamente')));
+        _fetchOrders();
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al eliminar: $e')));
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -167,17 +196,36 @@ class _OrdersScreenState extends State<OrdersScreen> {
               _buildDetailRow('Fecha', _formatDate(order.createdAt)),
               if (order.documentRef.isNotEmpty) _buildDetailRow('Ref. / Dirección', order.documentRef),
               const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _cancelOrder(order.id!);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFDE8E8),
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Text('Eliminar', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold)),
+                    ),
                   ),
-                  child: const Text('Cerrar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Text('Cerrar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -365,7 +413,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       final nameMatch = o.name.toLowerCase().contains(_searchQuery);
                       final productMatch = o.productName.toLowerCase().contains(_searchQuery);
                       final idMatch = o.id.toString().contains(_searchQuery);
-                      final codeMatch = '#ft-2026-${o.id}'.contains(_searchQuery) || 'ft-2026-${o.id}'.contains(_searchQuery);
+                      final year = o.createdAt.isNotEmpty ? o.createdAt.substring(0, 4) : '2026';
+                      final codeMatch = '#ft-$year-${o.id}'.contains(_searchQuery) || 'ft-$year-${o.id}'.contains(_searchQuery) || '${o.id}'.contains(_searchQuery);
                       return nameMatch || productMatch || idMatch || codeMatch;
                     }
                     return true;

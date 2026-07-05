@@ -231,7 +231,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Pedido #FT-2026-${o.id}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textDark)),
+                          Text(o.name.isNotEmpty ? o.name : 'Pedido #FT-2026-${o.id}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textDark)),
                           const SizedBox(height: 4),
                           Text('${_formatStatus(o.status)} • ${_formatDate(o.createdAt)}', style: const TextStyle(fontSize: 12, color: AppColors.textGrey)),
                         ],
@@ -366,7 +366,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('#FT-2026-${order.id}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                        Text(order.name.isNotEmpty ? order.name : '#FT-2026-${order.id}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
                         Row(
                           children: [
                             Container(width: 6, height: 6, decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle)),
@@ -405,8 +405,24 @@ class _TrackingScreenState extends State<TrackingScreen> {
                             : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
                         userAgentPackageName: 'com.example.fueltrack',
                       ),
+                      PolylineLayer(
+                        polylines: [
+                          Polyline(
+                            points: [_currentTruckLocation, _targetLocation],
+                            color: AppColors.primary,
+                            strokeWidth: 4.0,
+                            pattern: const StrokePattern.dashed(segments: [10, 10]),
+                          ),
+                        ],
+                      ),
                       MarkerLayer(
                         markers: [
+                          Marker(
+                            point: _targetLocation,
+                            width: 40,
+                            height: 40,
+                            child: const Icon(Icons.location_on, color: AppColors.error, size: 40),
+                          ),
                           Marker(
                             point: _currentTruckLocation,
                             width: 60,
