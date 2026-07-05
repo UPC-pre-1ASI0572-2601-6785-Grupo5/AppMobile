@@ -18,6 +18,26 @@ class ProviderOrderDetailsScreen extends StatelessWidget {
     }
   }
 
+  String _getStatusTranslation(String status) {
+    switch (status) {
+      case 'PENDING_APPROVAL':
+        return 'Pendiente';
+      case 'APPROVED':
+        return 'Confirmado';
+      case 'DISPATCHED':
+      case 'IN_TRANSIT':
+        return 'En Ruta';
+      case 'DELIVERED':
+        return 'Entregado';
+      case 'COMPLETED':
+        return 'Completado';
+      case 'CANCELLED':
+        return 'Cancelado';
+      default:
+        return status;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,7 +75,7 @@ class ProviderOrderDetailsScreen extends StatelessWidget {
             
             _buildSectionTitle('Información General'),
             _buildDetailCard([
-              _buildRow('Estado', order.status),
+              _buildRow('Estado', _getStatusTranslation(order.status)),
               _buildRow('Creado el', _formatDate(order.createdAt)),
               if (order.dispatchedAt != null) _buildRow('Despachado el', _formatDate(order.dispatchedAt)),
               if (order.completedAt != null) _buildRow('Completado el', _formatDate(order.completedAt)),

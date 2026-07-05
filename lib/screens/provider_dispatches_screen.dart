@@ -240,21 +240,30 @@ class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> wit
           statusBgColor = const Color(0xFFD4EFDF);
           statusTextColor = const Color(0xFF006D3E);
           statusText = 'Confirmado';
-          actions = SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () async {
-                await Navigator.push(context, MaterialPageRoute(builder: (context) => ResourceAssignmentScreen(order: order)));
-                _fetchOrders();
-              },
-              icon: const Icon(Icons.person_add_alt_1_outlined, size: 16, color: Color(0xFF006D3E)),
-              label: const Text('Asignar Conductor', style: TextStyle(color: Color(0xFF006D3E), fontWeight: FontWeight.bold)),
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Color(0xFF006D3E)),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                padding: const EdgeInsets.symmetric(vertical: 12),
+          actions = Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    await Navigator.push(context, MaterialPageRoute(builder: (context) => ResourceAssignmentScreen(order: order)));
+                    _fetchOrders();
+                  },
+                  icon: const Icon(Icons.person_add_alt_1_outlined, size: 16, color: Color(0xFF006D3E)),
+                  label: const Text('Asignar', style: TextStyle(color: Color(0xFF006D3E), fontWeight: FontWeight.bold)),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Color(0xFF006D3E)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildOutlinedButton('Ver Detalles', onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ProviderOrderDetailsScreen(order: order)));
+                }),
+              ),
+            ],
           );
           break;
         case 'DISPATCHED':
@@ -262,20 +271,29 @@ class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> wit
           statusBgColor = const Color(0xFF2ECC71);
           statusTextColor = Colors.white;
           statusText = 'En Ruta';
-          actions = SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => ProviderTrackingScreen(order: order)));
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFD4EFDF),
-                elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                padding: const EdgeInsets.symmetric(vertical: 12),
+          actions = Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => ProviderTrackingScreen(order: order)));
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFD4EFDF),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: const Text('Rastreo', style: TextStyle(color: Color(0xFF006D3E), fontWeight: FontWeight.bold, fontSize: 12)),
+                ),
               ),
-              child: const Text('Rastreo en Vivo', style: TextStyle(color: Color(0xFF006D3E), fontWeight: FontWeight.bold, fontSize: 12)),
-            ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildOutlinedButton('Ver Detalles', onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ProviderOrderDetailsScreen(order: order)));
+                }),
+              ),
+            ],
           );
           break;
         case 'COMPLETED':
@@ -284,14 +302,23 @@ class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> wit
           statusTextColor = AppColors.textGrey;
           statusText = 'Completado';
           isCompleted = true;
-          actions = SizedBox(
-            width: double.infinity,
-            child: _buildSolidButton('Ver Comprobante', const Color(0xFFEAECEE), AppColors.textGrey, onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => DigitalReceiptScreen(order: order, signaturePoints: const [])),
-              );
-            }),
+          actions = Row(
+            children: [
+              Expanded(
+                child: _buildSolidButton('Comprobante', const Color(0xFFEAECEE), AppColors.textGrey, onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => DigitalReceiptScreen(order: order, signaturePoints: const [])),
+                  );
+                }),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildOutlinedButton('Ver Detalles', onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ProviderOrderDetailsScreen(order: order)));
+                }),
+              ),
+            ],
           );
           break;
         default:
