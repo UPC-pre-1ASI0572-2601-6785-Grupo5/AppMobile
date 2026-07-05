@@ -1,9 +1,21 @@
-﻿
+
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 
-class ProviderTrackingScreen extends StatelessWidget {
-  const ProviderTrackingScreen({Key? key}) : super(key: key);
+import '../models/order_model.dart';
+import '../services/order_service.dart';
+
+class ProviderTrackingScreen extends StatefulWidget {
+  final OrderModel order;
+  const ProviderTrackingScreen({Key? key, required this.order}) : super(key: key);
+
+  @override
+  State<ProviderTrackingScreen> createState() => _ProviderTrackingScreenState();
+}
+
+class _ProviderTrackingScreenState extends State<ProviderTrackingScreen> {
+  bool _isLoading = false;
+  final OrderService _orderService = OrderService();
 
   @override
   Widget build(BuildContext context) {
@@ -85,17 +97,17 @@ class ProviderTrackingScreen extends StatelessWidget {
                 children: [
                   const Text('DESPACHO ID', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textGrey, letterSpacing: 1)),
                   const SizedBox(height: 4),
-                  const Text('#DPC-774291-MX', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                  Text('#FT-${widget.order.id}', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                   const SizedBox(height: 8),
                   Row(
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(color: const Color(0xFF2ECC71), borderRadius: BorderRadius.circular(12)),
-                        child: const Text('En Ruta', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                        child: Text(widget.order.status == 'DELIVERED' || widget.order.status == 'COMPLETED' ? 'Entregado' : 'En Ruta', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                       ),
                       const SizedBox(width: 8),
-                      const Text('• Actualizado hace 2 min', style: TextStyle(fontSize: 11, color: AppColors.textGrey)),
+                      const Text('• Rastreo Activo', style: TextStyle(fontSize: 11, color: AppColors.textGrey)),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -347,9 +359,9 @@ class ProviderTrackingScreen extends StatelessWidget {
                     padding: EdgeInsets.symmetric(vertical: 16),
                     child: Divider(color: AppColors.borderLight),
                   ),
-                  const Text('Tiempo de Viaje Restante', style: TextStyle(fontSize: 11, color: AppColors.textGrey)),
+                  const Text('Tiempo de Viaje Estimado', style: TextStyle(fontSize: 11, color: AppColors.textGrey)),
                   const SizedBox(height: 4),
-                  const Text('03h 12min', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF006D3E))),
+                  Text('${widget.order.etaMinutes ?? 0} minutos', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF006D3E))),
                   const SizedBox(height: 4),
                   const Text('Ruta sin demoras reportadas', style: TextStyle(fontSize: 11, color: AppColors.textGrey)),
                 ],
@@ -385,6 +397,14 @@ class ProviderTrackingScreen extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              Text('Volumen', style: const TextStyle(fontSize: 10, color: AppColors.textGrey, fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 4),
+                              Text('${widget.order.quantityGallons} GL', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                              const SizedBox(height: 16),
+                              Text('Producto', style: const TextStyle(fontSize: 10, color: AppColors.textGrey, fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 4),
+                              Text(widget.order.productName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                              const SizedBox(height: 24),
                               const Text('ORIGEN', style: TextStyle(fontSize: 10, color: AppColors.textGrey, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
                               const SizedBox(height: 4),
                               const Text('Terminal Marítima Tuxpan', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textDark)),
@@ -405,67 +425,44 @@ class ProviderTrackingScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-
-                  // Tarjetas pequeñas (Temperatura, Presión)
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(color: const Color(0xFFF4F7F7), borderRadius: BorderRadius.circular(8)),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text('Temperatura\nTanque', style: TextStyle(fontSize: 10, color: AppColors.textGrey)),
-                              SizedBox(height: 6),
-                              Text('22.4°C', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                            ],
-                          ),
+                  if (_isLoading)
+                    const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                  else
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: (widget.order.status == 'DELIVERED' || widget.order.status == 'COMPLETED') ? null : () async {
+                          setState(() => _isLoading = true);
+                          try {
+                            await _orderService.markAsDelivered(widget.order.id);
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pedido marcado como entregado'), backgroundColor: AppColors.primary));
+                              Navigator.pop(context); // Regresa a la lista de despachos
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              setState(() => _isLoading = false);
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error));
+                            }
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2ECC71),
+                          disabledBackgroundColor: AppColors.borderLight,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text(
+                          (widget.order.status == 'DELIVERED' || widget.order.status == 'COMPLETED') ? 'Ya Entregado' : 'Marcar como Entregado',
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(color: const Color(0xFFF4F7F7), borderRadius: BorderRadius.circular(8)),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text('Presión\n', style: TextStyle(fontSize: 10, color: AppColors.textGrey)),
-                              SizedBox(height: 6),
-                              Text('1.2 Bar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Sellos Digitales
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: const Color(0xFFF4F7F7), borderRadius: BorderRadius.circular(8)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Sellos Digitales', style: TextStyle(fontSize: 10, color: AppColors.textGrey)),
-                        const SizedBox(height: 6),
-                        Row(
-                          children: const [
-                            Icon(Icons.lock_outline, size: 16, color: Color(0xFF006D3E)),
-                            SizedBox(width: 6),
-                            Text('ÃNTEGROS', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF006D3E), letterSpacing: 0.5)),
-                          ],
-                        ),
-                      ],
                     ),
-                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 80),
           ],
         ),
       ),

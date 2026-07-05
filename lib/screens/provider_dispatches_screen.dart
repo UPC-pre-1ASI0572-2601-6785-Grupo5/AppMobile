@@ -266,7 +266,7 @@ class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> wit
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const ProviderTrackingScreen()));
+                Navigator.push(context, MaterialPageRoute(builder: (context) => ProviderTrackingScreen(order: order)));
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFD4EFDF),
