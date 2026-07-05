@@ -254,7 +254,7 @@ class _DeliverySuccessScreenState extends State<DeliverySuccessScreen> {
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
+                            children: [
                               const Text('Código Hash de Seguridad', style: TextStyle(fontSize: 11, color: AppColors.textGrey)),
                               const SizedBox(height: 4),
                               Text(widget.order.securityHash ?? '#FT-HASH-PENDING', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primary, letterSpacing: 1)),

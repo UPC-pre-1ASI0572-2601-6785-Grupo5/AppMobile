@@ -7,6 +7,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'dart:ui' as ui;
+import 'dart:typed_data';
 
 class DigitalReceiptScreen extends StatefulWidget {
   // RECIBE LOS PUNTOS REALES DE LA FIRMA DIBUJADA
@@ -487,7 +488,7 @@ class _DigitalReceiptScreenState extends State<DigitalReceiptScreen> {
     );
   }
 
-  Future<ui.Uint8List?> _captureSignatureAsImage() async {
+  Future<Uint8List?> _captureSignatureAsImage() async {
     if (widget.signaturePoints.isEmpty) return null;
     
     final recorder = ui.PictureRecorder();
