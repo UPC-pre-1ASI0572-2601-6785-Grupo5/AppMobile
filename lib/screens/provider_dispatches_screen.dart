@@ -8,6 +8,7 @@ import '../models/order_model.dart';
 import '../services/order_service.dart';
 import 'package:intl/intl.dart';
 import 'provider_order_details_screen.dart';
+import 'digital_receipt_screen.dart';
 
 class ProviderDispatchesScreen extends StatefulWidget {
   const ProviderDispatchesScreen({Key? key}) : super(key: key);
@@ -285,7 +286,12 @@ class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> wit
           isCompleted = true;
           actions = SizedBox(
             width: double.infinity,
-            child: _buildSolidButton('Ver Comprobante', const Color(0xFFEAECEE), AppColors.textGrey),
+            child: _buildSolidButton('Ver Comprobante', const Color(0xFFEAECEE), AppColors.textGrey, onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => DigitalReceiptScreen(order: order)),
+              );
+            }),
           );
           break;
         default:
@@ -412,9 +418,9 @@ class _ProviderDispatchesScreenState extends State<ProviderDispatchesScreen> wit
     );
   }
 
-  Widget _buildSolidButton(String text, Color bgColor, Color textColor) {
+  Widget _buildSolidButton(String text, Color bgColor, Color textColor, {VoidCallback? onPressed}) {
     return ElevatedButton(
-      onPressed: () {},
+      onPressed: onPressed ?? () {},
       style: ElevatedButton.styleFrom(
         backgroundColor: bgColor,
         elevation: 0,
