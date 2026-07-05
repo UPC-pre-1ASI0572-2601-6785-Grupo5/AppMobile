@@ -5,11 +5,30 @@ import 'payment_confirmation_screen.dart';
 import '../services/session_manager.dart';
 import 'dashboard_screen.dart';
 import 'provider_dashboard_screen.dart';
+import '../services/auth_service.dart';
 
-class SubscriptionPlansScreen extends StatelessWidget {
+class SubscriptionPlansScreen extends StatefulWidget {
   const SubscriptionPlansScreen({Key? key}) : super(key: key);
 
-  void _navigateToPayment(BuildContext context, String name, double price, String desc) {
+  @override
+  State<SubscriptionPlansScreen> createState() => _SubscriptionPlansScreenState();
+}
+
+class _SubscriptionPlansScreenState extends State<SubscriptionPlansScreen> {
+  final AuthService _authService = AuthService();
+  bool _isLoading = false;
+
+  void _navigateToPayment(BuildContext context, String name, double price, String desc) async {
+    setState(() => _isLoading = true);
+    try {
+      await _authService.updateSubscriptionPlan(name);
+    } catch (e) {
+      debugPrint('Error updating plan: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+
+    if (!mounted) return;
     Navigator.push(
       context,
       MaterialPageRoute(

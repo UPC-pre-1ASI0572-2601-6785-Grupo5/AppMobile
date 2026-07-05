@@ -14,6 +14,7 @@ class ApiConfig {
   // ── Authentication endpoints ──────────────────────────────────────────
   static const String signUp = '/api/v1/authentication/sign-up';
   static const String signIn = '/api/v1/authentication/sign-in';
+  static const String users = '/api/v1/users';
 
   // ── Order endpoints ───────────────────────────────────────────────────
   static const String orders = '/api/v1/orders';

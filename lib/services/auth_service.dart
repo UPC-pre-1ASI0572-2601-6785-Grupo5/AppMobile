@@ -96,4 +96,20 @@ class AuthService {
   Future<bool> emailExists(String email) async {
     return false;
   }
+
+  /// Updates the user's subscription plan.
+  Future<void> updateSubscriptionPlan(String planName) async {
+    final user = _session.user;
+    if (user == null) return;
+    try {
+      final body = {
+        'subscriptionPlan': planName,
+      };
+      final json = await _api.put('${ApiConfig.users}/${user.id}/profile', body: body);
+      final updatedUser = User.fromJson(json as Map<String, dynamic>);
+      await _session.saveSession(token: updatedUser.token, user: updatedUser);
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

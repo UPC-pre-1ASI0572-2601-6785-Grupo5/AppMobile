@@ -8,6 +8,8 @@ import '../models/order_model.dart';
 
 import 'dart:math';
 import '../services/geocoding_service.dart';
+import '../services/order_service.dart';
+import 'delivery_success_screen.dart';
 
 class TrackingDetailsScreen extends StatefulWidget {
   final OrderModel order;
@@ -60,14 +62,30 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
       setState(() {
         _targetLocation = loc;
         _destinationName = addr;
-        _truckPosition = const LatLng(-12.085, -76.96); // Origen
+        if (widget.order.status == 'DELIVERED' || widget.order.status == 'COMPLETED') {
+          _truckPosition = _targetLocation;
+        } else {
+          _truckPosition = const LatLng(-12.085, -76.96); // Origen
+        }
         _isLoadingMap = false;
       });
-      _animController.forward(from: 0);
+      if (widget.order.status != 'DELIVERED' && widget.order.status != 'COMPLETED') {
+        _animController.forward(from: 0);
+      }
       try {
         _mapController.move(_targetLocation, 13.0);
       } catch (_) {}
     }
+  }
+
+  double _calculateDistance(LatLng p1, LatLng p2) {
+    double dLat = (p2.latitude - p1.latitude) * pi / 180.0;
+    double dLng = (p2.longitude - p1.longitude) * pi / 180.0;
+    double a = sin(dLat/2) * sin(dLat/2) +
+               cos(p1.latitude * pi / 180.0) * cos(p2.latitude * pi / 180.0) *
+               sin(dLng/2) * sin(dLng/2);
+    double c = 2 * atan2(sqrt(a), sqrt(1-a));
+    return 6371 * c;
   }
 
   @override
@@ -385,9 +403,9 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      Text('Distancia restante:', style: TextStyle(fontSize: 12, color: AppColors.textGrey)),
-                      Text('4.2 km', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                    children: [
+                      const Text('Distancia restante:', style: TextStyle(fontSize: 12, color: AppColors.textGrey)),
+                      Text('${_calculateDistance(_truckPosition, _targetLocation).toStringAsFixed(1)} km', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -424,6 +442,36 @@ class _TrackingDetailsScreenState extends State<TrackingDetailsScreen> with Tick
                       ),
                     ),
                   ),
+                  if (widget.order.status == 'DELIVERED') ...[
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          try {
+                            await OrderService().markAsCompleted(widget.order.id!);
+                            if (mounted) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const DeliverySuccessScreen()),
+                              );
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                            }
+                          }
+                        },
+                        icon: const Icon(Icons.check_circle, size: 18),
+                        label: const Text('Confirmar Recepción'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

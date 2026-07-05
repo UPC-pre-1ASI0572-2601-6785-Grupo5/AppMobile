@@ -32,10 +32,14 @@ class OrderService {
   }
 
   Future<void> cancelOrder(int id) async {
-    // Implement cancellation logic. Since we might not have a specific DELETE or Cancel endpoint documented,
-    // assuming it might be a PUT with status CANCELLED, or DELETE /api/v1/orders/{id}. 
-    // Wait, the API for order has not been fully verified for cancellation.
-    // Let's assume DELETE /api/v1/orders/{id}
     await _api.delete('${ApiConfig.orders}/$id');
+  }
+
+  Future<void> markAsDelivered(int id) async {
+    await _api.patch('${ApiConfig.orders}/$id/deliver');
+  }
+
+  Future<void> markAsCompleted(int id) async {
+    await _api.patch('${ApiConfig.orders}/$id/complete');
   }
 }

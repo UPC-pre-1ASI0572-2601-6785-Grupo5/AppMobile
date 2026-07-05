@@ -81,8 +81,8 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
   }
 
   void _calculateEta(LatLng target) {
-    const double originLat = -12.0464;
-    const double originLng = -77.0428;
+    const double originLat = -12.085;
+    const double originLng = -76.96;
     
     double dLat = (target.latitude - originLat) * pi / 180.0;
     double dLng = (target.longitude - originLng) * pi / 180.0;
