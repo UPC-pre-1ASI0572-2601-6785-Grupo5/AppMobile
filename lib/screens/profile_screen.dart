@@ -7,6 +7,8 @@ import '../models/user_model.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
 
@@ -37,15 +39,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final user = SessionManager.instance.user;
     if (user != null) {
       try {
-        final prefs = await SharedPreferences.getInstance();
-        final path = prefs.getString('profile_image_${user.id}');
         final updatedUser = await _profileService.fetchUserProfile(user.id);
         final sites = await _profileService.getSites(user.id);
         setState(() {
           _mfaEnabled = updatedUser.mfaEnabled;
           _currentPlan = updatedUser.subscriptionPlan ?? 'Starter';
           _sedes = sites;
-          _profileImagePath = path;
+          _profileImagePath = updatedUser.profilePicture;
           _isLoading = false;
         });
       } catch (e) {
@@ -62,11 +62,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (pickedFile != null) {
       final user = SessionManager.instance.user;
       if (user != null) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('profile_image_${user.id}', pickedFile.path);
-        setState(() {
-          _profileImagePath = pickedFile.path;
-        });
+        final bytes = await pickedFile.readAsBytes();
+        final base64Img = 'data:image/png;base64,' + base64Encode(bytes);
+        try {
+          await _profileService.updateProfile(user.id, {'profilePicture': base64Img});
+          setState(() {
+            _profileImagePath = base64Img;
+          });
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Foto actualizada')));
+        } catch (e) {
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        }
       }
     }
   }
@@ -107,14 +113,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: _profileImagePath != null
-                                ? Image.network(
-                                    _profileImagePath!,
-                                    width: 56,
-                                    height: 56,
-                                    fit: BoxFit.cover,
-                                  )
-                                : Image.asset(
-                                    'assets/images/logo.png',
+                                ? (_profileImagePath!.startsWith('data:image')
+                                    ? Image.memory(base64Decode(_profileImagePath!.split(',')[1]), width: 56, height: 56, fit: BoxFit.cover)
+                                    : Image.network(
+                                        _profileImagePath!,
+                                        width: 56,
+                                        height: 56,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) => Image.network('https://api.dicebear.com/7.x/bottts/png?seed=$userEmail', width: 56, height: 56, fit: BoxFit.cover),
+                                      ))
+                                : Image.network(
+                                    'https://api.dicebear.com/7.x/bottts/png?seed=$userEmail',
                                     width: 56,
                                     height: 56,
                                     fit: BoxFit.cover,

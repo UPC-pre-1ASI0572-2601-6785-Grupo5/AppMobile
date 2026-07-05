@@ -27,6 +27,7 @@ class User {
   String? address;
   bool mfaEnabled;
   String? subscriptionPlan;
+  String? profilePicture;
 
   User({
     required this.id,
@@ -41,6 +42,7 @@ class User {
     this.address,
     this.mfaEnabled = false,
     this.subscriptionPlan,
+    this.profilePicture,
   });
 
   /// Creates a [User] from the backend `AuthResponse` JSON.
@@ -58,6 +60,7 @@ class User {
       address: json['address'] as String?,
       mfaEnabled: json['mfaEnabled'] as bool? ?? false,
       subscriptionPlan: json['subscriptionPlan'] as String?,
+      profilePicture: json['profilePicture'] as String?,
     );
   }
 
@@ -75,6 +78,7 @@ class User {
       'address': address,
       'mfaEnabled': mfaEnabled,
       'subscriptionPlan': subscriptionPlan,
+      'profilePicture': profilePicture,
     };
   }
 

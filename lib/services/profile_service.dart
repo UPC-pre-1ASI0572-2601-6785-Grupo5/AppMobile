@@ -171,6 +171,7 @@ class ProfileService {
       address: user.address,
       mfaEnabled: user.mfaEnabled,
       subscriptionPlan: user.subscriptionPlan,
+      profilePicture: user.profilePicture,
     );
     await SessionManager.instance.saveSession(token: token, user: user);
   }
