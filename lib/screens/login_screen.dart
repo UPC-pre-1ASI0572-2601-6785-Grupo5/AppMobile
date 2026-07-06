@@ -7,7 +7,7 @@ import 'forgot_password_screen.dart';
 import 'mfa_verification_screen.dart';
 import 'dashboard_screen.dart';
 import 'provider_dashboard_screen.dart';
-import 'role_selection_screen.dart';
+import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -37,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ..onTap = () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const RoleSelectionScreen()),
+          MaterialPageRoute(builder: (context) => const SignUpScreen()),
         );
       };
     _forgotPasswordRecognizer = TapGestureRecognizer()
